@@ -77,4 +77,15 @@ class Utilisateur extends Authenticatable
   {
     return $this->role === 'superadmin';
   }
+
+  /**
+   * Accesseur pour obtenir le nom complet (nom + prenom).
+   * Utilisé pour la compatibilité avec le frontend.
+   *
+   * @return string
+   */
+  public function getNameAttribute(): string
+  {
+    return trim("{$this->prenom} {$this->nom}");
+  }
 }
