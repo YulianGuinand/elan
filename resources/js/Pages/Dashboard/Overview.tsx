@@ -3,28 +3,16 @@ import CircularProgress from "@/Components/Dashboard/CircularProgress";
 import ProgressBar from "@/Components/Dashboard/ProgressBar";
 import StatsCard from "@/Components/Dashboard/StatsCard";
 import WelcomeBanner from "@/Components/Dashboard/WelcomeBanner";
-import DashboardLayout from "@/Layouts/DashboardLayout";
 import {
-    ParticipationData,
-    SatisfactionData,
-    StatCard,
-    SurveyItem,
-} from "@/types/dashboard";
-import { Head } from "@inertiajs/react";
-
-interface DashboardProps {
-    stats: StatCard[];
-    participationData: ParticipationData;
-    satisfactionData: SatisfactionData;
-    activeSurveys: SurveyItem[];
-}
-
-export default function Dashboard({
-    stats,
+    activeSurveys,
     participationData,
     satisfactionData,
-    activeSurveys,
-}: DashboardProps) {
+    statsData,
+} from "@/data/mockData";
+import DashboardLayout from "@/Layouts/DashboardLayout";
+import { Head } from "@inertiajs/react";
+
+export default function Overview() {
     return (
         <>
             <Head title="Performance des Enquêtes" />
@@ -49,13 +37,13 @@ export default function Dashboard({
 
                     {/* Stats Cards Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {stats.map((stat) => (
+                        {statsData.map((stat) => (
                             <StatsCard key={stat.id} stat={stat} />
                         ))}
                     </div>
 
                     {/* Charts Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Participation Card */}
                         <div className="bg-white rounded-lg shadow-sm p-6">
                             <h3 className="text-lg font-semibold text-gray-900 mb-6">
