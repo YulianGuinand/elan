@@ -88,4 +88,14 @@ class Utilisateur extends Authenticatable
   {
     return trim("{$this->prenom} {$this->nom}");
   }
+
+  /**
+   * Relation : Un utilisateur peut créer plusieurs enquêtes.
+   *
+   * @return \Illuminate\Database\Eloquent\Relations\HasMany
+   */
+  public function enquetes()
+  {
+    return $this->hasMany(Enquete::class, 'utilisateur_id');
+  }
 }
