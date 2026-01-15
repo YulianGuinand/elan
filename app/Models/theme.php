@@ -12,6 +12,6 @@ class Theme extends Model
     ];
     public function questions()
     {
-        return $this->hasMany(Question::class, 'question_id');
+        return $this->BelongsToMAny(Question::class, 'etredefinit');
     }
 }

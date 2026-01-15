@@ -19,12 +19,12 @@ class Participant extends Model
 
     public function entreprises() : BelongsToMany
     {
-        return $this->belongsToMany(Entreprise::class);
+        return $this->belongsToMany(Entreprise::class,'engager');
     }
 
     public function enquetes() : BelongsToMany
     {
-        return $this->belongsToMany(Enquete::class);
+        return $this->belongsToMany(Enquete::class,'participer');
     }
 
     public function contrats() : HasMany
