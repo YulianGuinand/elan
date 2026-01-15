@@ -8,17 +8,13 @@ class Reponse extends Model
 {
     protected $primaryKey = 'id';
 
-    public function participantsbelongs()
+    public function participant()
     {
-        return $this->hasOne(Participant::class, 'id', 'id');
+        return $this->belongsto(Participant::class);
     }
 
-    public function questionbelongs()
+    public function question()
     {
-        return $this->hasOne(
-            Question::class,
-            'id',
-            'id'
-        );
+        return $this->belongsTo(Question::class);
     }
 }

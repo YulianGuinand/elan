@@ -10,25 +10,21 @@ class Question extends Model
     protected $primaryKey = 'id';
 
 
-    public function enquetebelongs()
+    public function enquete()
     {
-        return $this->hasOne(Enquete::class, 'enquetes', 'id')->withTimestamps();
+        return $this->belongsTo(Enquete::class)->withTimestamps();
     }
 
-    public function reponsesbelongs()
+    public function reponses()
     {
-        return $this->hasMany(Reponse::class, 'reponses', 'id')->withTimestamps();
+        return $this->hasMany(Reponse::class)->withTimestamps();
     }
-    public function type_reponsebelongs()
+    public function type_reponse()
     {
-        return $this->hasOne(
-            Type_Reponse::class,
-            'type__reponses',
-            'id'
-        )->withTimestamps();
+        return $this->belongsTo(Type_Reponse::class)->withTimestamps();
     }
-    public function  themebelongs()
+    public function  themes()
     {
-        return $this->hasMany(Theme::class, 'themes', 'id')->withTimestamps();
+        return $this->belongsToMany(Theme::class, 'etredefinit')->withTimestamps();
     }
 }

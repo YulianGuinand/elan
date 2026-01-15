@@ -15,12 +15,8 @@ class promotion extends Model
         'date_sortie'
     ];
 
-    public function contratsBelong()
+    public function contrats()
     {
-        return $this->hasMany(
-            Contrat::class,
-            'contrats',
-            'id'
-        )->withTimestamps();
+        return $this->hasMany(Contrat::class,)->withTimestamps();
     }
 }
