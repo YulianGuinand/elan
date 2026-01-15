@@ -191,4 +191,21 @@ class SurveyController extends Controller
       ],
     ];
   }
+
+  /**
+   * Show the form for creating a new survey.
+   */
+  public function create()
+  {
+    return Inertia::render('CreateSurvey');
+  }
+
+  /**
+   * Stocke une enquête créée depuis le builder
+   */
+  public function storeFromBuilder(Request $request)
+  {
+    // Pour le moment, on affiche juste les données reçues
+    dd($request->all());
+  }
 }

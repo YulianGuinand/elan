@@ -16,6 +16,7 @@ interface DashboardLayoutProps extends PropsWithChildren {
         href?: string;
         onClick?: () => void;
     };
+    noPadding?: boolean;
 }
 
 export default function DashboardLayout({
@@ -23,6 +24,7 @@ export default function DashboardLayout({
     breadcrumbs,
     actionButton,
     children,
+    noPadding = false,
 }: DashboardLayoutProps) {
     const user = usePage().props.auth?.user;
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -48,7 +50,11 @@ export default function DashboardLayout({
                 />
 
                 {/* Page Content */}
-                <main className="flex-1 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+                <main
+                    className={`flex-1 ${
+                        noPadding ? "" : "px-4 sm:px-6 lg:px-8 py-4 sm:py-6"
+                    }`}
+                >
                     {children}
                 </main>
             </div>

@@ -1,0 +1,30 @@
+/* ==============================================
+   CUSTOM LOADING OVERLAY & PROGRESS BAR
+   ============================================== */
+
+/* Désactiver le spinner par défaut */
+#nprogress .spinner {
+    display: none !important;
+}
+
+/* Barre de progression - au-dessus de l'overlay */
+#nprogress .bar {
+    height: 3px !important;
+    background: linear-gradient(to right, #f18628, #ff9d5c) !important;
+    box-shadow: 0 0 10px #f18628, 0 0 5px #f18628 !important;
+    position: fixed !important;
+    z-index: 999999 !important; /* Au-dessus de l'overlay (99999) */
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+}
+
+/* Animation pulsante */
+#nprogress .peg {
+    box-shadow: 0 0 10px #f18628, 0 0 5px #f18628 !important;
+}
+
+/* Pour les transitions plus fluides */
+#nprogress {
+    pointer-events: none;
+}
