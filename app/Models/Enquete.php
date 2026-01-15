@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Enquete extends Model
 {
@@ -13,22 +15,22 @@ class Enquete extends Model
         'description'
     ];
 
-    public function utilisateur()
+    public function utilisateur() : BelongsTo
     {
-        return $this->hasOne(User::class, 'utilisateur_id');
+        return $this->BelongsTo(utilisateur::class);
     }
 
-    public function participants()
+    public function participants() : BelongsToMany
     {
-        return $this->hasMany(participant::class, 'participant_id');
+        return $this->BelongsToMany(participant::class,'participer');
     }
 
     public function questions()
     {
-        return $this->hasMany(Question::class, 'question_id');
+        return $this->hasMany(Question::class);
     }
 
-    
+
     /**
      * Vérifie si l'enquête est active (date actuelle entre date_debut et date_fin).
      *
@@ -59,5 +61,5 @@ class Enquete extends Model
     {
         return $this->date_debut > now()->toDateString();
     }
- 
+
 }

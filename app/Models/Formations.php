@@ -18,6 +18,6 @@ class Formations extends Model
     }
     public function ecoles() : BelongsToMany
     {
-        return $this->belongsToMany(Ecole::class);
+        return $this->belongsToMany(Ecole::class,'etreenseigner');
     }
 }

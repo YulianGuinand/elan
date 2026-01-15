@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Ecole extends Model
@@ -49,9 +50,13 @@ class Ecole extends Model
      */
     public function contrats(): HasMany
     {
-        return $this->hasMany(Contrat::class, 'ecole_id');
+        return $this->hasMany(Contrat::class);
     }
 
+    public function formations(): BelongsToMany
+    {
+        return $this->belongsToMany(Contrat::class,'etreenseigner');
+    }
     /**
      * Accesseur pour l'adresse complète.
      *

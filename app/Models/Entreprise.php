@@ -17,6 +17,6 @@ class Entreprise extends Model
     ];
     public function participants() : BelongsToMany
     {
-        return $this->belongsToMany(Participant::class);
+        return $this->belongsToMany(Participant::class,'engager');
     }
 }
