@@ -1,7 +1,27 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { Head, useForm } from "@inertiajs/react";
+import { FormEventHandler } from "react";
 
 export default function Dashboard() {
+    const { post, reset, setData } = useForm<{ file: File | null }>({
+        file: null,
+    });
+
+    const onSubmit: FormEventHandler = (e) => {
+        e.preventDefault();
+
+        post(route("upload-file"), {
+            forceFormData: true,
+            onError: (errors) => {
+                if (errors.password) {
+                    reset("file");
+                }
+
+                console.log(errors);
+            },
+        });
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -18,6 +38,25 @@ export default function Dashboard() {
                         <div className="p-6 text-gray-900">
                             You're logged in!
                         </div>
+
+                        <form onSubmit={onSubmit} className="flex flex-col">
+                            <label htmlFor="file">Fichier Excel</label>
+                            <input
+                                type="file"
+                                id="file"
+                                name="file"
+                                onChange={(e) =>
+                                    setData(
+                                        "file",
+                                        e.target.files
+                                            ? e.target.files[0]
+                                            : null,
+                                    )
+                                }
+                            />
+
+                            <button type="submit">Soumettre</button>
+                        </form>
                     </div>
                 </div>
             </div>
