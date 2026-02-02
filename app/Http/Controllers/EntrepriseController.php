@@ -59,6 +59,8 @@ class EntrepriseController extends Controller
      */
     public function show(string $id)
     {
+        $entreprise = Entreprise::find($id);
+        return view('entreprise.show', compact('entreprise'));
     }
 
     /**
@@ -66,7 +68,8 @@ class EntrepriseController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $entreprise = Entreprise::find($id);
+        return view('entreprise.edit', compact('entreprise'));
     }
 
     /**
@@ -74,7 +77,8 @@ class EntrepriseController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $entreprise = Entreprise::find($id)
+            ->update($request->all());
     }
 
     /**
@@ -82,6 +86,15 @@ class EntrepriseController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try
+        {
+            $entreprise = Entreprise::destroy($id);
+            return redirect()->route('entreprise.index')->with("success","L'Entreprise à bien été supprimée");
+        }
+        catch (\Exception $exception)
+        {
+            Log::error("Erreur de suppression de l'entreprise : " . $exception->getMessage());
+            return redirect()->route('entreprise.index')->with('error', "Impossible de supprimer l'entreprise");
+        }
     }
 }
