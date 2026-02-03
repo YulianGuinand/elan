@@ -33,13 +33,13 @@ class EntrepriseController extends Controller
     {
         try
         {
-            $raison_social = $request->input('raison_social');
+            $raison_sociale = $request->input('raison_sociale');
             $telephone = $request->input('telephone');
             $mail = $request->input('mail');
             $ville = $request->input('ville');
             $interlocuteur = $request->input('interlocuteur');
             Entreprise::create([
-                'raison_social' => $raison_social,
+                'raison_sociale' => $raison_sociale,
                 'mail' => $mail,
                 'telephone' => $telephone,
                 'ville' => $ville,
