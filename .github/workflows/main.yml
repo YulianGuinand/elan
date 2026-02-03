@@ -33,6 +33,7 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
+          port: 22
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd ~/elan
