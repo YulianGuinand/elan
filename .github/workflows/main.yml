@@ -21,7 +21,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-	  node-version: '20'
+          node-version: '20'
 
       - name: Install & Build Assets (Inertia)
         run: |
@@ -36,14 +36,16 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd ~/elan
-            git pull origin main
-            ù
+            git fetch origin main
+            git reset --hard origin/main
+            
             if [ ! -f composer.phar ]; then
               php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
               php composer-setup.php
               php -r "unlink('composer-setup.php');"
             fi
-            php composer-setup.php install --no-dev
+            
+            php composer.phar install --no-dev --optimize-autoloader
             php artisan migrate --force
             php artisan config:cache
             php artisan route:cache
