@@ -15,7 +15,7 @@ class ParticipantController extends Controller
     public function index()
     {
         $participants = Participant::all();
-        return view('Participant.index', compact('participants'));
+        return view('participant.index', compact('participants'));
     }
 
     /**
@@ -23,7 +23,7 @@ class ParticipantController extends Controller
      */
     public function create()
     {
-        return view('Participant.create');
+        return view('participant.create');
     }
 
     /**
@@ -43,12 +43,12 @@ class ParticipantController extends Controller
                 'telephone' => $telephone,
                 'mail' => $mail
             ]);
-            return redirect()->route('Participant.index');
+            return redirect()->route('participant.index');
         }
         catch (\Exception $e)
         {
             Log::error("Erreur de l'ajout du participant : " . $e->getMessage());
-            return redirect()->route('Participant.index')->with("error",'Erreur de l\'ajout du participant : ' . $e->getMessage());
+            return redirect()->route('participant.index')->with("erro",'Erreur de l\'ajout du participant : ' . $e->getMessage());
         }
     }
 
@@ -58,7 +58,7 @@ class ParticipantController extends Controller
     public function show(string $id)
     {
         $participant = Participant::find($id);
-        return view('Participant.show', compact('participant'));
+        return view('participant.show', compact('participant'));
     }
 
     /**
@@ -66,8 +66,8 @@ class ParticipantController extends Controller
      */
     public function edit(string $id)
     {
-        $participant = Participant::find($id);
-        return view('Participant.edit', compact('participant'));
+        $entreprise = Entreprise::find($id);
+        return view('participant.edit', compact('entreprise'));
     }
 
     /**
@@ -77,14 +77,12 @@ class ParticipantController extends Controller
     {
         try
         {
-            Participant::find($id)
+            Entreprise::find($id)
                 ->update($request->all());
-            return redirect()->route('Participant.index');
         }
         catch (\Exception $e)
         {
             Log::error("Erreur de la modification du participant : " . $e->getMessage());
-            return redirect()->route('Participant.index')->with("error",'Erreur de la modification du participant : ' . $e->getMessage());
         }
 
     }
@@ -97,12 +95,10 @@ class ParticipantController extends Controller
         try
         {
             Participant::destroy($id);
-            return redirect()->route('Participant.index');
         }
         catch (\Exception $e)
         {
             Log::error("Erreur de la suppression du participant : " . $e->getMessage());
-            return redirect()->route('Participant.index')->with("error",'Erreur de suppression du participant : ' . $e->getMessage());
         }
     }
 }
