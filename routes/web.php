@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\EntrepriseController;
+use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -26,5 +27,5 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::resource('Entreprise', EntrepriseController::class);
-
+Route::resource('Participant', ParticipantController::class);
 require __DIR__.'/auth.php';
