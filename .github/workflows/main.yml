@@ -1,52 +1,74 @@
-name: Deploy Elan Project
+name: Deploy Laravel App
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
+      # 1. Préparation PHP & Dépendances Backend
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
+          extensions: mbstring, xml, bcmath, curl
 
-      - name: Install Composer dependencies
-        run: composer install --no-dev --optimize-autoloader
+      - name: Install Composer Dependencies
+        run: composer install --no-dev --optimize-autoloader --prefer-dist --no-progress
 
+      # 2. Build Frontend (React/Inertia)
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Install & Build Assets (Inertia)
+          
+      - name: Build Assets
         run: |
-          npm install --legacy-peer-deps
+          npm ci --legacy-peer-deps
           npm run build
 
-      - name: Deploy via SSH
-        uses: appleboy/scp-action@v1
+      # 3. Configuration SSH
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      # 4. Envoi des fichiers (Rsync)
+      - name: Sync Files
+        run: |
+          rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" --delete \
+          --exclude='.git/' --exclude='.github/' --exclude='.env' \
+          --exclude='node_modules/' \
+          ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/elan/
+
+      # 5. Commandes Post-Déploiement sur le serveur
+      - name: Execute Remote Commands
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          port: 22
           key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
           script: |
-            cd ~/elan
-            git fetch origin main
-            git reset --hard origin/main
+            cd /var/www/elan
             
-            if [ ! -f composer.phar ]; then
-              php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-              php composer-setup.php
-              php -r "unlink('composer-setup.php');"
-            fi
-            
-            php composer.phar install --no-dev --optimize-autoloader
+            # Maintenance & Mises à jour
+            php artisan down
             php artisan migrate --force
+            
+            # Optimisations
             php artisan config:cache
             php artisan route:cache
+            php artisan view:cache
+            
+            # Permissions (Critique pour Nginx)
+            sudo chown -R :www-data storage bootstrap/cache
+            sudo chmod -R 775 storage bootstrap/cache
+            
+            php artisan up
