@@ -32,8 +32,4 @@ class Participant extends Model
         return $this->HasMany(Contrat::class);
     }
 
-    public function reponses() : HasMany
-    {
-        return $this->hasMany(Reponse::class);
-    }
 }

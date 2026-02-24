@@ -15,10 +15,6 @@ class Question extends Model
         return $this->belongsTo(Enquete::class)->withTimestamps();
     }
 
-    public function reponses()
-    {
-        return $this->hasMany(Reponse::class)->withTimestamps();
-    }
     public function type_reponse()
     {
         return $this->belongsTo(Type_Reponse::class)->withTimestamps();
