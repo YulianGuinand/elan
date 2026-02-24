@@ -15,8 +15,14 @@ class Entreprise extends Model
         "ville",
         "interlocuteur"
     ];
-    public function participants() : BelongsToMany
+
+    public function participants(): BelongsToMany
     {
-        return $this->belongsToMany(Participant::class,'engager');
+        return $this->belongsToMany(Participant::class, 'engager');
+    }
+
+    public function contrats(): HasMany
+    {
+        return $this->hasMany(Contrat::class, 'entreprise_id');
     }
 }

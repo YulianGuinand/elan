@@ -15,10 +15,6 @@ class Question extends Model
         return $this->belongsTo(Enquete::class)->withTimestamps();
     }
 
-    public function reponses()
-    {
-        return $this->hasMany(Reponse::class)->withTimestamps();
-    }
     public function type_reponse()
     {
         return $this->belongsTo(Type_Reponse::class)->withTimestamps();
@@ -26,5 +22,10 @@ class Question extends Model
     public function  themes()
     {
         return $this->belongsToMany(Theme::class, 'etredefinit')->withTimestamps();
+    }
+
+    public function choix()
+    {
+        return $this->hasMany(Choix::class)->withTimestamps();
     }
 }
