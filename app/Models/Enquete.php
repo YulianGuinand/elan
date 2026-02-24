@@ -30,7 +30,12 @@ class Enquete extends Model
         return $this->hasMany(Question::class);
     }
 
-
+    public function contacts()
+    {
+        return $this->belongsToMany(Participant::class, 'contacter')
+            ->withPivot('utilisateur_id','date_contact','moyen','commentaire')
+            ->withTimestamps();
+    }
     /**
      * Vérifie si l'enquête est active (date actuelle entre date_debut et date_fin).
      *
