@@ -81,4 +81,14 @@ class Contrat extends Model
     {
         return $this->belongsTo(Participant::class, 'participant_id');
     }
+
+    /**
+     * Relation : Un contrat appartient à une entreprise.
+     *
+     * @return BelongsTo
+     */
+    public function entreprise(): BelongsTo
+    {
+        return $this->belongsTo(Entreprise::class, 'entreprise_id');
+    }
 }
