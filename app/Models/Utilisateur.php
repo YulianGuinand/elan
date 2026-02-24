@@ -98,4 +98,11 @@ class Utilisateur extends Authenticatable
   {
     return $this->hasMany(Enquete::class, 'utilisateur_id');
   }
+
+  public function participants()
+  {
+      return $this->belongsToMany(Participant::class, 'contacter')
+          ->withPivot('utilisateur_id','date_contact','moyen','commentaire')
+          ->withTimestamps();
+  }
 }

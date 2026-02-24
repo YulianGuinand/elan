@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -35,5 +36,12 @@ class Participant extends Model
     public function reponses() : HasMany
     {
         return $this->hasMany(Reponse::class);
+    }
+
+    public function utilisateurs() : BelongsToMany
+    {
+        return $this->belongsToMany(Utilisateur::class, 'contacter')
+            ->withPivot('enquete_id','date_contact','moyen','commentaire')
+            ->withTimestamps();
     }
 }
