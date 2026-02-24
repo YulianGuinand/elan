@@ -14,13 +14,4 @@ class MainController extends Controller
     {
         return Inertia::render('Dashboard');
     }
-
-    public function upload(Request $request)
-    {
-        if (!$request->hasFile('file')) {
-            dd('No file uploaded', $request->all(), $request->files);
-        }
-        $collection = (new \Rap2hpoutre\FastExcel\FastExcel)->import($request->file('file'));
-        dd($collection);
-    }
 }
