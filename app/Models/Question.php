@@ -27,4 +27,9 @@ class Question extends Model
     {
         return $this->belongsToMany(Theme::class, 'etredefinit')->withTimestamps();
     }
+
+    public function choix()
+    {
+        return $this->hasMany(Choix::class)->withTimestamps();
+    }
 }
