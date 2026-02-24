@@ -9,11 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Entreprise extends Model
 {
     protected $fillable = [
-        "titre",
-        "description",
-        "date_debut",
-        "date_fin",
-        "type_contact"
+        "raison_sociale",
+        "mail",
+        "telephone",
+        "ville",
+        "interlocuteur"
     ];
     public function participants() : BelongsToMany
     {
