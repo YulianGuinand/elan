@@ -1,9 +1,12 @@
 <?php
 
-use App\Http\Controllers\MainController;
-use App\Http\Controllers\EntrepriseController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\StudentsController;
+use App\Http\Controllers\SurveyController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -17,14 +20,66 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', [MainController::class, 'home'])->middleware(['auth', 'verified'])->name('dashboard');
+// Routes protegees par authentification
+Route::middleware(['auth', 'verified'])->group(function () {
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // ============================================
+    // TABLEAU DE BORD
+    // ============================================
+    Route::get('/tableau-de-bord', [DashboardController::class, 'index'])
+        ->name('dashboard');
+
+    // ============================================
+    // ENQUETES
+    // ============================================
+    Route::prefix('enquetes')->group(function () {
+        Route::get('/', [SurveyController::class, 'index'])
+            ->name('surveys.index');
+
+        Route::get('/creer', [SurveyController::class, 'create'])
+            ->name('surveys.create');
+
+        Route::post('/constructeur', [SurveyController::class, 'storeFromBuilder'])
+            ->name('surveys.builder.store');
+    });
+
+    // ============================================
+    // PARTICIPANTS
+    // ============================================
+    Route::prefix('participants')->group(function () {
+        Route::get('/', [StudentsController::class, 'index'])
+            ->name('participants.index');
+
+        Route::get('/ajouter', function () {
+            return Inertia::render('Participants/Create');
+        })->name('participants.create');
+    });
+
+    // ============================================
+    // RAPPORTS
+    // ============================================
+    Route::get('/rapports', [ReportsController::class, 'index'])
+        ->name('reports.index');
+
+    // ============================================
+    // PARAMETRES
+    // ============================================
+    Route::get('/parametres', [SettingsController::class, 'index'])
+        ->name('settings.index');
+
+    // ============================================
+    // PROFIL
+    // ============================================
+    // Route::prefix('profil')->group(function () {
+    //     Route::get('/', [ProfileController::class, 'edit'])
+    //         ->name('profile.edit');
+
+    //     Route::patch('/', [ProfileController::class, 'update'])
+    //         ->name('profile.update');
+
+    //     Route::delete('/', [ProfileController::class, 'destroy'])
+    //         ->name('profile.destroy');
+    // });
 });
 
-Route::resource('Entreprise', EntrepriseController::class);
-Route::resource('Participant', ParticipantController::class);
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
