@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,7 +20,7 @@ class ReportsController extends Controller
     }
 
     /**
-     * Récupère les KPIs pour les rapports
+     * Recupere les KPIs pour les rapports
      */
     private function getReportKPIs(): array
     {
@@ -55,24 +54,24 @@ class ReportsController extends Controller
             ],
             [
                 'id' => '4',
-                'title' => 'Réponses Totales',
+                'title' => 'Reponses Totales',
                 'value' => '1,245',
                 'subtitle' => null,
                 'change' => 12,
-                'changeText' => '+12% cette année',
+                'changeText' => '+12% cette annee',
                 'icon' => 'responses',
             ],
         ];
     }
 
     /**
-     * Récupère les données d'évolution de la satisfaction (6 mois)
+     * Recupere les donnees evolution de la satisfaction (6 mois)
      */
     private function getSatisfactionEvolution(): array
     {
         return [
             ['label' => 'Jan', 'value' => 2.1],
-            ['label' => 'Fév', 'value' => 2.3],
+            ['label' => 'Fev', 'value' => 2.3],
             ['label' => 'Mar', 'value' => 2.2],
             ['label' => 'Avr', 'value' => 3.4],
             ['label' => 'Mai', 'value' => 3.8],
@@ -81,7 +80,7 @@ class ReportsController extends Controller
     }
 
     /**
-     * Récupère la répartition par public
+     * Recupere la repartition par public
      */
     private function getAudienceDistribution(): array
     {

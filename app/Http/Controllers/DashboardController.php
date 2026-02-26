@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
     /**
-     * Affiche le tableau de bord avec les statistiques des enquêtes
+     * Affiche le tableau de bord avec les statistiques des enquetes
      */
     public function index(): Response
     {
@@ -22,14 +21,14 @@ class DashboardController extends Controller
     }
 
     /**
-     * Récupère les données des cartes de statistiques
+     * Recupere les donnees des cartes de statistiques
      */
     private function getStatsData(): array
     {
         return [
             [
                 'id' => '1',
-                'title' => 'Total Enquêtes Envoyées',
+                'title' => 'Total Enquetes Envoyees',
                 'value' => '1,240',
                 'change' => 5.2,
                 'changeText' => '+5,2% mois dernier',
@@ -38,7 +37,7 @@ class DashboardController extends Controller
             ],
             [
                 'id' => '2',
-                'title' => 'Taux de Réponse Moyen',
+                'title' => 'Taux de Reponse Moyen',
                 'value' => '68%',
                 'change' => 2.4,
                 'changeText' => '+2,4% mois dernier',
@@ -56,21 +55,21 @@ class DashboardController extends Controller
             ],
         ];
     }
-    
+
     /**
-     * Récupère les données de participation
+     * Recupere les donnees de participation
      */
     private function getParticipationData(): array
     {
         return [
             'percentage' => 85,
-            'channelName' => 'Enquêtes Téléphoniques',
+            'channelName' => 'Enquetes Telephoniques',
             'channelSubtitle' => 'Canal à fort engagement',
         ];
     }
 
     /**
-     * Récupère les données de satisfaction globale
+     * Recupere les donnees de satisfaction globale
      */
     private function getSatisfactionData(): array
     {
@@ -78,17 +77,17 @@ class DashboardController extends Controller
             'score' => 4.2,
             'maxScore' => 5,
             'levels' => [
-                ['label' => 'Très Satisfait', 'percentage' => 40, 'color' => '#F18628'],
+                ['label' => 'Tres Satisfait', 'percentage' => 40, 'color' => '#F18628'],
                 ['label' => 'Satisfait', 'percentage' => 30, 'color' => '#F18628'],
                 ['label' => 'Neutre', 'percentage' => 20, 'color' => '#FFA85C'],
                 ['label' => 'Insatisfait', 'percentage' => 7, 'color' => '#FFD4B3'],
-                ['label' => 'Très Mauvais', 'percentage' => 3, 'color' => '#FFE8D9'],
+                ['label' => 'Tres Mauvais', 'percentage' => 3, 'color' => '#FFE8D9'],
             ],
         ];
     }
 
     /**
-     * Récupère la liste des enquêtes actives
+     * Recupere la liste des enquetes actives
      */
     private function getActiveSurveys(): array
     {
@@ -103,13 +102,13 @@ class DashboardController extends Controller
             [
                 'id' => '2',
                 'name' => 'Satisfaction Formateurs',
-                'subtitle' => 'Tous départements',
+                'subtitle' => 'Tous departements',
                 'endDate' => '20 Oct 2023',
                 'status' => 'active',
             ],
             [
                 'id' => '3',
-                'name' => 'Évaluation Entreprises',
+                'name' => 'evaluation Entreprises',
                 'subtitle' => 'Partenaires 2023',
                 'endDate' => '25 Oct 2023',
                 'status' => 'active',
