@@ -2,56 +2,109 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ExcelService;
 use App\Models\Entreprise;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Exception;
+use Inertia\Inertia;
 
 class EntrepriseController extends Controller
 {
+    public function __construct(private ExcelService $excelService) {}
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
         $entreprises = Entreprise::all();
-        return view('entreprise.index', compact('entreprises'));
+        return Inertia::render('Entreprises/Index', [
+            'entreprises' => $entreprises,
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('entreprise.create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * Store a newly created resource in storage (visuel uniquement → dd).
      */
     public function store(Request $request)
     {
-        try
-        {
-            $raison_sociale = $request->input('raison_sociale');
-            $telephone = $request->input('telephone');
-            $mail = $request->input('mail');
-            $ville = $request->input('ville');
-            $interlocuteur = $request->input('interlocuteur');
-            Entreprise::create([
-                'raison_sociale' => $raison_sociale,
-                'mail' => $mail,
-                'telephone' => $telephone,
-                'ville' => $ville,
-                'interlocuteur' => $interlocuteur,
+        dd($request->all());
+    }
+
+    /**
+     * Import depuis un fichier CSV/Excel via ExcelService (visuel uniquement → dd).
+     */
+    public function importCsv(Request $request)
+    {
+        $request->validate([
+            'fichier' => 'required|file',
+        ]);
+
+        try {
+            $donnees = $this->excelService->importEntreprises(
+                $request->file('fichier')
+            );
+
+            dd([
+                'nb_lignes'  => $donnees->count(),
+                'entreprises' => $donnees->values()->all(),
             ]);
-            return redirect()->route('entreprise.index');
+        } catch (\Throwable $e) {
+            dd([
+                'erreur'  => $e->getMessage(),
+                'fichier' => $request->file('fichier')->getClientOriginalName(),
+                'mime'    => $request->file('fichier')->getMimeType(),
+            ]);
         }
-        catch (\Exception $exception)
-        {
-            Log::error("Erreur de l'ajout de l'entreprise : " . $exception->getMessage());
-            return redirect()->route('entreprise.index')->with('error', $exception->getMessage());
-        }
+    }
+
+    /**
+     * Telecharger un fichier CSV exemple.
+     */
+    public function downloadExemple()
+    {
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="exemple_entreprises.csv"',
+        ];
+
+        $colonnes = [
+            'raison_sociale',
+            'siret',
+            'secteur',
+            'taille',
+            'mail',
+            'telephone',
+            'interlocuteur',
+            'fonction',
+            'ville',
+            'adresse',
+            'code_postal',
+        ];
+
+        $exemple = [
+            'Tech Solutions SAS',
+            '12345678901234',
+            'Informatique & Tech',
+            'pme',
+            'contact@techsolutions.fr',
+            '06 12 34 56 78',
+            'Marie Dupont',
+            'Responsable RH',
+            'Paris',
+            '12 rue de la Paix',
+            '75001',
+        ];
+
+        $callback = function () use ($colonnes, $exemple) {
+            $handle = fopen('php://output', 'w');
+            // BOM UTF-8 pour Excel
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fputcsv($handle, $colonnes, ';');
+            fputcsv($handle, $exemple, ';');
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     /**
@@ -60,16 +113,7 @@ class EntrepriseController extends Controller
     public function show(string $id)
     {
         $entreprise = Entreprise::find($id);
-        return view('entreprise.show', compact('entreprise'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        $entreprise = Entreprise::find($id);
-        return view('entreprise.edit', compact('entreprise'));
+        return Inertia::render('Entreprises/Show', compact('entreprise'));
     }
 
     /**
@@ -77,8 +121,7 @@ class EntrepriseController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $entreprise = Entreprise::find($id)
-            ->update($request->all());
+        dd($request->all());
     }
 
     /**
@@ -86,15 +129,6 @@ class EntrepriseController extends Controller
      */
     public function destroy(string $id)
     {
-        try
-        {
-            $entreprise = Entreprise::destroy($id);
-            return redirect()->route('entreprise.index')->with("success","L'Entreprise à bien été supprimée");
-        }
-        catch (\Exception $exception)
-        {
-            Log::error("Erreur de suppression de l'entreprise : " . $exception->getMessage());
-            return redirect()->route('entreprise.index')->with('error', "Impossible de supprimer l'entreprise");
-        }
+        dd(['id_supprime' => $id]);
     }
 }

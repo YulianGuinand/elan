@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EntrepriseController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportsController;
@@ -54,6 +55,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/ajouter', function () {
             return Inertia::render('Participants/Create');
         })->middleware(["is_superadmin"])->name('participants.create');
+    });
+
+    // ============================================
+    // ENTREPRISES
+    // ============================================
+    Route::prefix('entreprises')->group(function () {
+        Route::get('/', [EntrepriseController::class, 'index'])
+            ->name('entreprises.index');
+
+        Route::post('/', [EntrepriseController::class, 'store'])
+            ->name('entreprises.store');
+
+        Route::post('/import', [EntrepriseController::class, 'importCsv'])
+            ->name('entreprises.import');
+
+        Route::get('/exemple', [EntrepriseController::class, 'downloadExemple'])
+            ->name('entreprises.exemple');
     });
 
     // ============================================
