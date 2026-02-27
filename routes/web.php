@@ -64,7 +64,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ============================================
     // PARAMETRES
     // ============================================
-    Route::get('/parametres', [SettingsController::class, 'index'])
+    Route::get('/parametres', [SettingsController::class, 'index'])->middleware(["is_superadmin"])
         ->name('settings.index');
 
     // ============================================
