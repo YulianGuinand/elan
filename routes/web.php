@@ -52,7 +52,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/ajouter', function () {
             return Inertia::render('Participants/Create');
-        })->name('participants.create');
+        })->middleware(["is_superadmin"])->name('participants.create');
     });
 
     // ============================================
