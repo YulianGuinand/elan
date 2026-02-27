@@ -33,7 +33,7 @@ export default function Dashboard({
             <DashboardLayout
                 title="Performance des Enquêtes"
                 breadcrumbs={[
-                    { label: "Accueil", href: "/dashboard" },
+                    { label: "Accueil", href: "/tableau-de-bord" },
                     { label: "Vue d'ensemble" },
                 ]}
                 actionButton={{

@@ -17,10 +17,10 @@ export default function SurveyPreview() {
         const survey = exportSurvey();
 
         // Envoyer au backend
-        router.post("/surveys/builder", survey as any, {
+        router.post(route("surveys.builder.store"), survey as any, {
             onSuccess: () => {
                 clearDraft();
-                router.visit("/surveys");
+                router.visit(route("surveys.index"));
             },
             onError: (errors) => {
                 console.error("Erreur lors de la publication:", errors);

@@ -8,7 +8,6 @@ import {
     closestCenter,
     DndContext,
     DragEndEvent,
-    KeyboardSensor,
     PointerSensor,
     useSensor,
     useSensors,
@@ -16,7 +15,6 @@ import {
 import {
     arrayMove,
     SortableContext,
-    sortableKeyboardCoordinates,
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Eye, Plus } from "lucide-react";
@@ -31,14 +29,12 @@ export default function SurveyBuilder() {
     const [showQuestionTypes, setShowQuestionTypes] = useState(false);
 
     // Drag & drop sensors for themes
+    // On désactive le KeyboardSensor pour éviter les conflits avec les champs de saisie
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
                 distance: 8,
             },
-        }),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
         })
     );
 

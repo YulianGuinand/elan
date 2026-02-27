@@ -20,8 +20,8 @@ function CreateSurveyContent() {
             <DashboardLayout
                 title="Créer une enquête"
                 breadcrumbs={[
-                    { label: "Accueil", href: "/dashboard" },
-                    { label: "Enquêtes", href: "/surveys" },
+                    { label: "Accueil", href: "/tableau-de-bord" },
+                    { label: "Enquêtes", href: "/enquetes" },
                     { label: "Créer" },
                 ]}
                 noPadding={true}

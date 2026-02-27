@@ -66,7 +66,7 @@ export default function Students({
             <DashboardLayout
                 title="Liste des Participants"
                 breadcrumbs={[
-                    { label: "Accueil", href: "/dashboard" },
+                    { label: "Accueil", href: "/tableau-de-bord" },
                     { label: "Participants" },
                 ]}
                 actionButton={{

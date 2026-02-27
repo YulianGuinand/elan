@@ -1,5 +1,5 @@
+@import "./custom-progress.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import "./custom-progress.css";

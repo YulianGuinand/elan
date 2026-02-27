@@ -9,7 +9,6 @@ import {
     closestCenter,
     DndContext,
     DragEndEvent,
-    KeyboardSensor,
     PointerSensor,
     useSensor,
     useSensors,
@@ -17,7 +16,6 @@ import {
 import {
     arrayMove,
     SortableContext,
-    sortableKeyboardCoordinates,
     useSortable,
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
@@ -50,10 +48,8 @@ export default function ThemeSection({
             activationConstraint: {
                 distance: 8, // Require 8px movement before dragging starts
             },
-        }),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
         })
+        // KeyboardSensor désactivé pour éviter les conflits avec les champs de saisie
     );
 
     const handleSaveTitle = () => {

@@ -41,7 +41,7 @@ export default function Settings({
             <DashboardLayout
                 title="Paramètres"
                 breadcrumbs={[
-                    { label: "Accueil", href: "/dashboard" },
+                    { label: "Accueil", href: "/tableau-de-bord" },
                     { label: "Paramètres" },
                 ]}
             >

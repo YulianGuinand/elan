@@ -76,7 +76,7 @@ export default function Surveys({ stats, surveys }: SurveysProps) {
             <DashboardLayout
                 title="Liste des Enquêtes"
                 breadcrumbs={[
-                    { label: "Accueil", href: "/dashboard" },
+                    { label: "Accueil", href: "/tableau-de-bord" },
                     { label: "Enquêtes" },
                 ]}
                 actionButton={{

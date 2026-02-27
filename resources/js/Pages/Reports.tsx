@@ -39,7 +39,7 @@ export default function Reports({
             <DashboardLayout
                 title="Rapports Analytiques"
                 breadcrumbs={[
-                    { label: "Accueil", href: "/dashboard" },
+                    { label: "Accueil", href: "/tableau-de-bord" },
                     { label: "Rapports" },
                 ]}
             >
