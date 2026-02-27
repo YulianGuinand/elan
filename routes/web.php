@@ -9,6 +9,7 @@ use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\SurveyController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\IsAdmin;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -37,10 +38,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('surveys.index');
 
         Route::get('/creer', [SurveyController::class, 'create'])
-            ->name('surveys.create');
+            ->name('surveys.create')->middleware(["is_admin", "is_superAdmin"]);
 
         Route::post('/constructeur', [SurveyController::class, 'storeFromBuilder'])
-            ->name('surveys.builder.store');
+            ->name('surveys.builder.store')->middleware(["is_admin", "is_superAdmin"]);
     });
 
     // ============================================
