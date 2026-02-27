@@ -24,6 +24,7 @@ class ReportsController extends Controller
      */
     private function getReportKPIs(): array
     {
+
         return [
             [
                 'id' => '1',
@@ -69,6 +70,8 @@ class ReportsController extends Controller
      */
     private function getSatisfactionEvolution(): array
     {
+        auth()->user()->isAdmin();
+        auth()->user()->isSuperAdmin();
         return [
             ['label' => 'Jan', 'value' => 2.1],
             ['label' => 'Fev', 'value' => 2.3],
@@ -84,6 +87,8 @@ class ReportsController extends Controller
      */
     private function getAudienceDistribution(): array
     {
+        auth()->user()->isAdmin();
+        auth()->user()->isSuperAdmin();
         return [
             [
                 'label' => 'Apprentis',
