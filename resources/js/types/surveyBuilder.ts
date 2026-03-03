@@ -54,7 +54,7 @@ export interface Theme {
 export interface SurveyBasicInfo {
     title: string;
     description: string;
-    audience: string[];
+    type_campagne: string;
     startDate: string;
     endDate: string;
 }
@@ -70,6 +70,7 @@ export interface SurveyDraft {
 export type BuilderStep = "info" | "builder" | "preview";
 
 export interface SurveyBuilderState {
+    surveyId?: number;
     currentStep: BuilderStep;
     basicInfo: SurveyBasicInfo;
     themes: Theme[];

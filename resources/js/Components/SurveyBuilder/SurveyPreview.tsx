@@ -7,25 +7,93 @@ import {
 } from "@/constants/questionTypes";
 import { useSurveyBuilder } from "@/contexts/SurveyBuilderContext";
 import { Question } from "@/types/surveyBuilder";
+import { TypeReponse } from "@/types/surveys";
 import { router } from "@inertiajs/react";
 import { Send } from "lucide-react";
 
-export default function SurveyPreview() {
-    const { state, setStep, exportSurvey, clearDraft } = useSurveyBuilder();
+interface Props {
+    typesReponse: TypeReponse[];
+}
+
+export default function SurveyPreview({ typesReponse }: Props) {
+    const { state, setStep, clearDraft } = useSurveyBuilder();
 
     const handlePublish = () => {
-        const survey = exportSurvey();
+        // Formatter les données pour le backend Laravel (SurveyController@storeFromBuilder)
+        // Expected: titre, description, date_debut, date_fin, type_campagne, questions.*.libelle, questions.*.numero, questions.*.type_reponse_id
+
+        // 1. Aplatir toutes les questions de tous les thèmes
+        let globalQuestionNumber = 1;
+        const flatQuestions = state.themes.flatMap((theme) =>
+            theme.questions.map((q) => {
+                // Trouver l'ID du type de réponse correspondant dans la BDD
+                let typeNomDb = "Texte court"; // Par défaut
+                switch (q.type) {
+                    case "text":
+                        typeNomDb = "Texte court";
+                        break;
+                    case "textarea":
+                        typeNomDb = "Texte long";
+                        break;
+                    case "radio":
+                        typeNomDb = "Choix unique";
+                        break;
+                    case "checkbox":
+                        typeNomDb = "Choix multiples";
+                        break;
+                    case "select":
+                        typeNomDb = "Liste déroulante";
+                        break;
+                    case "number":
+                        typeNomDb = "Nombre";
+                        break;
+                    case "date":
+                        typeNomDb = "Date";
+                        break;
+                    case "likert":
+                        typeNomDb = "Échelle linéaire";
+                        break;
+                }
+
+                const dbType =
+                    typesReponse.find((t) => t.libelle === typeNomDb) ||
+                    typesReponse[0]; // fallback au premier type disponible si introuvable
+
+                return {
+                    libelle: q.label || "Question sans titre",
+                    numero: globalQuestionNumber++,
+                    type_reponse_id: dbType?.id || 1,
+                    choix: q.options
+                        ? q.options.map((o) => o.label || o.value)
+                        : [],
+                };
+            }),
+        );
+
+        const payload = {
+            titre: state.basicInfo.title,
+            description: state.basicInfo.description || "",
+            date_debut: state.basicInfo.startDate,
+            date_fin: state.basicInfo.endDate,
+            type_campagne: state.basicInfo.type_campagne,
+            questions: flatQuestions,
+        };
+
+        const url = state.surveyId
+            ? route("surveys.update", { id: state.surveyId })
+            : route("surveys.builder.store");
+
+        const method = state.surveyId ? "put" : "post";
 
         // Envoyer au backend
-        router.post(route("surveys.builder.store"), survey as any, {
+        router[method](url, payload as any, {
             onSuccess: () => {
                 clearDraft();
-                router.visit(route("surveys.index"));
             },
             onError: (errors) => {
                 console.error("Erreur lors de la publication:", errors);
                 alert(
-                    "Une erreur est survenue lors de la publication de l'enquête"
+                    "Une erreur est survenue lors de la publication de l'enquête. Vérifiez que tous les champs obligatoires (Titre, Type de campagne, Dates) sont remplis.",
                 );
             },
         });
@@ -64,22 +132,23 @@ export default function SurveyPreview() {
 
                         <div className="flex flex-wrap gap-4 text-sm">
                             <div>
-                                <span className="text-gray-500">Public : </span>
+                                <span className="text-gray-500">Type : </span>
                                 <span className="font-medium text-gray-900">
-                                    {state.basicInfo.audience.join(", ")}
+                                    {state.basicInfo.type_campagne ||
+                                        "Non défini"}
                                 </span>
                             </div>
                             <div>
                                 <span className="text-gray-500">Du </span>
                                 <span className="font-medium text-gray-900">
                                     {new Date(
-                                        state.basicInfo.startDate
+                                        state.basicInfo.startDate,
                                     ).toLocaleDateString("fr-FR")}
                                 </span>
                                 <span className="text-gray-500"> au </span>
                                 <span className="font-medium text-gray-900">
                                     {new Date(
-                                        state.basicInfo.endDate
+                                        state.basicInfo.endDate,
                                     ).toLocaleDateString("fr-FR")}
                                 </span>
                             </div>
@@ -132,13 +201,13 @@ export default function SurveyPreview() {
                             <span className="font-semibold text-gray-900">
                                 {state.themes.reduce(
                                     (acc, t) => acc + t.questions.length,
-                                    0
+                                    0,
                                 )}
                             </span>{" "}
                             question
                             {state.themes.reduce(
                                 (acc, t) => acc + t.questions.length,
-                                0
+                                0,
                             ) > 1
                                 ? "s"
                                 : ""}

@@ -2,215 +2,295 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Enquete;
+use App\Models\Question;
+use App\Models\Type_Reponse;
+use App\Models\Participant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class SurveyController extends Controller
 {
     /**
-     * Affiche la liste des enquetes avec statistiques
+     * Liste de toutes les enquetes (admin/superadmin)
+     * ou uniquement celles de l'utilisateur connecte.
      */
     public function index(): Response
     {
+        $user = Auth::user();
+
+        $enquetes = Enquete::with(['utilisateur', 'questions'])
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn(Enquete $e) => $this->formatEnquete($e));
+
+        $stats = [
+            'total'             => $enquetes->count(),
+            'active'            => $enquetes->where('statut', 'active')->count(),
+            'terminee'          => $enquetes->where('statut', 'terminee')->count(),
+            'a_venir'           => $enquetes->where('statut', 'a_venir')->count(),
+        ];
+
+        $auteurs = \App\Models\Utilisateur::whereHas('enquetes')
+            ->get(['id', 'nom', 'prenom'])
+            ->map(fn($u) => ['id' => $u->id, 'nom' => $u->nom, 'prenom' => $u->prenom]);
+
         return Inertia::render('Surveys', [
-            'stats' => $this->getStats(),
-            'surveys' => $this->getSurveys(),
+            'stats'   => $stats,
+            'surveys' => $enquetes->values(),
+            'userRole' => $user ? $user->role : 'utilisateur',
+            'userId' => $user ? $user->id : null,
+            'auteurs' => $auteurs,
         ]);
     }
 
     /**
-     * Recupere les statistiques des enquetes
+     * Formulaire de creation.
      */
-    private function getStats(): array
+    public function create(): Response
     {
-        return [
-            'total' => 42,
-            'totalChange' => 12,
-            'active' => 8,
-            'avgResponseRate' => 65,
-            'avgResponseChange' => 5,
-        ];
+        $typesReponse = Type_Reponse::all(['id', 'libelle']);
+        return Inertia::render('CreateSurvey', [
+            'typesReponse' => $typesReponse,
+        ]);
     }
 
     /**
-     * Recupere la liste complete des enquetes
-     */
-    private function getSurveys(): array
-    {
-        if(auth()->user()->isAdmin()&auth()->user()->isSuperAdmin())
-        {
-            return [
-                [
-                    'id' => '1',
-                    'title' => 'Enquete Satisfaction Apprentis Q1',
-                    'subtitle' => 'Classe 2023-A',
-                    'idNumber' => '#SQ-2023-001',
-                    'audience' => 'apprentis',
-                    'status' => 'active',
-                    'createdDate' => '01/09/2023',
-                    'endDate' => '30/08/2023',
-                    'participation' => [
-                        'percentage' => 68,
-                        'current' => 124,
-                        'total' => 182,
-                    ],
-                ],
-                [
-                    'id' => '2',
-                    'title' => 'Insertion Professionnelle 2023',
-                    'subtitle' => 'Secteur Tertiaire',
-                    'idNumber' => '#SQ-2023-045',
-                    'audience' => 'entreprises',
-                    'status' => 'draft',
-                    'createdDate' => '10/10/2023',
-                    'endDate' => null,
-                    'participation' => [
-                        'percentage' => 0,
-                        'current' => 0,
-                        'total' => 0,
-                    ],
-                ],
-                [
-                    'id' => '3',
-                    'title' => 'Besoins en Formation Continue',
-                    'subtitle' => 'Tous departements',
-                    'idNumber' => '#SQ-2023-012',
-                    'audience' => 'formateurs',
-                    'status' => 'completed',
-                    'createdDate' => '01/06/2023',
-                    'endDate' => '30/06/2023',
-                    'participation' => [
-                        'percentage' => 92,
-                        'current' => 46,
-                        'total' => 50,
-                    ],
-                ],
-                [
-                    'id' => '4',
-                    'title' => 'Feedback Restauration Q3',
-                    'subtitle' => 'Services generaux',
-                    'idNumber' => '#SQ-2023-088',
-                    'audience' => 'tous',
-                    'status' => 'active',
-                    'createdDate' => '15/10/2023',
-                    'endDate' => '01/11/2023',
-                    'participation' => [
-                        'percentage' => 34,
-                        'current' => 120,
-                        'total' => 350,
-                    ],
-                ],
-                [
-                    'id' => '5',
-                    'title' => 'evaluation Outils Numeriques',
-                    'subtitle' => 'Formation Digitale',
-                    'idNumber' => '#SQ-2023-092',
-                    'audience' => 'apprentis',
-                    'status' => 'active',
-                    'createdDate' => '20/09/2023',
-                    'endDate' => '20/10/2023',
-                    'participation' => [
-                        'percentage' => 45,
-                        'current' => 67,
-                        'total' => 150,
-                    ],
-                ],
-                [
-                    'id' => '6',
-                    'title' => 'Partenariats Entreprises 2024',
-                    'subtitle' => 'Anticipation besoins',
-                    'idNumber' => '#SQ-2023-095',
-                    'audience' => 'entreprises',
-                    'status' => 'draft',
-                    'createdDate' => '25/10/2023',
-                    'endDate' => null,
-                    'participation' => [
-                        'percentage' => 0,
-                        'current' => 0,
-                        'total' => 0,
-                    ],
-                ],
-                [
-                    'id' => '7',
-                    'title' => 'Methodologies Pedagogiques',
-                    'subtitle' => 'Innovation enseignement',
-                    'idNumber' => '#SQ-2023-067',
-                    'audience' => 'formateurs',
-                    'status' => 'completed',
-                    'createdDate' => '01/08/2023',
-                    'endDate' => '31/08/2023',
-                    'participation' => [
-                        'percentage' => 88,
-                        'current' => 44,
-                        'total' => 50,
-                    ],
-                ],
-                [
-                    'id' => '8',
-                    'title' => 'Infrastructures et equipements',
-                    'subtitle' => 'etat des lieux',
-                    'idNumber' => '#SQ-2023-078',
-                    'audience' => 'tous',
-                    'status' => 'active',
-                    'createdDate' => '10/10/2023',
-                    'endDate' => '30/11/2023',
-                    'participation' => [
-                        'percentage' => 12,
-                        'current' => 25,
-                        'total' => 200,
-                    ],
-                ],
-                [
-                    'id' => '9',
-                    'title' => 'Mobilite Internationale',
-                    'subtitle' => 'Programme Erasmus+',
-                    'idNumber' => '#SQ-2023-034',
-                    'audience' => 'apprentis',
-                    'status' => 'completed',
-                    'createdDate' => '15/05/2023',
-                    'endDate' => '30/06/2023',
-                    'participation' => [
-                        'percentage' => 76,
-                        'current' => 38,
-                        'total' => 50,
-                    ],
-                ],
-                [
-                    'id' => '10',
-                    'title' => 'Communication Interne',
-                    'subtitle' => 'Efficacite des canaux',
-                    'idNumber' => '#SQ-2023-099',
-                    'audience' => 'tous',
-                    'status' => 'active',
-                    'createdDate' => '28/10/2023',
-                    'endDate' => '15/11/2023',
-                    'participation' => [
-                        'percentage' => 28,
-                        'current' => 84,
-                        'total' => 300,
-                    ],
-                ],
-            ];
-        }else{
-            return [];
-        }
-    }
-
-    /**
-     * Show the form for creating a new survey.
-     */
-    public function create()
-    {
-        return Inertia::render('CreateSurvey');
-    }
-
-    /**
-     * Stocke une enquete creee depuis le builder
+     * Persiste l'enquete depuis le builder.
      */
     public function storeFromBuilder(Request $request)
     {
-        // Pour le moment, on affiche juste les donnees reçues
-        dd($request->all());
+        $validated = $request->validate([
+            'titre'         => 'required|string|max:255',
+            'description'   => 'nullable|string',
+            'date_debut'    => 'required|date',
+            'date_fin'      => 'required|date|after_or_equal:date_debut',
+            'type_campagne' => 'required|string|max:100',
+            'questions'     => 'nullable|array',
+            'questions.*.libelle'         => 'required|string',
+            'questions.*.numero'          => 'required|integer',
+            'questions.*.type_reponse_id' => 'required|exists:type__reponses,id',
+            'questions.*.choix'           => 'nullable|array',
+            'questions.*.choix.*'         => 'string',
+        ]);
+
+        $enquete = Enquete::create([
+            'titre'          => $validated['titre'],
+            'description'    => $validated['description'] ?? '',
+            'date_debut'     => $validated['date_debut'],
+            'date_fin'       => $validated['date_fin'],
+            'type_campagne'  => $validated['type_campagne'],
+            'utilisateur_id' => Auth::id(),
+        ]);
+
+        foreach ($validated['questions'] ?? [] as $q) {
+            $question = $enquete->questions()->create([
+                'libelle'         => $q['libelle'],
+                'numero'          => $q['numero'],
+                'type_reponse_id' => $q['type_reponse_id'],
+            ]);
+
+            if (!empty($q['choix'])) {
+                foreach ($q['choix'] as $choixLibelle) {
+                    $question->choix()->create(['libelle' => $choixLibelle]);
+                }
+            }
+        }
+
+        return redirect()->route('surveys.index')
+            ->with('success', 'Enquête créée avec succès.');
+    }
+
+    /**
+     * Formulaire de modification.
+     */
+    public function edit(string $id): Response
+    {
+        $user    = Auth::user();
+        $enqueteQuery = Enquete::with(['questions.type_reponse', 'questions.choix'])
+            ->where('id', $id);
+
+        if (!$user->isSuperAdmin()) {
+            $enqueteQuery->where('utilisateur_id', $user->id); // admin modifies only their own
+        }
+
+        $enquete = $enqueteQuery->firstOrFail();
+
+        $typesReponse = Type_Reponse::all(['id', 'libelle']);
+
+        return Inertia::render('Surveys/Edit', [
+            'enquete'      => $this->formatEnquete($enquete),
+            'typesReponse' => $typesReponse,
+        ]);
+    }
+
+    /**
+     * Met a jour une enquete (ses propres uniquement).
+     */
+    public function update(Request $request, string $id)
+    {
+        $user    = Auth::user();
+        $enqueteQuery = Enquete::where('id', $id);
+
+        if (!$user->isSuperAdmin()) {
+            $enqueteQuery->where('utilisateur_id', $user->id);
+        }
+
+        $enquete = $enqueteQuery->firstOrFail();
+
+        $validated = $request->validate([
+            'titre'         => 'required|string|max:255',
+            'description'   => 'nullable|string',
+            'date_debut'    => 'required|date',
+            'date_fin'      => 'required|date|after_or_equal:date_debut',
+            'type_campagne' => 'required|string|max:100',
+            'questions'     => 'nullable|array',
+            'questions.*.libelle'         => 'required|string',
+            'questions.*.numero'          => 'required|integer',
+            'questions.*.type_reponse_id' => 'required|exists:type__reponses,id',
+            'questions.*.choix'           => 'nullable|array',
+            'questions.*.choix.*'         => 'string',
+        ]);
+
+        $enquete->update([
+            'titre'         => $validated['titre'],
+            'description'   => $validated['description'] ?? '',
+            'date_debut'    => $validated['date_debut'],
+            'date_fin'      => $validated['date_fin'],
+            'type_campagne' => $validated['type_campagne'],
+        ]);
+
+        // Pour simplifier, on supprime et recrée les questions (en cascade via foreign keys, les choix associés seront supprimés)
+        $enquete->questions()->delete();
+
+        foreach ($validated['questions'] ?? [] as $q) {
+            $question = $enquete->questions()->create([
+                'libelle'         => $q['libelle'],
+                'numero'          => $q['numero'],
+                'type_reponse_id' => $q['type_reponse_id'],
+            ]);
+
+            if (!empty($q['choix'])) {
+                foreach ($q['choix'] as $choixLibelle) {
+                    $question->choix()->create(['libelle' => $choixLibelle]);
+                }
+            }
+        }
+
+        return redirect()->route('surveys.index')
+            ->with('success', 'Enquête mise à jour avec succès.');
+    }
+
+    /**
+     * Supprime une enquete (ses propres uniquement).
+     */
+    public function destroy(string $id)
+    {
+        $user    = Auth::user();
+        $enqueteQuery = Enquete::where('id', $id);
+
+        if (!$user->isSuperAdmin()) {
+            $enqueteQuery->where('utilisateur_id', $user->id);
+        }
+
+        $enquete = $enqueteQuery->firstOrFail();
+
+        $enquete->delete();
+
+        return redirect()->route('surveys.index')
+            ->with('success', 'Enquête supprimée.');
+    }
+
+    /**
+     * Supprime TOUTES les enquetes (admin uniquement).
+     */
+    public function destroyAll()
+    {
+        $user = Auth::user();
+
+        // Seuls les superadmins accedent à cette mthode (via le middleware), donc clean everything
+        Enquete::query()->delete();
+
+        return redirect()->route('surveys.index')
+            ->with('success', 'Toutes vos enquêtes ont été supprimées.');
+    }
+
+    /**
+     * Affiche le formulaire de remplissage avec les vraies questions.
+     */
+    public function fill(string $id): Response
+    {
+        $enquete = Enquete::with(['questions.type_reponse', 'questions.choix'])
+            ->findOrFail($id);
+
+        $participants = Participant::with('entreprises')->get();
+
+        return Inertia::render('Surveys/Fill', [
+            'enquete' => $this->formatEnquete($enquete),
+            'participants' => $participants,
+        ]);
+    }
+
+    /**
+     * Soumet les reponses d'une enquete.
+     */
+    public function submitFill(Request $request, string $id)
+    {
+        $enquete = Enquete::with('questions')->findOrFail($id);
+        $user    = Auth::user();
+
+        // Validation dynamique : une reponse par question
+        $rules = [
+            'participant_id' => 'required|exists:participants,id',
+        ];
+        foreach ($enquete->questions as $q) {
+            $rules["reponses.{$q->id}"] = 'nullable|string';
+        }
+        $validated = $request->validate($rules);
+
+        // Visuel → dd() pour l'instant (pas de table reponses en BDD)
+        dd([
+            'action'         => 'Soumettre réponses enquête',
+            'enquete_id'     => $id,
+            'enquete_titre'  => $enquete->titre,
+            'utilisateur_id' => $user?->id,
+            'participant_id' => $validated['participant_id'],
+            'reponses'       => $validated['reponses'] ?? [],
+        ]);
+    }
+
+    // ─────────────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────────────
+
+    private function formatEnquete(Enquete $e): array
+    {
+        return [
+            'id'            => $e->id,
+            'titre'         => $e->titre,
+            'description'   => $e->description,
+            'date_debut'    => $e->date_debut?->format('d/m/Y'),
+            'date_fin'      => $e->date_fin?->format('d/m/Y'),
+            'type_campagne' => $e->type_campagne,
+            'statut'        => $e->statut,
+            'utilisateur'   => $e->utilisateur?->name ?? '—',
+            'utilisateur_id' => $e->utilisateur_id,
+            'nb_questions'  => $e->questions?->count() ?? 0,
+            'questions'     => $e->relationLoaded('questions')
+                ? $e->questions->map(fn(Question $q) => [
+                    'id'            => $q->id,
+                    'libelle'       => $q->libelle,
+                    'numero'        => $q->numero,
+                    'type_reponse'  => $q->type_reponse?->libelle,
+                    'type_reponse_id' => $q->type_reponse_id,
+                    'choix'         => $q->relationLoaded('choix')
+                        ? $q->choix->map(fn($c) => ['id' => $c->id, 'libelle' => $c->libelle])
+                        : [],
+                ])->values()
+                : [],
+            'created_at'    => $e->created_at?->format('d/m/Y'),
+        ];
     }
 }

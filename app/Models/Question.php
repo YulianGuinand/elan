@@ -3,29 +3,33 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Psy\Output\Theme;
 
 class Question extends Model
 {
-    protected $primaryKey = 'id';
-
+    protected $fillable = [
+        'libelle',
+        'numero',
+        'enquete_id',
+        'type_reponse_id',
+    ];
 
     public function enquete()
     {
-        return $this->belongsTo(Enquete::class)->withTimestamps();
+        return $this->belongsTo(Enquete::class);
     }
 
     public function type_reponse()
     {
-        return $this->belongsTo(Type_Reponse::class)->withTimestamps();
+        return $this->belongsTo(Type_Reponse::class);
     }
-    public function  themes()
+
+    public function themes()
     {
-        return $this->belongsToMany(Theme::class, 'etredefinit')->withTimestamps();
+        return $this->belongsToMany(theme::class, 'etredefinit')->withTimestamps();
     }
 
     public function choix()
     {
-        return $this->hasMany(Choix::class)->withTimestamps();
+        return $this->hasMany(Choix::class);
     }
 }

@@ -165,7 +165,7 @@ export default function Welcome({
                                                     1,240
                                                 </div>
                                                 <div className="text-xs text-orange-700">
-                                                    Apprenants suivis
+                                                    Participants suivis
                                                 </div>
                                             </div>
                                             <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
@@ -632,7 +632,7 @@ export default function Welcome({
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 alert(
-                                                    "Page en cours de développement"
+                                                    "Page en cours de développement",
                                                 );
                                             }}
                                         >
@@ -646,7 +646,7 @@ export default function Welcome({
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 alert(
-                                                    "Page en cours de développement"
+                                                    "Page en cours de développement",
                                                 );
                                             }}
                                         >
@@ -660,7 +660,7 @@ export default function Welcome({
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 alert(
-                                                    "Page en cours de développement"
+                                                    "Page en cours de développement",
                                                 );
                                             }}
                                         >

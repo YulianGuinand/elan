@@ -3,7 +3,15 @@ import DropdownMenu, {
     DropdownItem,
 } from "@/Components/Common/DropdownMenu";
 import { Link, router } from "@inertiajs/react";
-import { ChevronUp, LogOut, Settings, X } from "lucide-react";
+import {
+    BookOpen,
+    ChevronUp,
+    FileText,
+    GraduationCap,
+    LogOut,
+    Settings,
+    X,
+} from "lucide-react";
 import DashboardIcon from "./icons/DashboardIcon";
 import EntrepriseIcon from "./icons/EntrepriseIcon";
 import ReportIcon from "./icons/ReportIcon";
@@ -36,6 +44,24 @@ const navigationItems: NavItem[] = [
         href: "/participants",
         icon: StudentIcon,
         routeName: "participants.index",
+    },
+    {
+        name: "Contrats",
+        href: "/contrats",
+        icon: FileText,
+        routeName: "contrats.index",
+    },
+    {
+        name: "Écoles",
+        href: "/ecoles",
+        icon: GraduationCap,
+        routeName: "ecoles.index",
+    },
+    {
+        name: "Formations",
+        href: "/formations",
+        icon: BookOpen,
+        routeName: "formations.index",
     },
     {
         name: "Entreprises",

@@ -37,32 +37,17 @@ export default function SurveyBasicInfo() {
         }
 
         setErrors(newErrors);
+        if (!state.basicInfo.type_campagne) {
+            newErrors.type_campagne = "Le type de campagne est obligatoire";
+        }
+
+        setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
     const handleNext = () => {
         if (validate()) {
             setStep("builder");
-        }
-    };
-
-    const audienceOptions = [
-        { value: "apprentis", label: "Apprentis" },
-        { value: "tuteurs", label: "Tuteurs" },
-        { value: "formateurs", label: "Formateurs" },
-        { value: "alumni", label: "Alumni" },
-    ];
-
-    const toggleAudience = (value: string) => {
-        const current = state.basicInfo.audience;
-        if (current.includes(value)) {
-            updateBasicInfo({
-                audience: current.filter((a) => a !== value),
-            });
-        } else {
-            updateBasicInfo({
-                audience: [...current, value],
-            });
         }
     };
 
@@ -120,29 +105,44 @@ export default function SurveyBasicInfo() {
                             />
                         </div>
 
-                        {/* Public cible */}
+                        {/* Type de campagne */}
                         <div>
-                            <InputLabel value="Public cible *" />
-                            <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                {audienceOptions.map((option) => (
+                            <InputLabel value="Type de campagne *" />
+                            <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                {[
+                                    "Satisfaction apprentis",
+                                    "Insertion professionnelle",
+                                    "Besoins en formation",
+                                    "Feedback formation",
+                                    "Partenariats entreprises",
+                                    "Évaluation pédagogique",
+                                    "Autre",
+                                ].map((type) => (
                                     <button
-                                        key={option.value}
+                                        key={type}
                                         type="button"
                                         onClick={() =>
-                                            toggleAudience(option.value)
+                                            updateBasicInfo({
+                                                type_campagne: type,
+                                            })
                                         }
                                         className={`px-4 py-2 rounded-lg border-2 transition-all text-sm font-medium ${
-                                            state.basicInfo.audience.includes(
-                                                option.value
-                                            )
+                                            state.basicInfo.type_campagne ===
+                                            type
                                                 ? "border-elan-orange bg-elan-orange text-white"
                                                 : "border-gray-300 bg-white text-gray-700 hover:border-elan-orange"
                                         }`}
                                     >
-                                        {option.label}
+                                        {type}
                                     </button>
                                 ))}
                             </div>
+                            {errors.type_campagne && (
+                                <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                                    <AlertCircle className="w-4 h-4" />
+                                    {errors.type_campagne}
+                                </p>
+                            )}
                         </div>
 
                         {/* Dates */}

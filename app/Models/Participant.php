@@ -15,33 +15,35 @@ class Participant extends Model
         'nom',
         'prenom',
         'telephone',
-        'mail'
+        'mail',
+        'statut',
+        'role'
     ];
 
-    public function entreprises() : BelongsToMany
+    public function entreprises(): BelongsToMany
     {
-        return $this->belongsToMany(Entreprise::class,'engager');
+        return $this->belongsToMany(Entreprise::class, 'engager');
     }
 
-    public function enquetes() : BelongsToMany
+    public function enquetes(): BelongsToMany
     {
-        return $this->belongsToMany(Enquete::class,'participer');
+        return $this->belongsToMany(Enquete::class, 'participer');
     }
 
-    public function contrats() : HasMany
+    public function contrats(): HasMany
     {
         return $this->HasMany(Contrat::class);
     }
 
-    public function reponses() : HasMany
+    public function reponses(): HasMany
     {
         return $this->hasMany(Reponse::class);
     }
 
-    public function utilisateurs() : BelongsToMany
+    public function utilisateurs(): BelongsToMany
     {
         return $this->belongsToMany(Utilisateur::class, 'contacter')
-            ->withPivot('enquete_id','date_contact','moyen','commentaire')
+            ->withPivot('enquete_id', 'date_contact', 'moyen', 'commentaire')
             ->withTimestamps();
     }
 }

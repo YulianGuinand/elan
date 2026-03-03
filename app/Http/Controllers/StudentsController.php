@@ -9,7 +9,7 @@ use Inertia\Response;
 class StudentsController extends Controller
 {
     /**
-     * Affiche la liste des apprenants avec recherche, filtres et pagination
+     * Affiche la liste des participants avec recherche, filtres et pagination
      */
     public function index(Request $request): Response
     {
@@ -28,7 +28,7 @@ class StudentsController extends Controller
                 $searchLower = strtolower($search);
 
                 return str_contains(strtolower($student['full_name']), $searchLower) ||
-                  str_contains(strtolower($student['email']), $searchLower);
+                    str_contains(strtolower($student['email']), $searchLower);
             });
         }
 
@@ -80,7 +80,7 @@ class StudentsController extends Controller
     }
 
     /**
-     * Retourne la liste complete des apprenants (donnees placeholder)
+     * Retourne la liste complete des participants (donnees placeholder)
      */
     private function getAllStudents(): array
     {
