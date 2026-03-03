@@ -95,13 +95,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('entreprises.index');
 
         Route::post('/', [EntrepriseController::class, 'store'])
-            ->name('entreprises.store');
+            ->name('entreprises.store')->middleware(['is_admin','is_superadmin']);
 
         Route::post('/import', [EntrepriseController::class, 'importCsv'])
-            ->name('entreprises.import');
+            ->name('entreprises.import')->middleware(['is_admin','is_superadmin']);
 
         Route::get('/exemple', [EntrepriseController::class, 'downloadExemple'])
-            ->name('entreprises.exemple');
+            ->name('entreprises.exemple')->middleware(['is_admin','is_superadmin']);
     });
 
     // ============================================
