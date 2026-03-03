@@ -50,7 +50,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Remplir une enquête
         Route::get('/{id}/remplir', [SurveyController::class, 'fill'])
-            ->name('surveys.fill');+
+            ->name('surveys.fill');
         Route::post('/{id}/remplir', [SurveyController::class, 'submitFill'])
             ->name('surveys.fill.submit');
 
@@ -188,6 +188,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('formations.destroy')->middleware(['is_admin', 'is_superadmin']);
     });
 
+    // ============================================
+    // UTILISATEURS
+    // ============================================
+    Route::prefix('utilisateurs')->group(function () {
+        Route::get('/', [\App\Http\Controllers\UtilisateurController::class, 'index'])
+            ->name('utilisateurs.index');
+
+        // Route pour le formulaire de création d'utilisateur (URL /utilisateurs/create)
+        Route::get('/create', [\App\Http\Controllers\UtilisateurController::class, 'create'])
+            ->name('utilisateurs.create')->middleware(['is_superadmin']);
+
+        Route::post('/', [\App\Http\Controllers\UtilisateurController::class, 'store'])
+            ->name('utilisateurs.store')->middleware(['is_superadmin']);
+
+       // Route::get('/{id}', [\App\Http\Controllers\UtilisateurController::class, 'show'])
+        //   ->name('utilisateurs.show')->middleware(['is_admin', 'is_superadmin']);
+
+        Route::delete('/{id}', [\App\Http\Controllers\UtilisateurController::class, 'destroy'])
+            ->name('utilisateurs.destroy')->middleware(['is_superadmin']);
+    });
     // ============================================
     // RAPPORTS
     // ============================================
