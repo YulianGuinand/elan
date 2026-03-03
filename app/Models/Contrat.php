@@ -23,10 +23,13 @@ class Contrat extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'promotion_id',
         'formation_id',
         'ecole_id',
         'participant_id',
+        'entreprise_id',
+        'utilisateur_id',
+        'date_entree',
+        'date_sortiee',
     ];
 
     /**
@@ -39,17 +42,9 @@ class Contrat extends Model
         return [
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
+            'date_entree' => 'date',
+            'date_sortiee' => 'date',
         ];
-    }
-
-    /**
-     * Relation : Un contrat appartient à une promotion.
-     *
-     * @return BelongsTo
-     */
-    public function promotion(): BelongsTo
-    {
-        return $this->belongsTo(Promotion::class, 'promotion_id');
     }
 
     /**
@@ -90,5 +85,15 @@ class Contrat extends Model
     public function entreprise(): BelongsTo
     {
         return $this->belongsTo(Entreprise::class, 'entreprise_id');
+    }
+
+    /**
+     * Relation : Un contrat est créé par un utilisateur spécifique (Admin/Superadmin).
+     *
+     * @return BelongsTo
+     */
+    public function utilisateur(): BelongsTo
+    {
+        return $this->belongsTo(Utilisateur::class, 'utilisateur_id');
     }
 }

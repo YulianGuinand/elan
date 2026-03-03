@@ -1,33 +1,52 @@
-export type SurveyStatus = "active" | "draft" | "completed";
-export type AudienceType = "apprentis" | "entreprises" | "formateurs" | "tous";
+// Champs réels depuis la base de données (table enquetes)
+export type StatutEnquete = "active" | "terminee" | "a_venir" | "brouillon";
+
+export interface Choix {
+    id: number;
+    libelle: string;
+}
+
+export interface QuestionEnquete {
+    id: number;
+    libelle: string;
+    numero: number;
+    type_reponse: string | null;
+    type_reponse_id: number;
+    choix: Choix[];
+}
 
 export interface Survey {
-    id: string;
-    title: string;
-    subtitle: string;
-    idNumber: string;
-    audience: AudienceType;
-    status: SurveyStatus;
-    createdDate: string;
-    endDate?: string;
-    participation: {
-        percentage: number;
-        current: number;
-        total: number;
-    };
+    id: number;
+    titre: string;
+    description: string;
+    date_debut: string;
+    date_fin: string;
+    type_campagne: string;
+    statut: StatutEnquete;
+    utilisateur: string;
+    utilisateur_id: number;
+    nb_questions: number;
+    questions: QuestionEnquete[];
+    created_at: string;
 }
 
 export interface SurveyStats {
     total: number;
-    totalChange: number;
     active: number;
-    avgResponseRate: number;
-    avgResponseChange: number;
+    terminee: number;
+    a_venir: number;
 }
 
 export interface SurveyFilters {
     search: string;
-    status: SurveyStatus | "all";
-    audience: AudienceType | "all";
-    period: "all" | "7days" | "30days" | "90days";
+    statut: StatutEnquete | "all";
+    type_campagne: string;
+    auteur: number | "all";
+    date_debut: string;
+    date_fin: string;
+}
+
+export interface TypeReponse {
+    id: number;
+    libelle: string;
 }

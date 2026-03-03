@@ -8,9 +8,14 @@ import {
     SurveyBuilderProvider,
     useSurveyBuilder,
 } from "@/contexts/SurveyBuilderContext";
+import { TypeReponse } from "@/types/surveys";
 import { Head } from "@inertiajs/react";
 
-function CreateSurveyContent() {
+function CreateSurveyContent({
+    typesReponse,
+}: {
+    typesReponse: TypeReponse[];
+}) {
     const { state } = useSurveyBuilder();
 
     return (
@@ -38,18 +43,22 @@ function CreateSurveyContent() {
                     {state.currentStep === "info" && <SurveyBasicInfo />}
 
                     {state.currentStep === "builder" && <SurveyBuilder />}
-
-                    {state.currentStep === "preview" && <SurveyPreview />}
+                    {state.currentStep === "preview" && (
+                        <SurveyPreview typesReponse={typesReponse} />
+                    )}
                 </div>
             </DashboardLayout>
         </>
     );
 }
-
-export default function CreateSurvey() {
+export default function CreateSurvey({
+    typesReponse,
+}: {
+    typesReponse: TypeReponse[];
+}) {
     return (
         <SurveyBuilderProvider>
-            <CreateSurveyContent />
+            <CreateSurveyContent typesReponse={typesReponse} />
         </SurveyBuilderProvider>
     );
 }

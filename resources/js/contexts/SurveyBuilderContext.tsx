@@ -37,7 +37,7 @@ interface SurveyBuilderContextType {
     updateQuestion: (
         themeId: string,
         questionId: string,
-        updates: Partial<Question>
+        updates: Partial<Question>,
     ) => void;
     deleteQuestion: (themeId: string, questionId: string) => void;
     reorderQuestions: (themeId: string, questionIds: string[]) => void;
@@ -45,7 +45,7 @@ interface SurveyBuilderContextType {
         questionId: string,
         fromThemeId: string,
         toThemeId: string,
-        toIndex: number
+        toIndex: number,
     ) => void;
 
     // Draft management
@@ -59,12 +59,12 @@ const SurveyBuilderContext = createContext<
     SurveyBuilderContextType | undefined
 >(undefined);
 
-const initialState: SurveyBuilderState = {
+const defaultInitialState: SurveyBuilderState = {
     currentStep: "info",
     basicInfo: {
         title: "",
         description: "",
-        audience: [],
+        type_campagne: "",
         startDate: "",
         endDate: "",
     },
@@ -72,12 +72,23 @@ const initialState: SurveyBuilderState = {
     isDirty: false,
 };
 
-export function SurveyBuilderProvider({ children }: { children: ReactNode }) {
-    const [state, setState] = useState<SurveyBuilderState>(initialState);
+interface ProviderProps {
+    children: ReactNode;
+    initialStateOverride?: Partial<SurveyBuilderState>;
+}
 
-    // Auto-save to localStorage
+export function SurveyBuilderProvider({
+    children,
+    initialStateOverride,
+}: ProviderProps) {
+    const [state, setState] = useState<SurveyBuilderState>(() => ({
+        ...defaultInitialState,
+        ...initialStateOverride,
+    }));
+
+    // Auto-save to localStorage (only if not editing an existing survey)
     useEffect(() => {
-        if (state.isDirty) {
+        if (state.isDirty && !state.surveyId) {
             const timeoutId = setTimeout(() => {
                 saveDraft();
             }, 2000); // Debounce 2s
@@ -86,9 +97,11 @@ export function SurveyBuilderProvider({ children }: { children: ReactNode }) {
         }
     }, [state]);
 
-    // Load draft on mount
+    // Load draft on mount (only if not editing)
     useEffect(() => {
-        loadDraft();
+        if (!state.surveyId) {
+            loadDraft();
+        }
     }, []);
 
     const setStep = (step: BuilderStep) => {
@@ -123,7 +136,7 @@ export function SurveyBuilderProvider({ children }: { children: ReactNode }) {
         setState((prev) => ({
             ...prev,
             themes: prev.themes.map((theme) =>
-                theme.id === themeId ? { ...theme, ...updates } : theme
+                theme.id === themeId ? { ...theme, ...updates } : theme,
             ),
             isDirty: true,
         }));
@@ -171,7 +184,7 @@ export function SurveyBuilderProvider({ children }: { children: ReactNode }) {
             themes: prev.themes.map((t) =>
                 t.id === themeId
                     ? { ...t, questions: [...t.questions, newQuestion] }
-                    : t
+                    : t,
             ),
             isDirty: true,
         }));
@@ -180,7 +193,7 @@ export function SurveyBuilderProvider({ children }: { children: ReactNode }) {
     const updateQuestion = (
         themeId: string,
         questionId: string,
-        updates: Partial<Question>
+        updates: Partial<Question>,
     ) => {
         setState((prev) => ({
             ...prev,
@@ -189,10 +202,10 @@ export function SurveyBuilderProvider({ children }: { children: ReactNode }) {
                     ? {
                           ...theme,
                           questions: theme.questions.map((q) =>
-                              q.id === questionId ? { ...q, ...updates } : q
+                              q.id === questionId ? { ...q, ...updates } : q,
                           ),
                       }
-                    : theme
+                    : theme,
             ),
             isDirty: true,
         }));
@@ -206,10 +219,10 @@ export function SurveyBuilderProvider({ children }: { children: ReactNode }) {
                     ? {
                           ...theme,
                           questions: theme.questions.filter(
-                              (q) => q.id !== questionId
+                              (q) => q.id !== questionId,
                           ),
                       }
-                    : theme
+                    : theme,
             ),
             isDirty: true,
         }));
@@ -224,12 +237,12 @@ export function SurveyBuilderProvider({ children }: { children: ReactNode }) {
                           ...theme,
                           questions: questionIds.map((id, index) => {
                               const question = theme.questions.find(
-                                  (q) => q.id === id
+                                  (q) => q.id === id,
                               )!;
                               return { ...question, order: index };
                           }),
                       }
-                    : theme
+                    : theme,
             ),
             isDirty: true,
         }));
@@ -239,7 +252,7 @@ export function SurveyBuilderProvider({ children }: { children: ReactNode }) {
         questionId: string,
         fromThemeId: string,
         toThemeId: string,
-        toIndex: number
+        toIndex: number,
     ) => {
         const fromTheme = state.themes.find((t) => t.id === fromThemeId);
         const question = fromTheme?.questions.find((q) => q.id === questionId);
@@ -253,10 +266,10 @@ export function SurveyBuilderProvider({ children }: { children: ReactNode }) {
                     ? {
                           ...theme,
                           questions: theme.questions.filter(
-                              (q) => q.id !== questionId
+                              (q) => q.id !== questionId,
                           ),
                       }
-                    : theme
+                    : theme,
             );
 
             // Add to destination
@@ -272,7 +285,7 @@ export function SurveyBuilderProvider({ children }: { children: ReactNode }) {
                                   ...theme.questions.slice(toIndex),
                               ],
                           }
-                        : theme
+                        : theme,
                 ),
                 isDirty: true,
             };
@@ -311,7 +324,11 @@ export function SurveyBuilderProvider({ children }: { children: ReactNode }) {
 
     const clearDraft = () => {
         localStorage.removeItem(STORAGE_KEY);
-        setState(initialState);
+        setState((prev) => ({
+            ...defaultInitialState,
+            // Keep surveyId if it exists so we don't break edit mode
+            surveyId: prev.surveyId,
+        }));
     };
 
     const exportSurvey = (): SurveyDraft => {
@@ -354,7 +371,7 @@ export function useSurveyBuilder() {
     const context = useContext(SurveyBuilderContext);
     if (!context) {
         throw new Error(
-            "useSurveyBuilder must be used within SurveyBuilderProvider"
+            "useSurveyBuilder must be used within SurveyBuilderProvider",
         );
     }
     return context;

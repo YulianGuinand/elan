@@ -1,12 +1,14 @@
-import { ProgramType, StudentFilters, StudentStatus } from "@/types/students";
+import { Formation, ParticipantFilters } from "@/types/participants";
 import { Filter, Search } from "lucide-react";
 
 interface StudentFilterBarProps {
-    filters: StudentFilters;
-    onFiltersChange: (filters: StudentFilters) => void;
+    formations: Formation[];
+    filters: ParticipantFilters;
+    onFiltersChange: (filters: ParticipantFilters) => void;
 }
 
 export default function StudentFilterBar({
+    formations,
     filters,
     onFiltersChange,
 }: StudentFilterBarProps) {
@@ -42,21 +44,17 @@ export default function StudentFilterBar({
                             onChange={(e) =>
                                 onFiltersChange({
                                     ...filters,
-                                    program: e.target.value as
-                                        | ProgramType
-                                        | "all",
+                                    program: e.target.value,
                                 })
                             }
                             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none transition-all bg-white appearance-none"
                         >
-                            <option value="all">Programme</option>
-                            <option value="web_dev">Développeur Web</option>
-                            <option value="cybersecurity">Cybersécurité</option>
-                            <option value="data_analyst">Data Analyst</option>
-                            <option value="mobile_dev">
-                                Développeur Mobile
-                            </option>
-                            <option value="ux_ui">UX/UI Design</option>
+                            <option value="all">Tous les programmes</option>
+                            {formations?.map((f) => (
+                                <option key={f.id} value={f.id.toString()}>
+                                    {f.libelle}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
@@ -67,18 +65,16 @@ export default function StudentFilterBar({
                             onChange={(e) =>
                                 onFiltersChange({
                                     ...filters,
-                                    status: e.target.value as
-                                        | StudentStatus
-                                        | "all",
+                                    status: e.target.value,
                                 })
                             }
                             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none transition-all bg-white appearance-none"
                         >
-                            <option value="all">Statut</option>
-                            <option value="active">Actif</option>
-                            <option value="graduated">Diplômé</option>
-                            <option value="paused">En Pause</option>
-                            <option value="suspended">Suspendu</option>
+                            <option value="all">Tous les statuts</option>
+                            <option value="actif">Actif</option>
+                            <option value="diplome">Diplômé</option>
+                            <option value="suspendu">Suspendu</option>
+                            <option value="abandon">Abandon</option>
                         </select>
                     </div>
 

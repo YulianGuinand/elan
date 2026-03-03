@@ -54,7 +54,7 @@ export default function Pagination({ meta, onPageChange }: PaginationProps) {
                 <span className="font-medium text-gray-900">{from}</span> à{" "}
                 <span className="font-medium text-gray-900">{to}</span> sur{" "}
                 <span className="font-medium text-gray-900">{total}</span>{" "}
-                apprenants
+                participants
             </div>
 
             {/* Navigation de pagination */}

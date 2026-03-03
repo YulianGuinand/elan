@@ -23,11 +23,41 @@ class EntrepriseController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage (visuel uniquement → dd).
+     * Store a newly created resource in storage
      */
     public function store(Request $request)
     {
-        dd($request->all());
+        $validated = $request->validate([
+            'raison_sociale' => 'required|string|max:50',
+            'mail' => 'required|email|max:100',
+            'telephone' => 'required|string|max:15',
+            'ville' => 'nullable|string|max:50',
+            'interlocuteur' => 'required|string|max:100',
+        ]);
+
+        // 1. Création de l'entreprise
+        $entreprise = Entreprise::create($validated);
+
+        // 2. Création ou association du contact principal (Employeur)
+        $names = explode(' ', trim($validated['interlocuteur']), 2);
+        $prenom = $names[0];
+        $nom = $names[1] ?? 'NC'; // Si un seul mot est renseigné
+
+        $employeur = \App\Models\Participant::firstOrCreate(
+            ['mail' => $validated['mail']], // On suppose que le mail est unique
+            [
+                'nom' => $nom,
+                'prenom' => $prenom,
+                'telephone' => $validated['telephone'],
+                'statut' => 'actif',
+                'role' => 'Employeur',
+            ]
+        );
+
+        // 3. Liaison de l'entreprise avec son employeur via la table pivot "engager"
+        $entreprise->participants()->syncWithoutDetaching([$employeur->id]);
+
+        return redirect()->back()->with('success', 'Entreprise ajoutée avec succès.');
     }
 
     /**

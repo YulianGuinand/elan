@@ -1,12 +1,15 @@
-import { Student } from "@/types/students";
+import { PageProps } from "@/types";
+import { Participant } from "@/types/participants";
+import { router, usePage } from "@inertiajs/react";
 import { useState } from "react";
 import StudentRow from "./StudentRow";
 
 interface StudentTableProps {
-    students: Student[];
+    students: Participant[];
 }
 
 export default function StudentTable({ students }: StudentTableProps) {
+    const { auth } = usePage<PageProps>().props;
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
     const handleSelectAll = () => {
@@ -20,7 +23,7 @@ export default function StudentTable({ students }: StudentTableProps) {
     const handleSelectOne = (id: number) => {
         if (selectedIds.includes(id)) {
             setSelectedIds(
-                selectedIds.filter((selectedId) => selectedId !== id)
+                selectedIds.filter((selectedId) => selectedId !== id),
             );
         } else {
             setSelectedIds([...selectedIds, id]);
@@ -32,8 +35,35 @@ export default function StudentTable({ students }: StudentTableProps) {
     const someSelected =
         selectedIds.length > 0 && selectedIds.length < students.length;
 
+    const handleBulkDelete = () => {
+        if (!confirm("Voulez-vous vraiment supprimer ces participants ?"))
+            return;
+        router.post(
+            route("participants.bulk-destroy"),
+            { ids: selectedIds },
+            {
+                onSuccess: () => setSelectedIds([]),
+            },
+        );
+    };
+
     return (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden animate-slideUp">
+            {selectedIds.length > 0 && (
+                <div className="bg-red-50 px-6 py-3 border-b border-red-100 flex items-center justify-between">
+                    <span className="text-sm text-red-700 font-medium">
+                        {selectedIds.length} participant(s) sélectionné(s)
+                    </span>
+                    {auth.user.role_id !== 3 && (
+                        <button
+                            onClick={handleBulkDelete}
+                            className="text-sm bg-red-600 text-white px-3 py-1.5 rounded-md hover:bg-red-700 transition-colors"
+                        >
+                            Supprimer la sélection
+                        </button>
+                    )}
+                </div>
+            )}
             <div className="overflow-x-auto">
                 <table className="w-full">
                     <thead className="bg-gray-50 border-b border-gray-200">
@@ -53,7 +83,7 @@ export default function StudentTable({ students }: StudentTableProps) {
                             </th>
                             <th className="px-4 sm:px-6 py-3 text-left">
                                 <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Apprenant
+                                    Participant
                                 </span>
                             </th>
                             <th className="px-4 sm:px-6 py-3 text-left hidden md:table-cell">
@@ -91,12 +121,12 @@ export default function StudentTable({ students }: StudentTableProps) {
                                 </td>
                             </tr>
                         ) : (
-                            students.map((student, index) => (
+                            students.map((student) => (
                                 <StudentRow
                                     key={student.id}
                                     student={student}
                                     isSelected={selectedIds.includes(
-                                        student.id
+                                        student.id,
                                     )}
                                     onSelect={handleSelectOne}
                                 />

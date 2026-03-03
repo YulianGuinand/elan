@@ -128,4 +128,46 @@ class ExcelService
       })
       ->filter(fn($item) => !empty($item['raison_sociale']));
   }
+
+  /**
+   * Import Participants depuis un fichier Excel ou CSV.
+   *
+   * @param string|UploadedFile $file
+   * @return Collection
+   */
+  public function importParticipants($file): Collection
+  {
+    $extension = strtolower(
+      $file instanceof UploadedFile
+        ? $file->getClientOriginalExtension()
+        : pathinfo($file, PATHINFO_EXTENSION)
+    );
+
+    if ($extension === 'csv') {
+      $rows = $this->importFromCsv($file);
+    } else {
+      $rows = $this->importFromExcel($file);
+    }
+
+    return $this->mapParticipants($rows);
+  }
+
+  /**
+   * Mappe les colonnes du fichier vers les champs participant.
+   */
+  private function mapParticipants(Collection $rows): Collection
+  {
+    return $rows
+      ->map(function ($line) {
+        return [
+          'nom'       => $line['nom']       ?? $line['Nom']       ?? null,
+          'prenom'    => $line['prenom']    ?? $line['Prénom']    ?? $line['Prenom'] ?? null,
+          'mail'      => $line['mail']      ?? $line['Mail']      ?? $line['Email']  ?? $line['email'] ?? null,
+          'telephone' => $line['telephone'] ?? $line['Telephone'] ?? $line['Téléphone'] ?? null,
+          'statut'    => $line['statut']    ?? $line['Statut']    ?? 'actif',
+          'role'      => $line['role']      ?? $line['Role']      ?? $line['Rôle']     ?? 'Apprenti',
+        ];
+      })
+      ->filter(fn($item) => !empty($item['nom']) && !empty($item['prenom']) && !empty($item['mail']));
+  }
 }

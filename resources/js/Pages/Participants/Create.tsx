@@ -1,209 +1,339 @@
-import FadeIn from "@/Components/Animations/FadeIn";
-import Card from "@/Components/Common/Card";
-import CSVImport from "@/Components/Participants/CSVImport";
-import ManualEntryForm from "@/Components/Participants/ManualEntryForm";
-import RecentParticipantsTable from "@/Components/Participants/RecentParticipantsTable";
+import SearchableSelect, {
+    SelectOption,
+} from "@/Components/Common/SearchableSelect";
 import DashboardLayout from "@/Layouts/DashboardLayout";
-import { Participant, RecentParticipant } from "@/types/participant";
-import { Head } from "@inertiajs/react";
-import { FileText, Users } from "lucide-react";
-import { useState } from "react";
+import { Head, useForm } from "@inertiajs/react";
+import { AlertCircle, Save } from "lucide-react";
+import { FormEventHandler, useEffect, useState } from "react";
 
-// Donnees mockees pour la demonstration
-const mockRecentParticipants: RecentParticipant[] = [
-    {
-        id: 1,
-        prenom: "Sophie",
-        nom: "Martin",
-        email: "sophie.martin@cfacc.fr",
-        telephone: "06 12 34 56 78",
-        role: "apprenant",
-        programme_formation: "BTS Management Commercial Opérationnel",
-        created_at: new Date().toISOString(),
-        statut: "validé",
-    },
-    {
-        id: 2,
-        prenom: "Lucas",
-        nom: "Bernard",
-        email: "l.bernard@tech-corp.fr",
-        telephone: "06 23 45 67 89",
-        role: "employeur",
-        created_at: new Date(Date.now() - 86400000).toISOString(), // Hier
-        statut: "validé",
-    },
-];
-
-interface CreateParticipantsProps {
-    recentParticipants?: RecentParticipant[];
+interface Props {
+    ecoles: SelectOption[];
+    formations: SelectOption[];
+    entreprises: SelectOption[];
 }
 
-export default function CreateParticipants({
-    recentParticipants = [],
-}: CreateParticipantsProps) {
-    const [activeTab, setActiveTab] = useState<"manual" | "csv">("manual");
-    const [isSubmitting, setIsSubmitting] = useState(false);
+export default function Create({ ecoles, formations, entreprises }: Props) {
+    const { data, setData, post, processing, errors } = useForm({
+        nom: "",
+        prenom: "",
+        mail: "",
+        telephone: "",
+        statut: "actif",
+        role: "Apprenti",
+        ecole_id: "",
+        formation_id: "",
+        entreprise_id: "",
+        date_entree: "",
+    });
 
-    const handleManualSubmit = (participant: Participant) => {
-        setIsSubmitting(true);
+    const [selectedEcole, setSelectedEcole] = useState<SelectOption | null>(
+        null,
+    );
+    const [selectedFormation, setSelectedFormation] =
+        useState<SelectOption | null>(null);
+    const [selectedEntreprise, setSelectedEntreprise] =
+        useState<SelectOption | null>(null);
 
-        // Simulation d'envoi (visuel seulement)
-        console.log("Participant ajouté:", participant);
+    useEffect(() => {
+        setData("ecole_id", selectedEcole ? selectedEcole.id.toString() : "");
+    }, [selectedEcole]);
 
-        setTimeout(() => {
-            setIsSubmitting(false);
-            alert(
-                `Participant ${participant.prenom} ${participant.nom} ajouté avec succès !`
-            );
-        }, 1000);
-    };
+    useEffect(() => {
+        setData(
+            "formation_id",
+            selectedFormation ? selectedFormation.id.toString() : "",
+        );
+    }, [selectedFormation]);
 
-    const handleCSVImport = (participants: Participant[]) => {
-        setIsSubmitting(true);
+    useEffect(() => {
+        setData(
+            "entreprise_id",
+            selectedEntreprise ? selectedEntreprise.id.toString() : "",
+        );
+    }, [selectedEntreprise]);
 
-        // Simulation d'import (visuel seulement)
-        console.log("Import CSV:", participants);
-
-        setTimeout(() => {
-            setIsSubmitting(false);
-            alert(
-                `${participants.length} participant${
-                    participants.length > 1 ? "s" : ""
-                } importé${participants.length > 1 ? "s" : ""} avec succès !`
-            );
-        }, 1500);
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+        post(route("participants.store"));
     };
 
     return (
-        <DashboardLayout title="Ajouter des Participants">
-            <Head title="Ajouter des Participants" />
+        <>
+            <Head title="Ajouter un participant" />
 
-            <div className="max-w-7xl mx-auto space-y-6">
-                {/* Header */}
-                <FadeIn delay={0}>
-                    <div>
-                        {/* Breadcrumbs */}
-                        <nav className="text-sm text-gray-600 mb-2">
-                            <span>Participants</span>
-                            <span className="mx-2">›</span>
-                            <span className="text-elan-orange font-medium">
-                                Ajouter
-                            </span>
-                        </nav>
+            <DashboardLayout
+                title="Ajouter un participant"
+                breadcrumbs={[
+                    { label: "Accueil", href: "/tableau-de-bord" },
+                    {
+                        label: "Participants",
+                        href: route("participants.index"),
+                    },
+                    { label: "Ajouter" },
+                ]}
+                actionButton={{
+                    label: "Retour à la liste",
+                    onClick: () => window.history.back(),
+                }}
+            >
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <form onSubmit={submit} className="p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Nom */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Nom
+                                </label>
+                                <input
+                                    type="text"
+                                    value={data.nom}
+                                    onChange={(e) =>
+                                        setData("nom", e.target.value)
+                                    }
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none"
+                                    required
+                                />
+                                {errors.nom && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {errors.nom}
+                                    </p>
+                                )}
+                            </div>
 
-                        {/* Title */}
-                        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
-                            Ajouter des Participants
-                        </h1>
-                        <p className="text-sm text-gray-600 mt-1">
-                            Gérez l&apos;intégration de vos apprenants,
-                            employeurs et formateurs dans la plateforme.
-                        </p>
-                    </div>
-                </FadeIn>
+                            {/* Prénom */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Prénom
+                                </label>
+                                <input
+                                    type="text"
+                                    value={data.prenom}
+                                    onChange={(e) =>
+                                        setData("prenom", e.target.value)
+                                    }
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none"
+                                    required
+                                />
+                                {errors.prenom && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {errors.prenom}
+                                    </p>
+                                )}
+                            </div>
 
-                {/* Tabs */}
-                <FadeIn delay={100}>
-                    <div className="border-b border-gray-200">
-                        <nav
-                            className="-mb-px flex gap-2 sm:gap-8"
-                            aria-label="Tabs"
-                        >
-                            <button
-                                onClick={() => setActiveTab("manual")}
-                                className={`
-                  whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2
-                  transition-colors
-                  ${
-                      activeTab === "manual"
-                          ? "border-elan-orange text-elan-orange"
-                          : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-                  }
-                `}
-                            >
-                                <Users className="w-4 h-4" />
-                                <span>Saisie Manuelle</span>
-                            </button>
-                            <button
-                                onClick={() => setActiveTab("csv")}
-                                className={`
-                  whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2
-                  transition-colors
-                  ${
-                      activeTab === "csv"
-                          ? "border-elan-orange text-elan-orange"
-                          : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-                  }
-                `}
-                            >
-                                <FileText className="w-4 h-4" />
-                                <span>Importation CSV</span>
-                            </button>
-                        </nav>
-                    </div>
-                </FadeIn>
+                            {/* Email */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Email
+                                </label>
+                                <input
+                                    type="email"
+                                    value={data.mail}
+                                    onChange={(e) =>
+                                        setData("mail", e.target.value)
+                                    }
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none"
+                                    required
+                                />
+                                {errors.mail && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {errors.mail}
+                                    </p>
+                                )}
+                            </div>
 
-                {/* Content Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Left Column - Manual Entry */}
-                    <FadeIn delay={200}>
-                        <Card
-                            className={
-                                activeTab === "manual"
-                                    ? ""
-                                    : "hidden lg:block opacity-50"
-                            }
-                        >
-                            <ManualEntryForm
-                                onSubmit={handleManualSubmit}
-                                isSubmitting={
-                                    isSubmitting && activeTab === "manual"
-                                }
-                            />
-                        </Card>
-                    </FadeIn>
+                            {/* Téléphone */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Téléphone
+                                </label>
+                                <input
+                                    type="tel"
+                                    value={data.telephone}
+                                    onChange={(e) =>
+                                        setData("telephone", e.target.value)
+                                    }
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none"
+                                    required
+                                />
+                                {errors.telephone && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {errors.telephone}
+                                    </p>
+                                )}
+                            </div>
 
-                    {/* Right Column - CSV Import */}
-                    <FadeIn delay={250}>
-                        <Card
-                            className={
-                                activeTab === "csv"
-                                    ? ""
-                                    : "hidden lg:block opacity-50"
-                            }
-                        >
-                            <CSVImport
-                                onImport={handleCSVImport}
-                                isImporting={
-                                    isSubmitting && activeTab === "csv"
-                                }
-                            />
-                        </Card>
-                    </FadeIn>
-                </div>
+                            {/* Statut */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Statut
+                                </label>
+                                <select
+                                    value={data.statut}
+                                    onChange={(e) =>
+                                        setData("statut", e.target.value)
+                                    }
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none bg-white"
+                                >
+                                    <option value="actif">Actif</option>
+                                    <option value="diplome">Diplômé</option>
+                                    <option value="suspendu">Suspendu</option>
+                                    <option value="abandon">Abandon</option>
+                                </select>
+                                {errors.statut && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {errors.statut}
+                                    </p>
+                                )}
+                            </div>
 
-                {/* Recent Participants Table */}
-                <FadeIn delay={300}>
-                    <Card>
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-lg font-semibold text-gray-900">
-                                Ajouts récents
-                            </h2>
-                            <a
-                                href="/participants"
-                                className="text-sm text-elan-orange hover:text-elan-orange/80 font-medium"
-                            >
-                                Voir tout l&apos;historique →
-                            </a>
+                            {/* Role */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Rôle
+                                </label>
+                                <select
+                                    value={data.role}
+                                    onChange={(e) =>
+                                        setData("role", e.target.value)
+                                    }
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none bg-white"
+                                >
+                                    <option value="Apprenti">Apprenti</option>
+                                    <option value="Alumni">Alumni</option>
+                                    <option value="Formateur">Formateur</option>
+                                    <option value="Employeur">Employeur</option>
+                                </select>
+                                {errors.role && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {errors.role}
+                                    </p>
+                                )}
+                            </div>
                         </div>
-                        <RecentParticipantsTable
-                            participants={
-                                recentParticipants || mockRecentParticipants
-                            }
-                        />
-                    </Card>
-                </FadeIn>
-            </div>
-        </DashboardLayout>
+
+                        {/* Renseignements supplémentaires pour Apprentis/Formateurs */}
+                        {(data.role === "Apprenti" ||
+                            data.role === "Formateur") && (
+                            <div className="mt-8 pt-6 border-t border-gray-100">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <h3 className="text-lg font-bold text-gray-900">
+                                        Informations Académiques &
+                                        Professionnelles
+                                    </h3>
+                                    <span className="text-xs font-semibold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                                        Nouveau Contrat
+                                    </span>
+                                </div>
+                                <div className="bg-blue-50 text-blue-800 p-4 rounded-lg flex gap-3 text-sm mb-6">
+                                    <AlertCircle className="w-5 h-5 shrink-0" />
+                                    <p>
+                                        Vous pouvez utiliser la recherche pour
+                                        trouver une école, formation ou
+                                        entreprise. Si elle n'existe pas, tapez
+                                        son nom et utilisez l'option{" "}
+                                        <strong>"Créer"</strong> dans la liste !
+                                    </p>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Select Ecole */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            École{" "}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </label>
+                                        <SearchableSelect
+                                            options={ecoles}
+                                            value={selectedEcole}
+                                            onChange={setSelectedEcole}
+                                            placeholder="Chercher ou créer une école..."
+                                            allowCreate={true}
+                                            createLabel="Créer l'école"
+                                        />
+                                        {errors.ecole_id && (
+                                            <p className="mt-1 text-sm text-red-600">
+                                                {errors.ecole_id}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Select Formation */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Formation{" "}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </label>
+                                        <SearchableSelect
+                                            options={formations}
+                                            value={selectedFormation}
+                                            onChange={setSelectedFormation}
+                                            placeholder="Chercher ou créer une formation..."
+                                            allowCreate={true}
+                                            createLabel="Créer la formation"
+                                        />
+                                        {errors.formation_id && (
+                                            <p className="mt-1 text-sm text-red-600">
+                                                {errors.formation_id}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Select Entreprise */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Entreprise d'accueil (Optionnel)
+                                        </label>
+                                        <SearchableSelect
+                                            options={entreprises}
+                                            value={selectedEntreprise}
+                                            onChange={setSelectedEntreprise}
+                                            placeholder="Chercher ou créer une entreprise..."
+                                            allowCreate={true}
+                                            createLabel="Créer l'entreprise"
+                                        />
+                                    </div>
+
+                                    {/* Date de début */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Date de début
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={data.date_entree}
+                                            onChange={(e) =>
+                                                setData(
+                                                    "date_entree",
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none bg-white"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="mt-8 flex justify-end">
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="inline-flex items-center px-6 py-3 bg-elan-orange text-white text-sm font-medium rounded-lg hover:bg-elan-dark transition-colors"
+                            >
+                                <Save className="w-4 h-4 mr-2" />
+                                {processing
+                                    ? "Enregistrement..."
+                                    : "Enregistrer"}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </DashboardLayout>
+        </>
     );
 }

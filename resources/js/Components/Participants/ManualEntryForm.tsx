@@ -184,7 +184,7 @@ export default function ManualEntryForm({
                         onChange={(e) =>
                             updateField(
                                 "role",
-                                e.target.value as Participant["role"]
+                                e.target.value as Participant["role"],
                             )
                         }
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-elan-orange focus:ring-elan-orange"

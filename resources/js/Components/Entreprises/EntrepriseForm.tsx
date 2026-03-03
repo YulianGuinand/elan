@@ -1,5 +1,6 @@
+import { useForm } from "@inertiajs/react";
 import { Building2 } from "lucide-react";
-import { useRef } from "react";
+import { FormEventHandler } from "react";
 
 const SECTEURS = [
     "Informatique & Tech",
@@ -27,30 +28,32 @@ interface EntrepriseFormProps {
 }
 
 export default function EntrepriseForm({ onCancel }: EntrepriseFormProps) {
-    const formRef = useRef<HTMLFormElement>(null);
+    const { data, setData, post, processing, errors, reset } = useForm({
+        raison_sociale: "",
+        siret: "",
+        secteur: "",
+        taille: "",
+        adresse: "",
+        code_postal: "",
+        ville: "",
+        interlocuteur: "",
+        mail: "",
+        telephone: "",
+        fonction: "",
+    });
 
-    const csrfToken =
-        (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)
-            ?.content ?? "";
-
-    const handleCancel = () => {
-        formRef.current?.reset();
-        onCancel?.();
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+        post(route("entreprises.store"), {
+            onSuccess: () => {
+                reset();
+                if (onCancel) onCancel();
+            },
+        });
     };
 
     return (
-        /*
-         * Formulaire HTML natif (non-Inertia/XHR) pour que dd() s'affiche
-         * correctement dans le navigateur.
-         */
-        <form
-            ref={formRef}
-            method="POST"
-            action={route("entreprises.store")}
-            className="space-y-6"
-        >
-            <input type="hidden" name="_token" value={csrfToken} />
-
+        <form onSubmit={submit} className="space-y-6">
             {/* En-tête section */}
             <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
                 <div className="w-7 h-7 bg-orange-100 rounded-md flex items-center justify-center">
@@ -69,22 +72,30 @@ export default function EntrepriseForm({ onCancel }: EntrepriseFormProps) {
                     </label>
                     <input
                         type="text"
-                        name="raison_sociale"
+                        value={data.raison_sociale}
+                        onChange={(e) =>
+                            setData("raison_sociale", e.target.value)
+                        }
                         placeholder="Ex: Tech Solutions SAS"
                         required
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                     />
+                    {errors.raison_sociale && (
+                        <p className="mt-1 text-xs text-red-600">
+                            {errors.raison_sociale}
+                        </p>
+                    )}
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Numéro SIRET <span className="text-red-500">*</span>
+                        Numéro SIRET
                     </label>
                     <input
                         type="text"
-                        name="siret"
+                        value={data.siret}
+                        onChange={(e) => setData("siret", e.target.value)}
                         placeholder="14 chiffres"
                         maxLength={14}
-                        required
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                     />
                 </div>
@@ -97,7 +108,8 @@ export default function EntrepriseForm({ onCancel }: EntrepriseFormProps) {
                         Secteur d'activité
                     </label>
                     <select
-                        name="secteur"
+                        value={data.secteur}
+                        onChange={(e) => setData("secteur", e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                     >
                         <option value="">— Sélectionner —</option>
@@ -113,7 +125,8 @@ export default function EntrepriseForm({ onCancel }: EntrepriseFormProps) {
                         Taille de l'entreprise
                     </label>
                     <select
-                        name="taille"
+                        value={data.taille}
+                        onChange={(e) => setData("taille", e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                     >
                         <option value="">— Sélectionner —</option>
@@ -134,7 +147,8 @@ export default function EntrepriseForm({ onCancel }: EntrepriseFormProps) {
                     </label>
                     <input
                         type="text"
-                        name="adresse"
+                        value={data.adresse}
+                        onChange={(e) => setData("adresse", e.target.value)}
                         placeholder="Ex: 12 rue de la République"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                     />
@@ -145,7 +159,8 @@ export default function EntrepriseForm({ onCancel }: EntrepriseFormProps) {
                     </label>
                     <input
                         type="text"
-                        name="code_postal"
+                        value={data.code_postal}
+                        onChange={(e) => setData("code_postal", e.target.value)}
                         placeholder="Ex: 75001"
                         maxLength={5}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
@@ -159,7 +174,8 @@ export default function EntrepriseForm({ onCancel }: EntrepriseFormProps) {
                 </label>
                 <input
                     type="text"
-                    name="ville"
+                    value={data.ville}
+                    onChange={(e) => setData("ville", e.target.value)}
                     placeholder="Ex: Paris"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                 />
@@ -173,36 +189,62 @@ export default function EntrepriseForm({ onCancel }: EntrepriseFormProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Nom complet
+                            Nom complet <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
-                            name="interlocuteur"
+                            required
+                            value={data.interlocuteur}
+                            onChange={(e) =>
+                                setData("interlocuteur", e.target.value)
+                            }
                             placeholder="Prénom Nom"
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                         />
+                        {errors.interlocuteur && (
+                            <p className="mt-1 text-xs text-red-600">
+                                {errors.interlocuteur}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Email professionnel
+                            Email professionnel{" "}
+                            <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="email"
-                            name="mail"
+                            required
+                            value={data.mail}
+                            onChange={(e) => setData("mail", e.target.value)}
                             placeholder="contact@entreprise.fr"
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                         />
+                        {errors.mail && (
+                            <p className="mt-1 text-xs text-red-600">
+                                {errors.mail}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Téléphone
+                            Téléphone <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="tel"
-                            name="telephone"
+                            required
+                            value={data.telephone}
+                            onChange={(e) =>
+                                setData("telephone", e.target.value)
+                            }
                             placeholder="06 .. .. .. .."
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                         />
+                        {errors.telephone && (
+                            <p className="mt-1 text-xs text-red-600">
+                                {errors.telephone}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -210,7 +252,10 @@ export default function EntrepriseForm({ onCancel }: EntrepriseFormProps) {
                         </label>
                         <input
                             type="text"
-                            name="fonction"
+                            value={data.fonction}
+                            onChange={(e) =>
+                                setData("fonction", e.target.value)
+                            }
                             placeholder="Ex: Responsable RH"
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                         />
@@ -222,14 +267,18 @@ export default function EntrepriseForm({ onCancel }: EntrepriseFormProps) {
             <div className="flex justify-end gap-3 pt-2">
                 <button
                     type="button"
-                    onClick={handleCancel}
+                    onClick={() => {
+                        reset();
+                        if (onCancel) onCancel();
+                    }}
                     className="px-5 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                     Annuler
                 </button>
                 <button
                     type="submit"
-                    className="px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors shadow-sm"
+                    disabled={processing}
+                    className="px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 disabled:opacity-50 transition-colors shadow-sm"
                 >
                     Ajouter l'entreprise
                 </button>
