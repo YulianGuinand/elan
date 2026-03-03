@@ -167,25 +167,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('formations.index');
 
         Route::post('/bulk-destroy', [\App\Http\Controllers\FormationController::class, 'bulkDestroy'])
-            ->name('formations.bulk-destroy')->middleware(['is_admin']);
+            ->name('formations.bulk-destroy')->middleware(['is_admin', 'is_superadmin']);
 
         Route::get('/ajouter', [\App\Http\Controllers\FormationController::class, 'create'])
-            ->name('formations.create')->middleware(['is_admin']);
+            ->name('formations.create')->middleware(['is_admin', 'is_superadmin']);
 
         Route::post('/', [\App\Http\Controllers\FormationController::class, 'store'])
-            ->name('formations.store')->middleware(['is_admin']);
+            ->name('formations.store')->middleware(['is_admin', 'is_superadmin']);
 
         Route::get('/{formation}', [\App\Http\Controllers\FormationController::class, 'show'])
             ->name('formations.show');
 
         Route::get('/{formation}/modifier', [\App\Http\Controllers\FormationController::class, 'edit'])
-            ->name('formations.edit')->middleware(['is_admin']);
+            ->name('formations.edit')->middleware(['is_admin', 'is_superadmin']);
 
         Route::put('/{formation}', [\App\Http\Controllers\FormationController::class, 'update'])
-            ->name('formations.update')->middleware(['is_admin']);
+            ->name('formations.update')->middleware(['is_admin', 'is_superadmin']);
 
         Route::delete('/{formation}', [\App\Http\Controllers\FormationController::class, 'destroy'])
-            ->name('formations.destroy')->middleware(['is_admin']);
+            ->name('formations.destroy')->middleware(['is_admin', 'is_superadmin']);
     });
 
     // ============================================
