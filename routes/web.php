@@ -43,14 +43,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Créer une enquête (admin & superadmin)
         Route::get('/creer', [SurveyController::class, 'create'])
-            ->name('surveys.create')->middleware(["is_admin"]);
+            ->name('surveys.create')->middleware(["is_admin","is_superadmin"]);
 
         Route::post('/constructeur', [SurveyController::class, 'storeFromBuilder'])
-            ->name('surveys.builder.store')->middleware(["is_admin"]);
+            ->name('surveys.builder.store')->middleware(["is_admin","is_superadmin"]);
 
         // Remplir une enquête
         Route::get('/{id}/remplir', [SurveyController::class, 'fill'])
-            ->name('surveys.fill');
+            ->name('surveys.fill');+
         Route::post('/{id}/remplir', [SurveyController::class, 'submitFill'])
             ->name('surveys.fill.submit');
 

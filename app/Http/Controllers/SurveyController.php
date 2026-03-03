@@ -210,7 +210,7 @@ class SurveyController extends Controller
     {
         $user = Auth::user();
 
-        // Seuls les superadmins accedent à cette mthode (via le middleware), donc clean everything
+        // Seuls les superadmins accedent à cette méthode (via le middleware), donc clean everything
         Enquete::query()->delete();
 
         return redirect()->route('surveys.index')
