@@ -141,22 +141,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('contrats.index');
 
         Route::get('/ajouter', [\App\Http\Controllers\ContratController::class, 'create'])
-            ->name('contrats.create')->middleware(['is_admin']);
+            ->name('contrats.create')->middleware(['is_admin', 'is_superadmin']);
 
         Route::post('/', [\App\Http\Controllers\ContratController::class, 'store'])
-            ->name('contrats.store')->middleware(['is_admin']);
+            ->name('contrats.store')->middleware(['is_admin', 'is_superadmin']);
 
         Route::get('/{contrat}', [\App\Http\Controllers\ContratController::class, 'show'])
             ->name('contrats.show');
 
         Route::get('/{contrat}/modifier', [\App\Http\Controllers\ContratController::class, 'edit'])
-            ->name('contrats.edit')->middleware(['is_admin']);
+            ->name('contrats.edit')->middleware(['is_admin', 'is_superadmin']);
 
         Route::put('/{contrat}', [\App\Http\Controllers\ContratController::class, 'update'])
-            ->name('contrats.update')->middleware(['is_admin']);
+            ->name('contrats.update')->middleware(['is_admin', 'is_superadmin']);
 
         Route::delete('/{contrat}', [\App\Http\Controllers\ContratController::class, 'destroy'])
-            ->name('contrats.destroy')->middleware(['is_admin']);
+            ->name('contrats.destroy')->middleware(['is_admin', 'is_superadmin']);
     });
 
     // ============================================
