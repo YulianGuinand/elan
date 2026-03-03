@@ -112,25 +112,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('ecoles.index');
 
         Route::post('/bulk-destroy', [EcoleController::class, 'bulkDestroy'])
-            ->name('ecoles.bulk-destroy')->middleware(['is_admin']);
+            ->name('ecoles.bulk-destroy')->middleware(['is_admin', 'is_superadmin']);
 
         Route::get('/ajouter', [EcoleController::class, 'create'])
-            ->name('ecoles.create')->middleware(['is_admin']);
+            ->name('ecoles.create')->middleware(['is_admin', 'is_superadmin']);
 
         Route::post('/', [EcoleController::class, 'store'])
-            ->name('ecoles.store')->middleware(['is_admin']);
+            ->name('ecoles.store')->middleware(['is_admin', 'is_superadmin']);
 
         Route::get('/{ecole}', [EcoleController::class, 'show'])
             ->name('ecoles.show');
 
         Route::get('/{ecole}/modifier', [EcoleController::class, 'edit'])
-            ->name('ecoles.edit')->middleware(['is_admin']);
+            ->name('ecoles.edit')->middleware(['is_admin', 'is_superadmin']);
 
         Route::put('/{ecole}', [EcoleController::class, 'update'])
-            ->name('ecoles.update')->middleware(['is_admin']);
+            ->name('ecoles.update')->middleware(['is_admin', 'is_superadmin']);
 
         Route::delete('/{ecole}', [EcoleController::class, 'destroy'])
-            ->name('ecoles.destroy')->middleware(['is_admin']);
+            ->name('ecoles.destroy')->middleware(['is_admin', 'is_superadmin']);
     });
 
     // ============================================
