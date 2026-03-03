@@ -74,17 +74,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ============================================
     Route::prefix('participants')->group(function () {
         Route::get('/', [ParticipantController::class, 'index'])->name('participants.index');
-        Route::post('/bulk-destroy', [ParticipantController::class, 'bulkDestroy'])->name('participants.bulk-destroy')->middleware(['is_admin']);
+        Route::post('/bulk-destroy', [ParticipantController::class, 'bulkDestroy'])->name('participants.bulk-destroy')->middleware(['is_admin', 'is_superadmin']);
 
-        Route::post('/import', [ParticipantController::class, 'importCsv'])->name('participants.import')->middleware(['is_admin']);
-        Route::get('/exemple', [ParticipantController::class, 'downloadExemple'])->name('participants.exemple')->middleware(['is_admin']);
+        Route::post('/import', [ParticipantController::class, 'importCsv'])->name('participants.import')->middleware(['is_admin', 'is_superadmin']);
+        Route::get('/exemple', [ParticipantController::class, 'downloadExemple'])->name('participants.exemple')->middleware(['is_admin', 'is_superadmin']);
 
-        Route::get('/ajouter', [ParticipantController::class, 'create'])->name('participants.create')->middleware(['is_admin']);
-        Route::post('/', [ParticipantController::class, 'store'])->name('participants.store')->middleware(['is_admin']);
+        Route::get('/ajouter', [ParticipantController::class, 'create'])->name('participants.create')->middleware(['is_admin', 'is_superadmin']);
+        Route::post('/', [ParticipantController::class, 'store'])->name('participants.store')->middleware(['is_admin', 'is_superadmin']);
         Route::get('/{participant}', [ParticipantController::class, 'show'])->name('participants.show');
-        Route::get('/{participant}/modifier', [ParticipantController::class, 'edit'])->name('participants.edit')->middleware(['is_admin']);
-        Route::put('/{participant}', [ParticipantController::class, 'update'])->name('participants.update')->middleware(['is_admin']);
-        Route::delete('/{participant}', [ParticipantController::class, 'destroy'])->name('participants.destroy')->middleware(['is_admin']);
+        Route::get('/{participant}/modifier', [ParticipantController::class, 'edit'])->name('participants.edit')->middleware(['is_admin', 'is_superadmin']);
+        Route::put('/{participant}', [ParticipantController::class, 'update'])->name('participants.update')->middleware(['is_admin', 'is_superadmin']);
+        Route::delete('/{participant}', [ParticipantController::class, 'destroy'])->name('participants.destroy')->middleware(['is_admin', 'is_superadmin']);
     });
 
     // ============================================
