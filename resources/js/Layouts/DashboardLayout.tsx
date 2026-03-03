@@ -1,7 +1,9 @@
+import { ToastContainer, useToastManager } from "@/Components/Common/Toast";
 import Header from "@/Components/Dashboard/Header";
 import Sidebar from "@/Components/Dashboard/Sidebar";
+import { PageProps } from "@/types";
 import { usePage } from "@inertiajs/react";
-import { PropsWithChildren, useState } from "react";
+import { PropsWithChildren, useEffect, useState } from "react";
 
 interface BreadcrumbItem {
     label: string;
@@ -26,11 +28,29 @@ export default function DashboardLayout({
     children,
     noPadding = false,
 }: DashboardLayoutProps) {
-    const user = usePage().props.auth?.user;
+    const { auth, flash, errors } = usePage<PageProps>().props;
+    const user = auth?.user;
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const { toasts, add, remove } = useToastManager();
+
+    // Afficher les messages flash (succès / erreur) à chaque navigation Inertia
+    useEffect(() => {
+        if (flash?.success) add(flash.success, "success");
+        if (flash?.error) add(flash.error, "error");
+        if (flash?.message) add(flash.message, "info");
+
+        // Erreurs de validation : afficher la première
+        if (errors && Object.keys(errors).length > 0) {
+            const firstError = Object.values(errors)[0];
+            add(firstError, "error");
+        }
+    }, [flash, errors]);
 
     return (
         <div className="min-h-screen bg-gray-50">
+            {/* Toast notifications */}
+            <ToastContainer toasts={toasts} onRemove={remove} />
+
             {/* Sidebar */}
             <Sidebar
                 userName={user?.name}

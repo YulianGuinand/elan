@@ -1,10 +1,18 @@
-import StatusBadge from "@/Components/Students/StatusBadge";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Participant } from "@/types/participants";
 import { Head, router } from "@inertiajs/react";
-import { Briefcase, Edit, GraduationCap, Mail, Phone } from "lucide-react";
+import {
+    Briefcase,
+    Building2,
+    Edit,
+    GraduationCap,
+    Mail,
+    Phone,
+} from "lucide-react";
 
 export default function Show({ participant }: { participant: Participant }) {
+    const contrat = participant.contrats?.[0];
+
     return (
         <>
             <Head
@@ -55,7 +63,9 @@ export default function Show({ participant }: { participant: Participant }) {
                                 {participant.prenom} {participant.nom}
                             </h1>
                             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-4">
-                                <StatusBadge status={participant.statut} />
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
+                                    {participant.role}
+                                </span>
                                 <span className="text-sm text-gray-500">
                                     Inscrit le{" "}
                                     {participant.created_at
@@ -118,7 +128,7 @@ export default function Show({ participant }: { participant: Participant }) {
                             </div>
                         </div>
 
-                        {/* Programme & Entreprise */}
+                        {/* Parcours */}
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                             <div className="flex items-center gap-2 mb-6 border-b border-gray-100 pb-4">
                                 <h2 className="text-lg font-semibold text-gray-900">
@@ -126,25 +136,40 @@ export default function Show({ participant }: { participant: Participant }) {
                                 </h2>
                             </div>
                             <div className="space-y-4">
-                                <div className="flex items-center p-3 bg-gray-50 rounded-lg border-l-4 border-elan-orange">
+                                {/* Formation */}
+                                <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                                     <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mr-4">
                                         <GraduationCap className="w-5 h-5 text-elan-orange" />
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-sm text-gray-500 mb-0.5">
-                                            Programme actuel
+                                            Programme
                                         </p>
                                         <p className="text-sm font-medium text-gray-900 truncate">
-                                            {participant.contrats &&
-                                            participant.contrats.length > 0
-                                                ? participant.contrats[0]
-                                                      .formation?.libelle
-                                                : "Aucun programme"}
+                                            {contrat?.formation?.libelle ??
+                                                "Aucun programme"}
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center p-3 bg-gray-50 rounded-lg border-l-4 border-elan-blue">
+                                {/* École */}
+                                <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                                    <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mr-4">
+                                        <Building2 className="w-5 h-5 text-elan-blue" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-sm text-gray-500 mb-0.5">
+                                            École
+                                        </p>
+                                        <p className="text-sm font-medium text-gray-900 truncate">
+                                            {contrat?.ecole?.libelle ??
+                                                "Aucune école"}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Entreprise */}
+                                <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                                     <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mr-4">
                                         <Briefcase className="w-5 h-5 text-elan-blue" />
                                     </div>
@@ -153,14 +178,50 @@ export default function Show({ participant }: { participant: Participant }) {
                                             Entreprise d'accueil
                                         </p>
                                         <p className="text-sm font-medium text-gray-900 truncate">
-                                            {participant.entreprises &&
-                                            participant.entreprises.length > 0
-                                                ? participant.entreprises[0]
-                                                      .raison_sociale
-                                                : "Aucune entreprise"}
+                                            {contrat?.entreprise
+                                                ?.raison_sociale ??
+                                                "Aucune entreprise"}
                                         </p>
                                     </div>
                                 </div>
+
+                                {/* Dates du contrat */}
+                                {contrat &&
+                                    (contrat.date_entree ||
+                                        contrat.date_sortiee) && (
+                                        <div className="p-3 bg-gray-50 rounded-lg">
+                                            <div className="flex gap-6">
+                                                {contrat.date_entree && (
+                                                    <div>
+                                                        <p className="text-xs text-gray-500">
+                                                            Début
+                                                        </p>
+                                                        <p className="text-sm font-medium text-gray-900">
+                                                            {new Date(
+                                                                contrat.date_entree,
+                                                            ).toLocaleDateString(
+                                                                "fr-FR",
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                                {contrat.date_sortiee && (
+                                                    <div>
+                                                        <p className="text-xs text-gray-500">
+                                                            Fin
+                                                        </p>
+                                                        <p className="text-sm font-medium text-gray-900">
+                                                            {new Date(
+                                                                contrat.date_sortiee,
+                                                            ).toLocaleDateString(
+                                                                "fr-FR",
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
                             </div>
                         </div>
                     </div>

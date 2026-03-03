@@ -58,36 +58,13 @@ export default function StudentFilterBar({
                         </select>
                     </div>
 
-                    {/* Filtre Statut */}
-                    <div className="min-w-[180px]">
-                        <select
-                            value={filters.status}
-                            onChange={(e) =>
-                                onFiltersChange({
-                                    ...filters,
-                                    status: e.target.value,
-                                })
-                            }
-                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none transition-all bg-white appearance-none"
-                        >
-                            <option value="all">Tous les statuts</option>
-                            <option value="actif">Actif</option>
-                            <option value="diplome">Diplômé</option>
-                            <option value="suspendu">Suspendu</option>
-                            <option value="abandon">Abandon</option>
-                        </select>
-                    </div>
-
                     {/* Bouton de réinitialisation */}
-                    {(filters.search ||
-                        filters.program !== "all" ||
-                        filters.status !== "all") && (
+                    {(filters.search || filters.program !== "all") && (
                         <button
                             onClick={() =>
                                 onFiltersChange({
                                     search: "",
                                     program: "all",
-                                    status: "all",
                                 })
                             }
                             className="px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors inline-flex items-center gap-2"

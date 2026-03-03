@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EntrepriseController;
+use App\Http\Controllers\InlineCreateController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\EcoleController;
 use App\Http\Controllers\ProfileController;
@@ -24,6 +25,16 @@ Route::get('/', function () {
 
 // Routes protegees par authentification
 Route::middleware(['auth', 'verified'])->group(function () {
+
+    // ============================================
+    // CREATION INLINE (modals)
+    // ============================================
+    Route::prefix('inline')->name('inline.')->group(function () {
+        Route::post('/ecole',      [InlineCreateController::class, 'storeEcole'])->name('ecole');
+        Route::post('/formation',  [InlineCreateController::class, 'storeFormation'])->name('formation');
+        Route::post('/entreprise', [InlineCreateController::class, 'storeEntreprise'])->name('entreprise');
+    });
+
 
     // ============================================
     // TABLEAU DE BORD
@@ -94,6 +105,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [EntrepriseController::class, 'index'])
             ->name('entreprises.index');
 
+        Route::post('/bulk-destroy', [EntrepriseController::class, 'bulkDestroy'])
+            ->name('entreprises.bulk-destroy');
+
         Route::post('/', [EntrepriseController::class, 'store'])
             ->name('entreprises.store');
 
@@ -102,6 +116,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/exemple', [EntrepriseController::class, 'downloadExemple'])
             ->name('entreprises.exemple');
+
+        Route::get('/{entreprise}', [EntrepriseController::class, 'show'])
+            ->name('entreprises.show');
+
+        Route::get('/{entreprise}/modifier', [EntrepriseController::class, 'edit'])
+            ->name('entreprises.edit');
+
+        Route::put('/{entreprise}', [EntrepriseController::class, 'update'])
+            ->name('entreprises.update');
+
+        Route::delete('/{entreprise}', [EntrepriseController::class, 'destroy'])
+            ->name('entreprises.destroy');
     });
 
     // ============================================

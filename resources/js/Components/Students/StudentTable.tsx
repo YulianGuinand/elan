@@ -68,7 +68,7 @@ export default function StudentTable({ students }: StudentTableProps) {
                 <table className="w-full">
                     <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
-                            <th className="px-4 sm:px-6 py-3 text-left">
+                            <th className="w-10 px-2 sm:px-3 py-3 text-left">
                                 <input
                                     type="checkbox"
                                     checked={allSelected}
@@ -96,11 +96,7 @@ export default function StudentTable({ students }: StudentTableProps) {
                                     Programme
                                 </span>
                             </th>
-                            <th className="px-4 sm:px-6 py-3 text-left">
-                                <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Statut
-                                </span>
-                            </th>
+
                             <th className="px-4 sm:px-6 py-3 text-left">
                                 <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     Actions
@@ -112,7 +108,7 @@ export default function StudentTable({ students }: StudentTableProps) {
                         {students.length === 0 ? (
                             <tr>
                                 <td
-                                    colSpan={6}
+                                    colSpan={5}
                                     className="px-6 py-12 text-center"
                                 >
                                     <p className="text-gray-500">

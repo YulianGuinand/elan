@@ -164,7 +164,6 @@ class ExcelService
           'prenom'    => $line['prenom']    ?? $line['Prénom']    ?? $line['Prenom'] ?? null,
           'mail'      => $line['mail']      ?? $line['Mail']      ?? $line['Email']  ?? $line['email'] ?? null,
           'telephone' => $line['telephone'] ?? $line['Telephone'] ?? $line['Téléphone'] ?? null,
-          'statut'    => $line['statut']    ?? $line['Statut']    ?? 'actif',
           'role'      => $line['role']      ?? $line['Role']      ?? $line['Rôle']     ?? 'Apprenti',
         ];
       })

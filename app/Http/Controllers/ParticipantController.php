@@ -24,10 +24,9 @@ class ParticipantController extends Controller
     {
         $search = $request->input('search');
         $program = $request->input('program');
-        $status = $request->input('status');
         $perPage = 10;
 
-        $query = Participant::with(['contrats.formation', 'entreprises']);
+        $query = Participant::with(['contrats.formation', 'contrats.entreprise', 'contrats.ecole', 'entreprises']);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -43,10 +42,6 @@ class ParticipantController extends Controller
             });
         }
 
-        if ($status && $status !== 'all') {
-            $query->where('statut', $status);
-        }
-
         $participants = $query->latest()->paginate($perPage)->withQueryString();
 
         // Extraire la liste des formations pour le filtre
@@ -58,7 +53,6 @@ class ParticipantController extends Controller
             'filters' => [
                 'search' => $search ?? '',
                 'program' => $program ?? 'all',
-                'status' => $status ?? 'all',
             ],
         ]);
     }
@@ -83,7 +77,6 @@ class ParticipantController extends Controller
             'prenom' => 'required|string|max:255',
             'mail' => 'required|email|max:255',
             'telephone' => 'required|string|max:20',
-            'statut' => 'required|string',
             'role' => 'required|in:Apprenti,Alumni,Formateur,Employeur',
 
             // Champs additionnels pour creation inline
@@ -91,6 +84,7 @@ class ParticipantController extends Controller
             'formation_id' => 'nullable|string',
             'entreprise_id' => 'nullable|string',
             'date_entree' => 'nullable|date',
+            'date_sortiee' => 'nullable|date|after_or_equal:date_entree',
         ]);
 
         try {
@@ -99,7 +93,6 @@ class ParticipantController extends Controller
                 'prenom' => $validated['prenom'],
                 'mail' => $validated['mail'],
                 'telephone' => $validated['telephone'],
-                'statut' => $validated['statut'],
                 'role' => $validated['role'],
             ]);
 
@@ -116,6 +109,7 @@ class ParticipantController extends Controller
                     'entreprise_id' => $entrepriseId,
                     'utilisateur_id' => \Illuminate\Support\Facades\Auth::id(),
                     'date_entree' => $validated['date_entree'] ?? now()->toDateString(),
+                    'date_sortiee' => $validated['date_sortiee'] ?? null,
                 ]);
             }
 
@@ -140,7 +134,7 @@ class ParticipantController extends Controller
 
     public function show(Participant $participant)
     {
-        $participant->load(['contrats.formation', 'entreprises']);
+        $participant->load(['contrats.formation', 'contrats.entreprise', 'contrats.ecole', 'entreprises']);
         return Inertia::render('Participants/Show', [
             'participant' => $participant
         ]);
@@ -160,7 +154,6 @@ class ParticipantController extends Controller
             'prenom' => 'required|string|max:255',
             'mail' => 'required|email|max:255',
             'telephone' => 'required|string|max:20',
-            'statut' => 'required|string',
             'role' => 'required|in:Apprenti,Alumni,Formateur,Employeur'
         ]);
 
@@ -231,7 +224,6 @@ class ParticipantController extends Controller
             'prenom',
             'mail',
             'telephone',
-            'statut',
             'role'
         ];
 
@@ -240,7 +232,6 @@ class ParticipantController extends Controller
             'Jean',
             'jean.dupont@email.com',
             '0612345678',
-            'actif',
             'Apprenti'
         ];
 

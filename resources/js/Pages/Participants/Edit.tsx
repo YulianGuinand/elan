@@ -10,7 +10,6 @@ export default function Edit({ participant }: { participant: Participant }) {
         prenom: participant.prenom || "",
         mail: participant.mail || "",
         telephone: participant.telephone || "",
-        statut: participant.statut || "actif",
         role: participant.role || "Apprenti",
     });
 
@@ -121,30 +120,6 @@ export default function Edit({ participant }: { participant: Participant }) {
                                 {errors.telephone && (
                                     <p className="mt-1 text-sm text-red-600">
                                         {errors.telephone}
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Statut */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Statut
-                                </label>
-                                <select
-                                    value={data.statut}
-                                    onChange={(e) =>
-                                        setData("statut", e.target.value)
-                                    }
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none bg-white"
-                                >
-                                    <option value="actif">Actif</option>
-                                    <option value="diplome">Diplômé</option>
-                                    <option value="suspendu">Suspendu</option>
-                                    <option value="abandon">Abandon</option>
-                                </select>
-                                {errors.statut && (
-                                    <p className="mt-1 text-sm text-red-600">
-                                        {errors.statut}
                                     </p>
                                 )}
                             </div>

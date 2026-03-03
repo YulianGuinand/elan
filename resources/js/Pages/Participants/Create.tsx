@@ -1,3 +1,6 @@
+import InlineCreateModal, {
+    EntityType,
+} from "@/Components/Common/InlineCreateModal";
 import SearchableSelect, {
     SelectOption,
 } from "@/Components/Common/SearchableSelect";
@@ -18,12 +21,12 @@ export default function Create({ ecoles, formations, entreprises }: Props) {
         prenom: "",
         mail: "",
         telephone: "",
-        statut: "actif",
         role: "Apprenti",
         ecole_id: "",
         formation_id: "",
         entreprise_id: "",
         date_entree: "",
+        date_sortiee: "",
     });
 
     const [selectedEcole, setSelectedEcole] = useState<SelectOption | null>(
@@ -33,6 +36,36 @@ export default function Create({ ecoles, formations, entreprises }: Props) {
         useState<SelectOption | null>(null);
     const [selectedEntreprise, setSelectedEntreprise] =
         useState<SelectOption | null>(null);
+
+    // Listes locales (pour ajouter les entités créées inline)
+    const [ecolesList, setEcolesList] = useState<SelectOption[]>(ecoles);
+    const [formationsList, setFormationsList] =
+        useState<SelectOption[]>(formations);
+    const [entreprisesList, setEntreprisesList] =
+        useState<SelectOption[]>(entreprises);
+
+    // État du modal inline
+    const [modalType, setModalType] = useState<EntityType | null>(null);
+    const [modalDefaultName, setModalDefaultName] = useState("");
+
+    const openModal = (type: EntityType, name: string) => {
+        setModalType(type);
+        setModalDefaultName(name);
+    };
+
+    const handleInlineCreated = (option: SelectOption) => {
+        if (modalType === "ecole") {
+            setEcolesList((l) => [...l, option]);
+            setSelectedEcole(option);
+        } else if (modalType === "formation") {
+            setFormationsList((l) => [...l, option]);
+            setSelectedFormation(option);
+        } else if (modalType === "entreprise") {
+            setEntreprisesList((l) => [...l, option]);
+            setSelectedEntreprise(option);
+        }
+        setModalType(null);
+    };
 
     useEffect(() => {
         setData("ecole_id", selectedEcole ? selectedEcole.id.toString() : "");
@@ -163,30 +196,6 @@ export default function Create({ ecoles, formations, entreprises }: Props) {
                                 )}
                             </div>
 
-                            {/* Statut */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Statut
-                                </label>
-                                <select
-                                    value={data.statut}
-                                    onChange={(e) =>
-                                        setData("statut", e.target.value)
-                                    }
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none bg-white"
-                                >
-                                    <option value="actif">Actif</option>
-                                    <option value="diplome">Diplômé</option>
-                                    <option value="suspendu">Suspendu</option>
-                                    <option value="abandon">Abandon</option>
-                                </select>
-                                {errors.statut && (
-                                    <p className="mt-1 text-sm text-red-600">
-                                        {errors.statut}
-                                    </p>
-                                )}
-                            </div>
-
                             {/* Role */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -246,12 +255,15 @@ export default function Create({ ecoles, formations, entreprises }: Props) {
                                             </span>
                                         </label>
                                         <SearchableSelect
-                                            options={ecoles}
+                                            options={ecolesList}
                                             value={selectedEcole}
                                             onChange={setSelectedEcole}
                                             placeholder="Chercher ou créer une école..."
                                             allowCreate={true}
                                             createLabel="Créer l'école"
+                                            onCreateRequest={(q) =>
+                                                openModal("ecole", q)
+                                            }
                                         />
                                         {errors.ecole_id && (
                                             <p className="mt-1 text-sm text-red-600">
@@ -269,12 +281,15 @@ export default function Create({ ecoles, formations, entreprises }: Props) {
                                             </span>
                                         </label>
                                         <SearchableSelect
-                                            options={formations}
+                                            options={formationsList}
                                             value={selectedFormation}
                                             onChange={setSelectedFormation}
                                             placeholder="Chercher ou créer une formation..."
                                             allowCreate={true}
                                             createLabel="Créer la formation"
+                                            onCreateRequest={(q) =>
+                                                openModal("formation", q)
+                                            }
                                         />
                                         {errors.formation_id && (
                                             <p className="mt-1 text-sm text-red-600">
@@ -289,12 +304,15 @@ export default function Create({ ecoles, formations, entreprises }: Props) {
                                             Entreprise d'accueil (Optionnel)
                                         </label>
                                         <SearchableSelect
-                                            options={entreprises}
+                                            options={entreprisesList}
                                             value={selectedEntreprise}
                                             onChange={setSelectedEntreprise}
                                             placeholder="Chercher ou créer une entreprise..."
                                             allowCreate={true}
                                             createLabel="Créer l'entreprise"
+                                            onCreateRequest={(q) =>
+                                                openModal("entreprise", q)
+                                            }
                                         />
                                     </div>
 
@@ -315,6 +333,29 @@ export default function Create({ ecoles, formations, entreprises }: Props) {
                                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none bg-white"
                                         />
                                     </div>
+
+                                    {/* Date de fin */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Date de fin
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={data.date_sortiee}
+                                            onChange={(e) =>
+                                                setData(
+                                                    "date_sortiee",
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none bg-white"
+                                        />
+                                        {errors.date_sortiee && (
+                                            <p className="mt-1 text-sm text-red-600">
+                                                {errors.date_sortiee}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -334,6 +375,14 @@ export default function Create({ ecoles, formations, entreprises }: Props) {
                     </form>
                 </div>
             </DashboardLayout>
+
+            {/* Modal de création inline */}
+            <InlineCreateModal
+                type={modalType}
+                defaultName={modalDefaultName}
+                onClose={() => setModalType(null)}
+                onCreated={handleInlineCreated}
+            />
         </>
     );
 }

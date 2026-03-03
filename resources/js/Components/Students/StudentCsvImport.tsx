@@ -163,10 +163,6 @@ export default function StudentCsvImport() {
                                 ["mail *", "Email de contact"],
                                 ["telephone", "Téléphone"],
                                 [
-                                    "statut",
-                                    "Statut (actif, inactif, diplome, abandon)",
-                                ],
-                                [
                                     "role",
                                     "Rôle (Apprenti, Alumni, Formateur, Employeur)",
                                 ],

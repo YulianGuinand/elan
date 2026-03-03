@@ -42,9 +42,7 @@ export default function Students({
                     newFilters.program !== "all"
                         ? newFilters.program
                         : undefined,
-                status:
-                    newFilters.status !== "all" ? newFilters.status : undefined,
-                page: 1, // Reinitialiser a la page 1 lors d'un changement de filtre
+                page: 1,
             },
             {
                 preserveState: true,
@@ -61,7 +59,6 @@ export default function Students({
                 search: filters.search,
                 program:
                     filters.program !== "all" ? filters.program : undefined,
-                status: filters.status !== "all" ? filters.status : undefined,
                 page,
             },
             {

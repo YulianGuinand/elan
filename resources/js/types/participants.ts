@@ -4,7 +4,6 @@ export interface Participant {
     prenom: string;
     mail: string;
     telephone: string;
-    statut: "actif" | "diplome" | "suspendu" | "abandon" | string;
     role: "Apprenti" | "Alumni" | "Formateur" | "Employeur" | string;
     created_at?: string;
     updated_at?: string;
@@ -17,6 +16,11 @@ export interface Entreprise {
     raison_sociale: string;
 }
 
+export interface Ecole {
+    id: number;
+    libelle: string;
+}
+
 export interface Formation {
     id: number;
     libelle: string;
@@ -26,7 +30,12 @@ export interface Contrat {
     id: number;
     formation_id: number;
     entreprise_id?: number;
+    ecole_id?: number;
     formation?: Formation;
+    entreprise?: Entreprise;
+    ecole?: Ecole;
+    date_entree?: string;
+    date_sortiee?: string;
 }
 
 export interface PaginatedParticipants {
@@ -43,5 +52,4 @@ export interface PaginatedParticipants {
 export interface ParticipantFilters {
     search: string;
     program: string;
-    status: string;
 }
