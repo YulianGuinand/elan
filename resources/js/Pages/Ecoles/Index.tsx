@@ -1,3 +1,4 @@
+import FadeIn from "@/Components/Animations/FadeIn";
 import DropdownMenu, {
     DropdownDivider,
     DropdownItem,
@@ -51,7 +52,10 @@ export default function EcolesIndex({ ecoles, filters }: Props) {
                 }
             >
                 <div className="space-y-6">
-                    <div className="flex flex-col sm:flex-row justify-between gap-4">
+                    <FadeIn
+                        delay={0}
+                        className="flex flex-col sm:flex-row justify-between gap-4"
+                    >
                         <p className="text-gray-600 text-sm">
                             Gérez les écoles partenaires et gérez les
                             informations de contact pour vos apprentis.
@@ -72,9 +76,12 @@ export default function EcolesIndex({ ecoles, filters }: Props) {
                                 Chercher
                             </button>
                         </form>
-                    </div>
+                    </FadeIn>
 
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <FadeIn
+                        delay={100}
+                        className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+                    >
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
@@ -208,7 +215,7 @@ export default function EcolesIndex({ ecoles, filters }: Props) {
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    </FadeIn>
                 </div>
             </DashboardLayout>
         </>

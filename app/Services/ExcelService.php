@@ -144,9 +144,9 @@ class ExcelService
     );
 
     if ($extension === 'csv') {
-      $rows = $this->importFromCsv($file);
+      $rows = $this->importFromCsvRaw($file);
     } else {
-      $rows = $this->importFromExcel($file);
+      $rows = $this->importFromExcelRaw($file);
     }
 
     return $this->mapParticipants($rows);
@@ -160,13 +160,107 @@ class ExcelService
     return $rows
       ->map(function ($line) {
         return [
-          'nom'       => $line['nom']       ?? $line['Nom']       ?? null,
-          'prenom'    => $line['prenom']    ?? $line['Prénom']    ?? $line['Prenom'] ?? null,
-          'mail'      => $line['mail']      ?? $line['Mail']      ?? $line['Email']  ?? $line['email'] ?? null,
-          'telephone' => $line['telephone'] ?? $line['Telephone'] ?? $line['Téléphone'] ?? null,
-          'role'      => $line['role']      ?? $line['Role']      ?? $line['Rôle']     ?? 'Apprenti',
+          'nom'        => $line['nom']        ?? $line['Nom']        ?? null,
+          'prenom'     => $line['prenom']     ?? $line['Prenom']     ?? $line['Prenom'] ?? null,
+          'mail'       => $line['mail']       ?? $line['Mail']       ?? $line['Email']  ?? $line['email'] ?? null,
+          'telephone'  => $line['telephone']  ?? $line['Telephone']  ?? $line['Telephone'] ?? null,
+          'role'       => $line['role']       ?? $line['Role']       ?? $line['Role']      ?? 'Apprenti',
+          'ecole'      => $line['ecole']      ?? $line['Ecole']      ?? $line['ecole']     ?? null,
+          'formation'  => $line['formation']  ?? $line['Formation']  ?? null,
+          'entreprise' => $line['entreprise'] ?? $line['Entreprise'] ?? null,
+          'date_entree'   => $line['date_entree']   ?? $line['Date entree']    ?? $line['Date entree']   ?? null,
+          'date_sortiee'  => $line['date_sortiee']  ?? $line['Date sortie']    ?? $line['Date sortie']   ?? null,
         ];
       })
       ->filter(fn($item) => !empty($item['nom']) && !empty($item['prenom']) && !empty($item['mail']));
+  }
+
+  /**
+   * Parse le fichier et retourne les lignes + les entites inconnues (school/formation/company non trouvees en base).
+   * Utilise pour le previsualisateur cote frontend.
+   */
+  public function previewParticipants($file, array $knownEcoles, array $knownFormations, array $knownEntreprises): array
+  {
+    $extension = strtolower(
+      $file instanceof UploadedFile
+        ? $file->getClientOriginalExtension()
+        : pathinfo($file, PATHINFO_EXTENSION)
+    );
+
+    $raw = $extension === 'csv'
+      ? $this->importFromCsvRaw($file)
+      : $this->importFromExcelRaw($file);
+
+    $rows = $this->mapParticipants($raw);
+
+    $unknownEcoles     = [];
+    $unknownFormations = [];
+    $unknownEntreprises = [];
+
+    foreach ($rows as $row) {
+      if ($row['ecole'] && !in_array(strtolower($row['ecole']), array_map('strtolower', $knownEcoles))) {
+        $unknownEcoles[] = $row['ecole'];
+      }
+      if ($row['formation'] && !in_array(strtolower($row['formation']), array_map('strtolower', $knownFormations))) {
+        $unknownFormations[] = $row['formation'];
+      }
+      if ($row['entreprise'] && !in_array(strtolower($row['entreprise']), array_map('strtolower', $knownEntreprises))) {
+        $unknownEntreprises[] = $row['entreprise'];
+      }
+    }
+
+    return [
+      'rows'              => $rows->values()->all(),
+      'unknownEcoles'     => array_values(array_unique($unknownEcoles)),
+      'unknownFormations' => array_values(array_unique($unknownFormations)),
+      'unknownEntreprises' => array_values(array_unique($unknownEntreprises)),
+    ];
+  }
+
+  /**
+   * Import CSV brut (sans mapping) pour le preview.
+   */
+  private function importFromCsvRaw($file): Collection
+  {
+    $path = $file instanceof UploadedFile ? $file->getRealPath() : $file;
+    $handle = fopen($path, 'r');
+    if (!$handle) throw new \RuntimeException("Impossible d'ouvrir le CSV.");
+
+    $firstLine = fgets($handle);
+    rewind($handle);
+    $delimiter = substr_count($firstLine, ';') >= substr_count($firstLine, ',') ? ';' : ',';
+
+    $rows = [];
+    $headers = null;
+    while (($line = fgetcsv($handle, 0, $delimiter)) !== false) {
+      if ($headers === null) {
+        $line[0] = ltrim($line[0], "\xEF\xBB\xBF");
+        $headers = array_map('trim', $line);
+        continue;
+      }
+      if (count($line) !== count($headers)) continue;
+      $rows[] = array_combine($headers, array_map('trim', $line));
+    }
+    fclose($handle);
+    return collect($rows);
+  }
+
+  /**
+   * Import Excel brut (sans mapping) pour le preview.
+   */
+  private function importFromExcelRaw($file): Collection
+  {
+    if ($file instanceof UploadedFile) {
+      $tmpPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('elan_import_') . '.' . $file->getClientOriginalExtension();
+      $file->move(dirname($tmpPath), basename($tmpPath));
+      $path = $tmpPath;
+    } else {
+      $path = $file;
+    }
+    try {
+      return (new FastExcel)->import($path, fn($line) => $line);
+    } finally {
+      if (isset($tmpPath) && file_exists($tmpPath)) unlink($tmpPath);
+    }
   }
 }

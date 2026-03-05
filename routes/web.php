@@ -91,6 +91,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/exemple', [ParticipantController::class, 'downloadExemple'])->name('participants.exemple')->middleware(['is_admin']);
 
         Route::get('/ajouter', [ParticipantController::class, 'create'])->name('participants.create')->middleware(['is_admin']);
+        Route::post('/preview', [ParticipantController::class, 'previewCsv'])->name('participants.preview')->middleware(['is_admin']);
         Route::post('/', [ParticipantController::class, 'store'])->name('participants.store')->middleware(['is_admin']);
         Route::get('/{participant}', [ParticipantController::class, 'show'])->name('participants.show');
         Route::get('/{participant}/modifier', [ParticipantController::class, 'edit'])->name('participants.edit')->middleware(['is_admin']);

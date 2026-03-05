@@ -181,6 +181,31 @@ class ParticipantController extends Controller
     }
 
     /**
+     * Preview du fichier CSV : retourne les lignes parsees + les entites inconnues en JSON.
+     */
+    public function previewCsv(Request $request)
+    {
+        $request->validate(['fichier' => 'required|file']);
+
+        try {
+            $knownEcoles      = Ecole::pluck('libelle')->toArray();
+            $knownFormations  = Formations::pluck('libelle')->toArray();
+            $knownEntreprises = Entreprise::pluck('raison_sociale')->toArray();
+
+            $preview = $this->excelService->previewParticipants(
+                $request->file('fichier'),
+                $knownEcoles,
+                $knownFormations,
+                $knownEntreprises
+            );
+
+            return response()->json($preview);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
      * Import depuis un fichier CSV/Excel via ExcelService.
      */
     public function importCsv(Request $request)
@@ -194,14 +219,56 @@ class ParticipantController extends Controller
                 $request->file('fichier')
             );
 
-            // Creer les participants un par un
             $importedCount = 0;
-            foreach ($donnees as $participantData) {
-                Participant::create($participantData);
+            foreach ($donnees as $row) {
+                // Creer ou trouver le participant
+                $participant = Participant::firstOrCreate(
+                    ['mail' => $row['mail']],
+                    [
+                        'nom'       => $row['nom'],
+                        'prenom'    => $row['prenom'],
+                        'telephone' => $row['telephone'] ?? null,
+                        'role'      => $row['role'] ?? 'Apprenti',
+                    ]
+                );
+
+                // Creer le contrat si ecole + formation fournis
+                if (!empty($row['ecole']) || !empty($row['formation']) || !empty($row['entreprise'])) {
+                    $ecoleId = null;
+                    if (!empty($row['ecole'])) {
+                        $ecole = Ecole::firstOrCreate(['libelle' => $row['ecole']]);
+                        $ecoleId = $ecole->id;
+                    }
+
+                    $formationId = null;
+                    if (!empty($row['formation'])) {
+                        $formation = Formations::firstOrCreate(['libelle' => $row['formation']]);
+                        $formationId = $formation->id;
+                    }
+
+                    $entrepriseId = null;
+                    if (!empty($row['entreprise'])) {
+                        $entreprise = Entreprise::firstOrCreate(['raison_sociale' => $row['entreprise']]);
+                        $entrepriseId = $entreprise->id;
+                    }
+
+                    Contrat::firstOrCreate(
+                        ['participant_id' => $participant->id],
+                        [
+                            'ecole_id'      => $ecoleId,
+                            'formation_id'  => $formationId,
+                            'entreprise_id' => $entrepriseId,
+                            'utilisateur_id' => \Illuminate\Support\Facades\Auth::id(),
+                            'date_entree'   => $row['date_entree'] ?? now()->toDateString(),
+                            'date_sortiee'  => $row['date_sortiee'] ?? null,
+                        ]
+                    );
+                }
+
                 $importedCount++;
             }
 
-            return redirect()->back()->with('success', "{$importedCount} participant(s) importe(s) avec succès.");
+            return redirect()->back()->with('success', "{$importedCount} participant(s) importe(s) avec succes.");
         } catch (\Throwable $e) {
             return redirect()->back()->withErrors([
                 'fichier' => "Erreur lors de l'import : " . $e->getMessage()
@@ -219,28 +286,22 @@ class ParticipantController extends Controller
             'Content-Disposition' => 'attachment; filename="exemple_participants.csv"',
         ];
 
-        $colonnes = [
-            'nom',
-            'prenom',
-            'mail',
-            'telephone',
-            'role'
+        $colonnes = ['nom', 'prenom', 'mail', 'telephone', 'role', 'ecole', 'formation', 'entreprise', 'date_entree', 'date_sortiee'];
+        $exemples = [
+            ['Durand', 'Sophie', 'sophie.durand@email.com', '0601020304', 'Apprenti', 'ENSIIE', 'BTS SIO SLAM', 'Tech Solutions SAS', '2024-09-01', '2026-06-30'],
+            ['Martin', 'Lucas', 'lucas.m@email.com', '0711223344', 'Apprenti', 'Lycée Turgot', 'BTS NDRC', 'Boutique Paris', '2025-09-01', '2027-06-30'],
+            ['Lefebvre', 'Marie', 'm.lefebvre@email.com', '0699887766', 'Formateur', '', '', '', '', ''],
+            ['Dubois', 'Thomas', 'thomas.dubois@email.com', '0655443322', 'Apprenti', 'ENSIIE', 'Licence Pro', 'Agence Web Creativ', '2024-09-01', '2025-06-30'],
+            ['Roux', 'Amélie', 'amelie.r@email.com', '', 'Apprenti', 'École du Web', 'Master Dev', 'Google France', '2024-09-01', '2026-06-30'],
         ];
 
-        $exemple = [
-            'Dupont',
-            'Jean',
-            'jean.dupont@email.com',
-            '0612345678',
-            'Apprenti'
-        ];
-
-        $callback = function () use ($colonnes, $exemple) {
+        $callback = function () use ($colonnes, $exemples) {
             $handle = fopen('php://output', 'w');
-            // BOM UTF-8 pour Excel
             fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
             fputcsv($handle, $colonnes, ';');
-            fputcsv($handle, $exemple, ';');
+            foreach ($exemples as $ex) {
+                fputcsv($handle, $ex, ';');
+            }
             fclose($handle);
         };
 
