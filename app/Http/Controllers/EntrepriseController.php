@@ -16,7 +16,7 @@ class EntrepriseController extends Controller
      */
     public function index()
     {
-        $entreprises = Entreprise::all();
+        $entreprises = Entreprise::orderBy('raison_sociale')->get();
         return Inertia::render('Entreprises/Index', [
             'entreprises' => $entreprises,
         ]);
@@ -29,39 +29,19 @@ class EntrepriseController extends Controller
     {
         $validated = $request->validate([
             'raison_sociale' => 'required|string|max:50',
-            'mail' => 'required|email|max:100',
-            'telephone' => 'required|string|max:15',
-            'ville' => 'nullable|string|max:50',
-            'interlocuteur' => 'required|string|max:100',
+            'mail'           => 'required|email|max:100',
+            'telephone'      => 'nullable|string|max:15',
+            'ville'          => 'nullable|string|max:50',
+            'interlocuteur'  => 'nullable|string|max:100',
         ]);
 
-        // 1. Création de l'entreprise
-        $entreprise = Entreprise::create($validated);
-
-        // 2. Création ou association du contact principal (Employeur)
-        $names = explode(' ', trim($validated['interlocuteur']), 2);
-        $prenom = $names[0];
-        $nom = $names[1] ?? 'NC'; // Si un seul mot est renseigné
-
-        $employeur = \App\Models\Participant::firstOrCreate(
-            ['mail' => $validated['mail']], // On suppose que le mail est unique
-            [
-                'nom' => $nom,
-                'prenom' => $prenom,
-                'telephone' => $validated['telephone'],
-                'statut' => 'actif',
-                'role' => 'Employeur',
-            ]
-        );
-
-        // 3. Liaison de l'entreprise avec son employeur via la table pivot "engager"
-        $entreprise->participants()->syncWithoutDetaching([$employeur->id]);
+        Entreprise::create($validated);
 
         return redirect()->back()->with('success', 'Entreprise ajoutée avec succès.');
     }
 
     /**
-     * Import depuis un fichier CSV/Excel via ExcelService (visuel uniquement → dd).
+     * Import depuis un fichier CSV/Excel via ExcelService.
      */
     public function importCsv(Request $request)
     {
@@ -75,7 +55,7 @@ class EntrepriseController extends Controller
             );
 
             dd([
-                'nb_lignes'  => $donnees->count(),
+                'nb_lignes'   => $donnees->count(),
                 'entreprises' => $donnees->values()->all(),
             ]);
         } catch (\Throwable $e) {
@@ -97,37 +77,11 @@ class EntrepriseController extends Controller
             'Content-Disposition' => 'attachment; filename="exemple_entreprises.csv"',
         ];
 
-        $colonnes = [
-            'raison_sociale',
-            'siret',
-            'secteur',
-            'taille',
-            'mail',
-            'telephone',
-            'interlocuteur',
-            'fonction',
-            'ville',
-            'adresse',
-            'code_postal',
-        ];
-
-        $exemple = [
-            'Tech Solutions SAS',
-            '12345678901234',
-            'Informatique & Tech',
-            'pme',
-            'contact@techsolutions.fr',
-            '06 12 34 56 78',
-            'Marie Dupont',
-            'Responsable RH',
-            'Paris',
-            '12 rue de la Paix',
-            '75001',
-        ];
+        $colonnes = ['raison_sociale', 'siret', 'secteur', 'taille', 'mail', 'telephone', 'interlocuteur', 'fonction', 'ville', 'adresse', 'code_postal'];
+        $exemple  = ['Tech Solutions SAS', '12345678901234', 'Informatique & Tech', 'pme', 'contact@techsolutions.fr', '06 12 34 56 78', 'Marie Dupont', 'Responsable RH', 'Paris', '12 rue de la Paix', '75001'];
 
         $callback = function () use ($colonnes, $exemple) {
             $handle = fopen('php://output', 'w');
-            // BOM UTF-8 pour Excel
             fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
             fputcsv($handle, $colonnes, ';');
             fputcsv($handle, $exemple, ';');
@@ -140,25 +94,66 @@ class EntrepriseController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Entreprise $entreprise)
     {
-        $entreprise = Entreprise::find($id);
-        return Inertia::render('Entreprises/Show', compact('entreprise'));
+        return Inertia::render('Entreprises/Show', [
+            'entreprise' => $entreprise,
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Entreprise $entreprise)
+    {
+        return Inertia::render('Entreprises/Edit', [
+            'entreprise' => $entreprise,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Entreprise $entreprise)
     {
-        dd($request->all());
+        $validated = $request->validate([
+            'raison_sociale' => 'required|string|max:50',
+            'mail'           => 'required|email|max:100',
+            'telephone'      => 'nullable|string|max:15',
+            'ville'          => 'nullable|string|max:50',
+            'interlocuteur'  => 'nullable|string|max:100',
+        ]);
+
+        $entreprise->update($validated);
+
+        return redirect()->route('entreprises.show', $entreprise->id)
+            ->with('success', 'Entreprise modifiée avec succès.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Entreprise $entreprise)
     {
-        dd(['id_supprime' => $id]);
+        $entreprise->delete();
+
+        return redirect()->route('entreprises.index')
+            ->with('success', 'Entreprise supprimée avec succès.');
+    }
+
+    /**
+     * Remove multiple resources from storage.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids'   => 'required|array',
+            'ids.*' => 'exists:entreprises,id',
+        ]);
+
+        Entreprise::whereIn('id', $request->ids)->delete();
+
+        return redirect()->route('entreprises.index')
+            ->with('success', count($request->ids) . ' entreprise(s) supprimée(s).');
     }
 }

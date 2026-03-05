@@ -1,3 +1,4 @@
+import FadeIn from "@/Components/Animations/FadeIn";
 import Modal from "@/Components/Modal";
 import Pagination from "@/Components/Students/Pagination";
 import StudentCsvImport from "@/Components/Students/StudentCsvImport";
@@ -42,9 +43,7 @@ export default function Students({
                     newFilters.program !== "all"
                         ? newFilters.program
                         : undefined,
-                status:
-                    newFilters.status !== "all" ? newFilters.status : undefined,
-                page: 1, // Reinitialiser a la page 1 lors d'un changement de filtre
+                page: 1,
             },
             {
                 preserveState: true,
@@ -61,7 +60,6 @@ export default function Students({
                 search: filters.search,
                 program:
                     filters.program !== "all" ? filters.program : undefined,
-                status: filters.status !== "all" ? filters.status : undefined,
                 page,
             },
             {
@@ -93,48 +91,56 @@ export default function Students({
             >
                 <div className="space-y-6">
                     {/* Description et Bouton d'import */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <p className="text-gray-600">
-                            Gérez les inscriptions, suivez les progrès et mettez
-                            à jour les statuts.
-                        </p>
-                        {auth.user.role_id !== 3 && (
-                            <button
-                                onClick={() => setIsImportModalOpen(true)}
-                                className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-elan-orange bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
-                            >
-                                <Upload className="w-4 h-4" />
-                                Importer CSV
-                            </button>
-                        )}
-                    </div>
+                    <FadeIn delay={0}>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <p className="text-gray-600">
+                                Gérez les inscriptions, suivez les progrès et
+                                mettez à jour les statuts.
+                            </p>
+                            {auth.user.role_id !== 3 && (
+                                <button
+                                    onClick={() => setIsImportModalOpen(true)}
+                                    className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-elan-orange bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
+                                >
+                                    <Upload className="w-4 h-4" />
+                                    Importer CSV
+                                </button>
+                            )}
+                        </div>
+                    </FadeIn>
 
                     <Modal
                         show={isImportModalOpen}
                         onClose={() => setIsImportModalOpen(false)}
                         maxWidth="2xl"
                     >
-                        <div className="p-6">
+                        <div className="p-6 overflow-y-auto max-h-[85vh] custom-scrollbar">
                             <StudentCsvImport />
                         </div>
                     </Modal>
 
                     {/* Barre de filtres */}
-                    <StudentFilterBar
-                        formations={formations}
-                        filters={filters}
-                        onFiltersChange={handleFiltersChange}
-                    />
+                    <FadeIn delay={100}>
+                        <StudentFilterBar
+                            formations={formations}
+                            filters={filters}
+                            onFiltersChange={handleFiltersChange}
+                        />
+                    </FadeIn>
 
                     {/* Tableau des participants */}
-                    <StudentTable students={participants.data} />
+                    <FadeIn delay={200}>
+                        <StudentTable students={participants.data} />
+                    </FadeIn>
 
                     {/* Pagination */}
                     {participants.data.length > 0 && (
-                        <Pagination
-                            meta={participants as any}
-                            onPageChange={handlePageChange}
-                        />
+                        <FadeIn delay={300}>
+                            <Pagination
+                                meta={participants as any}
+                                onPageChange={handlePageChange}
+                            />
+                        </FadeIn>
                     )}
                 </div>
             </DashboardLayout>

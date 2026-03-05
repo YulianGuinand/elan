@@ -21,6 +21,8 @@ interface SearchableSelectProps {
     allowCreate?: boolean;
     createLabel?: string;
     disabled?: boolean;
+    /** Si fourni, appelé à la place de onChange quand l'utilisateur clique "Créer" */
+    onCreateRequest?: (query: string) => void;
 }
 
 export default function SearchableSelect({
@@ -31,6 +33,7 @@ export default function SearchableSelect({
     allowCreate = false,
     createLabel = "Créer",
     disabled = false,
+    onCreateRequest,
 }: SearchableSelectProps) {
     const [query, setQuery] = useState("");
 
@@ -123,15 +126,14 @@ export default function SearchableSelect({
                     )}
 
                     {showCreateOption && (
-                        <ComboboxOption
-                            value={{ id: `NEW_${query}`, name: query }}
-                            className={({ focus }) =>
-                                `relative cursor-pointer select-none py-2 pl-4 pr-4 border-t border-gray-100 ${
-                                    focus
-                                        ? "bg-orange-50 text-orange-900"
-                                        : "text-orange-700"
-                                }`
-                            }
+                        <div
+                            onClick={() => {
+                                if (onCreateRequest) {
+                                    onCreateRequest(query);
+                                    setQuery("");
+                                }
+                            }}
+                            className="relative cursor-pointer select-none py-2 pl-4 pr-4 border-t border-gray-100 text-orange-700 hover:bg-orange-50 hover:text-orange-900 transition-colors"
                         >
                             <div className="flex items-center gap-2">
                                 <Plus className="w-4 h-4" />
@@ -139,7 +141,7 @@ export default function SearchableSelect({
                                     {createLabel} "{query}"
                                 </span>
                             </div>
-                        </ComboboxOption>
+                        </div>
                     )}
                 </ComboboxOptions>
             </Combobox>

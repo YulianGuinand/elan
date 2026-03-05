@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EntrepriseController;
+use App\Http\Controllers\InlineCreateController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\EcoleController;
 use App\Http\Controllers\ProfileController;
@@ -24,6 +25,16 @@ Route::get('/', function () {
 
 // Routes protegees par authentification
 Route::middleware(['auth', 'verified'])->group(function () {
+
+    // ============================================
+    // CREATION INLINE (modals)
+    // ============================================
+    Route::prefix('inline')->name('inline.')->group(function () {
+        Route::post('/ecole',      [InlineCreateController::class, 'storeEcole'])->name('ecole');
+        Route::post('/formation',  [InlineCreateController::class, 'storeFormation'])->name('formation');
+        Route::post('/entreprise', [InlineCreateController::class, 'storeEntreprise'])->name('entreprise');
+    });
+
 
     // ============================================
     // TABLEAU DE BORD
@@ -79,8 +90,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/import', [ParticipantController::class, 'importCsv'])->name('participants.import')->middleware(['is_admin', 'is_superadmin']);
         Route::get('/exemple', [ParticipantController::class, 'downloadExemple'])->name('participants.exemple')->middleware(['is_admin', 'is_superadmin']);
 
-        Route::get('/ajouter', [ParticipantController::class, 'create'])->name('participants.create')->middleware(['is_admin', 'is_superadmin']);
-        Route::post('/', [ParticipantController::class, 'store'])->name('participants.store')->middleware(['is_admin', 'is_superadmin']);
+        Route::get('/ajouter', [ParticipantController::class, 'create'])->name('participants.create')->middleware(['is_admin']);
+        Route::post('/preview', [ParticipantController::class, 'previewCsv'])->name('participants.preview')->middleware(['is_admin']);
+        Route::post('/', [ParticipantController::class, 'store'])->name('participants.store')->middleware(['is_admin']);
         Route::get('/{participant}', [ParticipantController::class, 'show'])->name('participants.show');
         Route::get('/{participant}/modifier', [ParticipantController::class, 'edit'])->name('participants.edit')->middleware(['is_admin', 'is_superadmin']);
         Route::put('/{participant}', [ParticipantController::class, 'update'])->name('participants.update')->middleware(['is_admin', 'is_superadmin']);
@@ -94,6 +106,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [EntrepriseController::class, 'index'])
             ->name('entreprises.index');
 
+        Route::post('/bulk-destroy', [EntrepriseController::class, 'bulkDestroy'])
+            ->name('entreprises.bulk-destroy');
+
         Route::post('/', [EntrepriseController::class, 'store'])
             ->name('entreprises.store')->middleware(['is_admin','is_superadmin']);
 
@@ -101,7 +116,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('entreprises.import')->middleware(['is_admin','is_superadmin']);
 
         Route::get('/exemple', [EntrepriseController::class, 'downloadExemple'])
-            ->name('entreprises.exemple')->middleware(['is_admin','is_superadmin']);
+            ->name('entreprises.exemple');
+
+        Route::get('/{entreprise}', [EntrepriseController::class, 'show'])
+            ->name('entreprises.show');
+
+        Route::get('/{entreprise}/modifier', [EntrepriseController::class, 'edit'])
+            ->name('entreprises.edit');
+
+        Route::put('/{entreprise}', [EntrepriseController::class, 'update'])
+            ->name('entreprises.update');
+
+        Route::delete('/{entreprise}', [EntrepriseController::class, 'destroy'])
+            ->name('entreprises.destroy');
     });
 
     // ============================================

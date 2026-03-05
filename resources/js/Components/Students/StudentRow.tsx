@@ -6,7 +6,6 @@ import { PageProps } from "@/types";
 import { Participant } from "@/types/participants";
 import { router, usePage } from "@inertiajs/react";
 import { Edit, Eye, Mail, MoreVertical, Phone, Trash2 } from "lucide-react";
-import StatusBadge from "./StatusBadge";
 
 interface StudentRowProps {
     student: Participant;
@@ -35,7 +34,7 @@ export default function StudentRow({
     return (
         <tr className="hover:bg-gray-50 transition-colors">
             {/* Checkbox */}
-            <td className="px-4 sm:px-6 py-4">
+            <td className="w-10 px-2 sm:px-3 py-4">
                 <input
                     type="checkbox"
                     checked={isSelected}
@@ -97,11 +96,6 @@ export default function StudentRow({
             {/* Programme */}
             <td className="px-4 sm:px-6 py-4 hidden lg:table-cell">
                 <p className="text-sm text-gray-900">{primaryProgram}</p>
-            </td>
-
-            {/* Statut */}
-            <td className="px-4 sm:px-6 py-4">
-                <StatusBadge status={student.statut} />
             </td>
 
             {/* Actions */}
