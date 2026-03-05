@@ -54,14 +54,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Créer une enquête (admin & superadmin)
         Route::get('/creer', [SurveyController::class, 'create'])
-            ->name('surveys.create')->middleware(["is_admin","is_superadmin"]);
+            ->name('surveys.create')->middleware(["is_admin", "is_superadmin"]);
 
         Route::post('/constructeur', [SurveyController::class, 'storeFromBuilder'])
-            ->name('surveys.builder.store')->middleware(["is_admin","is_superadmin"]);
+            ->name('surveys.builder.store')->middleware(["is_admin", "is_superadmin"]);
 
         // Remplir une enquête
         Route::get('/{id}/remplir', [SurveyController::class, 'fill'])
-            ->name('surveys.fill');+
+            ->name('surveys.fill');
         Route::post('/{id}/remplir', [SurveyController::class, 'submitFill'])
             ->name('surveys.fill.submit');
 
@@ -110,10 +110,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('entreprises.bulk-destroy');
 
         Route::post('/', [EntrepriseController::class, 'store'])
-            ->name('entreprises.store')->middleware(['is_admin','is_superadmin']);
+            ->name('entreprises.store')->middleware(['is_admin', 'is_superadmin']);
 
         Route::post('/import', [EntrepriseController::class, 'importCsv'])
-            ->name('entreprises.import')->middleware(['is_admin','is_superadmin']);
+            ->name('entreprises.import')->middleware(['is_admin', 'is_superadmin']);
 
         Route::get('/exemple', [EntrepriseController::class, 'downloadExemple'])
             ->name('entreprises.exemple');
