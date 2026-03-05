@@ -54,14 +54,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Créer une enquête (admin & superadmin)
         Route::get('/creer', [SurveyController::class, 'create'])
-            ->name('surveys.create')->middleware(["is_admin"]);
+            ->name('surveys.create')->middleware(["is_admin","is_superadmin"]);
 
         Route::post('/constructeur', [SurveyController::class, 'storeFromBuilder'])
-            ->name('surveys.builder.store')->middleware(["is_admin"]);
+            ->name('surveys.builder.store')->middleware(["is_admin","is_superadmin"]);
 
         // Remplir une enquête
         Route::get('/{id}/remplir', [SurveyController::class, 'fill'])
-            ->name('surveys.fill');
+            ->name('surveys.fill');+
         Route::post('/{id}/remplir', [SurveyController::class, 'submitFill'])
             ->name('surveys.fill.submit');
 
@@ -85,18 +85,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ============================================
     Route::prefix('participants')->group(function () {
         Route::get('/', [ParticipantController::class, 'index'])->name('participants.index');
-        Route::post('/bulk-destroy', [ParticipantController::class, 'bulkDestroy'])->name('participants.bulk-destroy')->middleware(['is_admin']);
+        Route::post('/bulk-destroy', [ParticipantController::class, 'bulkDestroy'])->name('participants.bulk-destroy')->middleware(['is_admin', 'is_superadmin']);
 
-        Route::post('/import', [ParticipantController::class, 'importCsv'])->name('participants.import')->middleware(['is_admin']);
-        Route::get('/exemple', [ParticipantController::class, 'downloadExemple'])->name('participants.exemple')->middleware(['is_admin']);
+        Route::post('/import', [ParticipantController::class, 'importCsv'])->name('participants.import')->middleware(['is_admin', 'is_superadmin']);
+        Route::get('/exemple', [ParticipantController::class, 'downloadExemple'])->name('participants.exemple')->middleware(['is_admin', 'is_superadmin']);
 
         Route::get('/ajouter', [ParticipantController::class, 'create'])->name('participants.create')->middleware(['is_admin']);
         Route::post('/preview', [ParticipantController::class, 'previewCsv'])->name('participants.preview')->middleware(['is_admin']);
         Route::post('/', [ParticipantController::class, 'store'])->name('participants.store')->middleware(['is_admin']);
         Route::get('/{participant}', [ParticipantController::class, 'show'])->name('participants.show');
-        Route::get('/{participant}/modifier', [ParticipantController::class, 'edit'])->name('participants.edit')->middleware(['is_admin']);
-        Route::put('/{participant}', [ParticipantController::class, 'update'])->name('participants.update')->middleware(['is_admin']);
-        Route::delete('/{participant}', [ParticipantController::class, 'destroy'])->name('participants.destroy')->middleware(['is_admin']);
+        Route::get('/{participant}/modifier', [ParticipantController::class, 'edit'])->name('participants.edit')->middleware(['is_admin', 'is_superadmin']);
+        Route::put('/{participant}', [ParticipantController::class, 'update'])->name('participants.update')->middleware(['is_admin', 'is_superadmin']);
+        Route::delete('/{participant}', [ParticipantController::class, 'destroy'])->name('participants.destroy')->middleware(['is_admin', 'is_superadmin']);
     });
 
     // ============================================
@@ -110,10 +110,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('entreprises.bulk-destroy');
 
         Route::post('/', [EntrepriseController::class, 'store'])
-            ->name('entreprises.store');
+            ->name('entreprises.store')->middleware(['is_admin','is_superadmin']);
 
         Route::post('/import', [EntrepriseController::class, 'importCsv'])
-            ->name('entreprises.import');
+            ->name('entreprises.import')->middleware(['is_admin','is_superadmin']);
 
         Route::get('/exemple', [EntrepriseController::class, 'downloadExemple'])
             ->name('entreprises.exemple');
@@ -139,25 +139,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('ecoles.index');
 
         Route::post('/bulk-destroy', [EcoleController::class, 'bulkDestroy'])
-            ->name('ecoles.bulk-destroy')->middleware(['is_admin']);
+            ->name('ecoles.bulk-destroy')->middleware(['is_admin', 'is_superadmin']);
 
         Route::get('/ajouter', [EcoleController::class, 'create'])
-            ->name('ecoles.create')->middleware(['is_admin']);
+            ->name('ecoles.create')->middleware(['is_admin', 'is_superadmin']);
 
         Route::post('/', [EcoleController::class, 'store'])
-            ->name('ecoles.store')->middleware(['is_admin']);
+            ->name('ecoles.store')->middleware(['is_admin', 'is_superadmin']);
 
         Route::get('/{ecole}', [EcoleController::class, 'show'])
             ->name('ecoles.show');
 
         Route::get('/{ecole}/modifier', [EcoleController::class, 'edit'])
-            ->name('ecoles.edit')->middleware(['is_admin']);
+            ->name('ecoles.edit')->middleware(['is_admin', 'is_superadmin']);
 
         Route::put('/{ecole}', [EcoleController::class, 'update'])
-            ->name('ecoles.update')->middleware(['is_admin']);
+            ->name('ecoles.update')->middleware(['is_admin', 'is_superadmin']);
 
         Route::delete('/{ecole}', [EcoleController::class, 'destroy'])
-            ->name('ecoles.destroy')->middleware(['is_admin']);
+            ->name('ecoles.destroy')->middleware(['is_admin', 'is_superadmin']);
     });
 
     // ============================================
@@ -168,22 +168,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('contrats.index');
 
         Route::get('/ajouter', [\App\Http\Controllers\ContratController::class, 'create'])
-            ->name('contrats.create')->middleware(['is_admin']);
+            ->name('contrats.create')->middleware(['is_admin', 'is_superadmin']);
 
         Route::post('/', [\App\Http\Controllers\ContratController::class, 'store'])
-            ->name('contrats.store')->middleware(['is_admin']);
+            ->name('contrats.store')->middleware(['is_admin', 'is_superadmin']);
 
         Route::get('/{contrat}', [\App\Http\Controllers\ContratController::class, 'show'])
             ->name('contrats.show');
 
         Route::get('/{contrat}/modifier', [\App\Http\Controllers\ContratController::class, 'edit'])
-            ->name('contrats.edit')->middleware(['is_admin']);
+            ->name('contrats.edit')->middleware(['is_admin', 'is_superadmin']);
 
         Route::put('/{contrat}', [\App\Http\Controllers\ContratController::class, 'update'])
-            ->name('contrats.update')->middleware(['is_admin']);
+            ->name('contrats.update')->middleware(['is_admin', 'is_superadmin']);
 
         Route::delete('/{contrat}', [\App\Http\Controllers\ContratController::class, 'destroy'])
-            ->name('contrats.destroy')->middleware(['is_admin']);
+            ->name('contrats.destroy')->middleware(['is_admin', 'is_superadmin']);
     });
 
     // ============================================
@@ -194,25 +194,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('formations.index');
 
         Route::post('/bulk-destroy', [\App\Http\Controllers\FormationController::class, 'bulkDestroy'])
-            ->name('formations.bulk-destroy')->middleware(['is_admin']);
+            ->name('formations.bulk-destroy')->middleware(['is_admin', 'is_superadmin']);
 
         Route::get('/ajouter', [\App\Http\Controllers\FormationController::class, 'create'])
-            ->name('formations.create')->middleware(['is_admin']);
+            ->name('formations.create')->middleware(['is_admin', 'is_superadmin']);
 
         Route::post('/', [\App\Http\Controllers\FormationController::class, 'store'])
-            ->name('formations.store')->middleware(['is_admin']);
+            ->name('formations.store')->middleware(['is_admin', 'is_superadmin']);
 
         Route::get('/{formation}', [\App\Http\Controllers\FormationController::class, 'show'])
             ->name('formations.show');
 
         Route::get('/{formation}/modifier', [\App\Http\Controllers\FormationController::class, 'edit'])
-            ->name('formations.edit')->middleware(['is_admin']);
+            ->name('formations.edit')->middleware(['is_admin', 'is_superadmin']);
 
         Route::put('/{formation}', [\App\Http\Controllers\FormationController::class, 'update'])
-            ->name('formations.update')->middleware(['is_admin']);
+            ->name('formations.update')->middleware(['is_admin', 'is_superadmin']);
 
         Route::delete('/{formation}', [\App\Http\Controllers\FormationController::class, 'destroy'])
-            ->name('formations.destroy')->middleware(['is_admin']);
+            ->name('formations.destroy')->middleware(['is_admin', 'is_superadmin']);
     });
 
     // ============================================
