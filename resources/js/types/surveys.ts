@@ -12,6 +12,11 @@ export interface QuestionEnquete {
     numero: number;
     type_reponse: string | null;
     type_reponse_id: number;
+    theme?: {
+        id: number;
+        libelle: string;
+        ordre: number;
+    } | null;
     choix: Choix[];
     required?: boolean;
 }

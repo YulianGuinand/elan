@@ -10,9 +10,10 @@ import {
     Info,
     Search,
     Send,
+    Tag,
     User,
 } from "lucide-react";
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export interface Participant {
     id: number;
@@ -156,7 +157,6 @@ export default function SurveyFill({
         setSelectedParticipant(participant);
         setIsParticipantConfirmed(true);
     };
-
 
     const getInitials = (firstName: string, lastName: string) => {
         return `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase();
@@ -563,19 +563,23 @@ export default function SurveyFill({
                                                         <p className="text-base font-semibold text-gray-900 leading-snug">
                                                             {q.libelle}
                                                         </p>
-                                                        {q.type_reponse && (
-                                                            <span className="inline-block mt-2 text-xs font-semibold px-2 py-0.5 rounded text-gray-500 bg-gray-100">
-                                                                {q.type_reponse}
+                                                        {q.theme && (
+                                                            <span className="inline-flex items-center gap-1.5 mt-2 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 border border-orange-100">
+                                                                <Tag className="w-3 h-3" />
+                                                                {q.theme.libelle}
                                                             </span>
                                                         )}
                                                     </div>
                                                 </div>
 
                                                 <div className="ml-12">
-                                                    {/* Choix multiples si disponibles */}
-                                                    {q.choix.length > 0 ? (
+                                                    {/* Saisie de la réponse */}
+                                                    {q.choix &&
+                                                    q.choix.length > 0 ? (
                                                         q.type_reponse ===
-                                                        "Liste déroulante" ? (
+                                                            "select" ||
+                                                        q.type_reponse ===
+                                                            "Liste déroulante" ? (
                                                             <select
                                                                 value={
                                                                     answers[
@@ -615,7 +619,9 @@ export default function SurveyFill({
                                                                 )}
                                                             </select>
                                                         ) : q.type_reponse ===
-                                                          "Échelle linéaire" ? (
+                                                              "likert" ||
+                                                          q.type_reponse ===
+                                                              "Échelle linéaire" ? (
                                                             <div className="flex flex-wrap justify-around sm:justify-center items-center gap-2 sm:gap-6 py-4">
                                                                 {q.choix.map(
                                                                     (c) => (
@@ -669,7 +675,9 @@ export default function SurveyFill({
                                                                     (c) => {
                                                                         const isMultiple =
                                                                             q.type_reponse ===
-                                                                            "Choix multiples";
+                                                                                "checkbox" ||
+                                                                            q.type_reponse ===
+                                                                                "Choix multiples";
                                                                         const isSelected =
                                                                             isMultiple
                                                                                 ? Array.isArray(
@@ -699,11 +707,7 @@ export default function SurveyFill({
                                                                                 key={
                                                                                     c.id
                                                                                 }
-                                                                                className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-                                                                                    isSelected
-                                                                                        ? "border-orange-500 bg-orange-50/50 shadow-sm"
-                                                                                        : "border-gray-100 hover:border-orange-200 hover:bg-gray-50"
-                                                                                }`}
+                                                                                className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${isSelected ? "border-orange-500 bg-orange-50/50 shadow-sm" : "border-gray-100 hover:border-orange-200 hover:bg-gray-50"}`}
                                                                             >
                                                                                 <input
                                                                                     type={
@@ -755,10 +759,10 @@ export default function SurveyFill({
                                                                 )}
                                                             </div>
                                                         )
-                                                    ) : /* Réponse libre (Texte, Nombre, Date, etc.) */
-                                                    q.type_reponse ===
-                                                    "select" ? (
-                                                        <select
+                                                    ) : q.type_reponse ===
+                                                      "textarea" ? (
+                                                        <textarea
+                                                            rows={4}
                                                             value={
                                                                 answers[q.id] ??
                                                                 ""
@@ -770,219 +774,44 @@ export default function SurveyFill({
                                                                         .value,
                                                                 )
                                                             }
-                                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all shadow-sm"
-                                                        >
-                                                            <option value="">
-                                                                -- Sélectionnez
-                                                                une option --
-                                                            </option>
-                                                            {q.choix.map(
-                                                                (c) => (
-                                                                    <option
-                                                                        key={
-                                                                            c.id
-                                                                        }
-                                                                        value={String(
-                                                                            c.id,
-                                                                        )}
-                                                                    >
-                                                                        {
-                                                                            c.libelle
-                                                                        }
-                                                                    </option>
-                                                                ),
-                                                            )}
-                                                        </select>
-                                                    ) : q.type_reponse ===
-                                                      "likert" ? (
-                                                        <div className="flex flex-wrap justify-around sm:justify-center items-center gap-2 sm:gap-6 py-4">
-                                                            {q.choix.map(
-                                                                (c) => (
-                                                                    <label
-                                                                        key={
-                                                                            c.id
-                                                                        }
-                                                                        className="flex flex-col items-center gap-2 cursor-pointer group"
-                                                                    >
-                                                                        <div
-                                                                            className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border-2 transition-all duration-200 ${answers[q.id] === String(c.id) ? "border-orange-500 bg-orange-500 text-white shadow-md shadow-orange-500/30" : "border-gray-200 bg-white text-gray-600 group-hover:border-orange-300 group-hover:bg-orange-50"}`}
-                                                                        >
-                                                                            <input
-                                                                                type="radio"
-                                                                                name={`q_${q.id}`}
-                                                                                value={String(
-                                                                                    c.id,
-                                                                                )}
-                                                                                checked={
-                                                                                    answers[
-                                                                                        q
-                                                                                            .id
-                                                                                    ] ===
-                                                                                    String(
-                                                                                        c.id,
-                                                                                    )
-                                                                                }
-                                                                                onChange={() =>
-                                                                                    handleChange(
-                                                                                        q.id,
-                                                                                        String(
-                                                                                            c.id,
-                                                                                        ),
-                                                                                    )
-                                                                                }
-                                                                                className="sr-only"
-                                                                            />
-                                                                            <span className="text-base sm:text-lg font-bold">
-                                                                                {
-                                                                                    c.libelle
-                                                                                }
-                                                                            </span>
-                                                                        </div>
-                                                                    </label>
-                                                                ),
-                                                            )}
-                                                        </div>
+                                                            placeholder="Saisissez votre réponse..."
+                                                            className="w-full p-4 border-2 border-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-0 focus:border-orange-500 bg-gray-50 focus:bg-white transition-all resize-none shadow-inner"
+                                                        />
                                                     ) : (
-                                                        <div className="space-y-3">
-                                                            {q.choix.map(
-                                                                (c) => {
-                                                                    const isMultiple =
-                                                                        q.type_reponse ===
-                                                                        "checkbox";
-                                                                    const isSelected =
-                                                                        isMultiple
-                                                                            ? Array.isArray(
-                                                                                  answers[
-                                                                                      q
-                                                                                          .id
-                                                                                  ],
-                                                                              ) &&
-                                                                              answers[
-                                                                                  q
-                                                                                      .id
-                                                                              ].includes(
-                                                                                  String(
-                                                                                      c.id,
-                                                                                  ),
-                                                                              )
-                                                                            : answers[
-                                                                                  q
-                                                                                      .id
-                                                                              ] ===
-                                                                              String(
-                                                                                  c.id,
-                                                                              );
-
-                                                                    return (
-                                                                        <label
-                                                                            key={
-                                                                                c.id
-                                                                            }
-                                                                            className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-                                                                                isSelected
-                                                                                    ? "border-orange-500 bg-orange-50/50 shadow-sm"
-                                                                                    : "border-gray-100 hover:border-orange-200 hover:bg-gray-50"
-                                                                            }`}
-                                                                        >
-                                                                            <input
-                                                                                type={
-                                                                                    isMultiple
-                                                                                        ? "checkbox"
-                                                                                        : "radio"
-                                                                                }
-                                                                                name={
-                                                                                    isMultiple
-                                                                                        ? `q_${q.id}_${c.id}`
-                                                                                        : `q_${q.id}`
-                                                                                }
-                                                                                value={String(
-                                                                                    c.id,
-                                                                                )}
-                                                                                checked={
-                                                                                    isSelected
-                                                                                }
-                                                                                onChange={(
-                                                                                    e,
-                                                                                ) =>
-                                                                                    isMultiple
-                                                                                        ? handleCheckboxChange(
-                                                                                              q.id,
-                                                                                              String(
-                                                                                                  c.id,
-                                                                                              ),
-                                                                                              e
-                                                                                                  .target
-                                                                                                  .checked,
-                                                                                          )
-                                                                                        : handleChange(
-                                                                                              q.id,
-                                                                                              String(
-                                                                                                  c.id,
-                                                                                              ),
-                                                                                          )
-                                                                                }
-                                                                                className={`w-5 h-5 text-orange-500 border-gray-300 focus:ring-orange-500 ${isMultiple ? "rounded" : "rounded-full"}`}
-                                                                            />
-                                                                            <span className="text-sm font-medium text-gray-800">
-                                                                                {
-                                                                                    c.libelle
-                                                                                }
-                                                                            </span>
-                                                                        </label>
-                                                                    );
-                                                                },
-                                                            )}
-                                                        </div>
-                                                    )
-                                                ) : /* Réponse libre (Texte, Nombre, Date, etc.) */
-                                                q.type_reponse ===
-                                                  "textarea" ? (
-                                                    <textarea
-                                                        rows={4}
-                                                        value={
-                                                            answers[q.id] ?? ""
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleChange(
-                                                                q.id,
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        placeholder="Saisissez votre réponse..."
-                                                        className="w-full p-4 border-2 border-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-0 focus:border-orange-500 bg-gray-50 focus:bg-white transition-all resize-none shadow-inner"
-                                                    />
-                                                ) : (
-                                                    <input
-                                                        type={
-                                                            q.type_reponse ===
-                                                            "number"
-                                                                ? "number"
-                                                                : q.type_reponse ===
-                                                                    "date"
-                                                                  ? "date"
-                                                                  : "text"
-                                                        }
-                                                        value={
-                                                            answers[q.id] ?? ""
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleChange(
-                                                                q.id,
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        placeholder={
-                                                            q.type_reponse ===
-                                                            "number"
-                                                                ? "Ex: 42"
-                                                                : q.type_reponse ===
-                                                                    "date"
-                                                                  ? ""
-                                                                  : "Saisissez votre réponse..."
-                                                        }
-                                                        className="w-full p-4 border-2 border-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-0 focus:border-orange-500 bg-gray-50 focus:bg-white transition-all shadow-inner"
-                                                    />
-                                                )}
+                                                        <input
+                                                            type={
+                                                                q.type_reponse ===
+                                                                "number"
+                                                                    ? "number"
+                                                                    : q.type_reponse ===
+                                                                        "date"
+                                                                      ? "date"
+                                                                      : "text"
+                                                            }
+                                                            value={
+                                                                answers[q.id] ??
+                                                                ""
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleChange(
+                                                                    q.id,
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            placeholder={
+                                                                q.type_reponse ===
+                                                                "number"
+                                                                    ? "Ex: 42"
+                                                                    : q.type_reponse ===
+                                                                        "date"
+                                                                      ? ""
+                                                                      : "Saisissez votre réponse..."
+                                                            }
+                                                            className="w-full p-4 border-2 border-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-0 focus:border-orange-500 bg-gray-50 focus:bg-white transition-all shadow-inner"
+                                                        />
+                                                    )}
+                                                </div>
                                             </div>
                                         </FadeIn>
                                     ))}

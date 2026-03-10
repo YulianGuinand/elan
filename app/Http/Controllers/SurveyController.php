@@ -391,6 +391,11 @@ class SurveyController extends Controller
                     'numero'        => $q->numero,
                     'type_reponse'  => $q->type_reponse?->libelle,
                     'type_reponse_id' => $q->type_reponse_id,
+                    'theme'         => $q->theme ? [
+                        'id' => $q->theme->id,
+                        'libelle' => $q->theme->libelle,
+                        'ordre' => $q->theme->ordre
+                    ] : null,
                     'choix'         => $q->relationLoaded('choix')
                         ? $q->choix->map(fn($c) => ['id' => $c->id, 'libelle' => $c->libelle])
                         : [],
