@@ -22,37 +22,8 @@ export default function SurveyPreview({ typesReponse }: Props) {
         let globalQuestionNumber = 1;
         const flatQuestions = state.themes.flatMap((theme) =>
             theme.questions.map((q) => {
-                // Trouver l'ID du type de réponse correspondant dans la BDD
-                let typeNomDb = "Texte court"; // Par défaut
-                switch (q.type) {
-                    case "text":
-                        typeNomDb = "Texte court";
-                        break;
-                    case "textarea":
-                        typeNomDb = "Texte long";
-                        break;
-                    case "radio":
-                        typeNomDb = "Choix unique";
-                        break;
-                    case "checkbox":
-                        typeNomDb = "Choix multiples";
-                        break;
-                    case "select":
-                        typeNomDb = "Liste déroulante";
-                        break;
-                    case "number":
-                        typeNomDb = "Nombre";
-                        break;
-                    case "date":
-                        typeNomDb = "Date";
-                        break;
-                    case "likert":
-                        typeNomDb = "Échelle linéaire";
-                        break;
-                }
-
                 const dbType =
-                    typesReponse.find((t) => t.libelle === typeNomDb) ||
+                    typesReponse.find((t) => t.libelle === q.type) ||
                     typesReponse[0]; // fallback au premier type disponible si introuvable
 
                 return {

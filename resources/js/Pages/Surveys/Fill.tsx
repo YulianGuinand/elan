@@ -341,7 +341,7 @@ export default function SurveyFill({ enquete, participants }: Props) {
                                                 {/* Choix multiples si disponibles */}
                                                 {q.choix.length > 0 ? (
                                                     q.type_reponse ===
-                                                    "Liste déroulante" ? (
+                                                    "select" ? (
                                                         <select
                                                             value={
                                                                 answers[q.id] ??
@@ -378,7 +378,7 @@ export default function SurveyFill({ enquete, participants }: Props) {
                                                             )}
                                                         </select>
                                                     ) : q.type_reponse ===
-                                                      "Échelle linéaire" ? (
+                                                      "likert" ? (
                                                         <div className="flex flex-wrap justify-around sm:justify-center items-center gap-2 sm:gap-6 py-4">
                                                             {q.choix.map(
                                                                 (c) => (
@@ -432,7 +432,7 @@ export default function SurveyFill({ enquete, participants }: Props) {
                                                                 (c) => {
                                                                     const isMultiple =
                                                                         q.type_reponse ===
-                                                                        "Choix multiples";
+                                                                        "checkbox";
                                                                     const isSelected =
                                                                         isMultiple
                                                                             ? Array.isArray(
@@ -520,7 +520,7 @@ export default function SurveyFill({ enquete, participants }: Props) {
                                                     )
                                                 ) : /* Réponse libre (Texte, Nombre, Date, etc.) */
                                                 q.type_reponse ===
-                                                  "Texte long" ? (
+                                                  "textarea" ? (
                                                     <textarea
                                                         rows={4}
                                                         value={
@@ -539,10 +539,10 @@ export default function SurveyFill({ enquete, participants }: Props) {
                                                     <input
                                                         type={
                                                             q.type_reponse ===
-                                                            "Nombre"
+                                                            "number"
                                                                 ? "number"
                                                                 : q.type_reponse ===
-                                                                    "Date"
+                                                                    "date"
                                                                   ? "date"
                                                                   : "text"
                                                         }
@@ -557,10 +557,10 @@ export default function SurveyFill({ enquete, participants }: Props) {
                                                         }
                                                         placeholder={
                                                             q.type_reponse ===
-                                                            "Nombre"
+                                                            "number"
                                                                 ? "Ex: 42"
                                                                 : q.type_reponse ===
-                                                                    "Date"
+                                                                    "date"
                                                                   ? ""
                                                                   : "Saisissez votre réponse..."
                                                         }

@@ -13,6 +13,14 @@ export interface QuestionEnquete {
     type_reponse: string | null;
     type_reponse_id: number;
     choix: Choix[];
+    required?: boolean;
+}
+
+export interface ThemeEnquete {
+    id: number;
+    libelle: string;
+    ordre: number;
+    questions: QuestionEnquete[];
 }
 
 export interface Survey {
@@ -27,6 +35,7 @@ export interface Survey {
     utilisateur_id: number;
     nb_questions: number;
     questions: QuestionEnquete[];
+    themes?: ThemeEnquete[];
     created_at: string;
 }
 

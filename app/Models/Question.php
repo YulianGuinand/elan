@@ -24,9 +24,9 @@ class Question extends Model
         return $this->belongsTo(Type_Reponse::class);
     }
 
-    public function themes()
+    public function theme()
     {
-        return $this->belongsTo(Enquete::class);
+        return $this->belongsTo(Theme::class);
     }
 
     public function choix()
