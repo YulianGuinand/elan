@@ -68,16 +68,25 @@ export default function QuestionEditorModal({
     );
     const needsScale = editedQuestion.type === "likert";
 
+    const handleOverlayClick = (e: React.MouseEvent) => {
+        if (e.target === e.currentTarget) {
+            onClose();
+        }
+    };
+
     return createPortal(
         <div
             className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 animate-fadeIn"
             style={{ position: "fixed", zIndex: 9999 }}
-            onClick={onClose}
+            //onClick={onClose}
+            onMouseDown={handleOverlayClick}
         >
             <div
                 className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slideUp relative"
                 style={{ zIndex: 10000 }}
                 onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
             >
                 <Card>
                     {/* Header */}
