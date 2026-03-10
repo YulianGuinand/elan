@@ -220,16 +220,41 @@ class SurveyController extends Controller
     /**
      * Affiche le formulaire de remplissage avec les vraies questions.
      */
-    public function fill(string $id): Response
+    public function fill(Request $request, string $id): Response
     {
         $enquete = Enquete::with(['questions.type_reponse', 'questions.choix'])
             ->findOrFail($id);
 
-        $participants = Participant::with('entreprises')->get();
+        $search = $request->input('search');
+        $roleFilter = $request->input('role', 'Tous');
+
+        $query = Participant::with('entreprises');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nom', 'like', "%{$search}%")
+                    ->orWhere('prenom', 'like', "%{$search}%")
+                    ->orWhere('mail', 'like', "%{$search}%");
+            });
+        }
+
+        if ($roleFilter !== 'Tous') {
+            $query->where('role', $roleFilter);
+        }
+
+        $participants = $query->paginate(5)->withQueryString();
+
+        // On récupère tous les rôles uniques pour les filtres
+        $allRoles = Participant::distinct()->pluck('role')->filter()->values();
 
         return Inertia::render('Surveys/Fill', [
             'enquete' => $this->formatEnquete($enquete),
             'participants' => $participants,
+            'filters' => [
+                'search' => $search,
+                'role' => $roleFilter,
+            ],
+            'availableRoles' => $allRoles,
         ]);
     }
 
