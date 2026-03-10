@@ -173,7 +173,95 @@ export default function SurveyFill({
                     { label: "Sélection du participant" },
                 ]}
             >
-                <div className="max-w-6xl mx-auto">
+                <FadeIn delay={100}>
+                    <div className="bg-white rounded-2xl border border-gray-200 p-5  shadow-sm sticky top-4 z-10">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center gap-4">
+                                <p className="w-5 h-5 text-gray-600">{selectedParticipant?.prenom.charAt(0)}{selectedParticipant?.nom.charAt(0)}</p>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+
+                                <div>
+                                    <p className="text-sm font-bold text-gray-900">
+                                        {
+                                            selectedParticipant?.prenom
+                                        }{" "}
+                                        {selectedParticipant?.nom}
+                                    </p>
+                                </div>
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-2xl">
+                                    {
+                                        selectedParticipant?.role
+                                    }
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+
+                                <div>
+                                    <p className="text-sm font-bold text-gray-900">
+                                        {selectedParticipant?.entreprises?.[0]?.nom || "Sans entreprise"}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 bg-gray-100 py-1.5 px-3 rounded-2xl">
+                                <div>
+                                    <p className="text-sm">
+                                        Télephone
+                                    </p>
+                                    <p className="text-sm font-bold text-gray-900">
+                                        {selectedParticipant?.telephone.match(/.{1,2}/g)?.join(" ") || ""}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 bg-gray-100 py-1.5 px-3 rounded-2xl">
+                                <div>
+                                    <p className="text-sm">
+                                        Email
+                                    </p>
+                                    <p className="text-sm font-bold text-gray-900">
+                                        {selectedParticipant?.mail}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="pb-4">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setIsParticipantConfirmed(false)
+                                    }
+                                    className="text-xs font-semibold text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition-colors"
+                                >
+                                    Changer de participant
+                                </button>
+                            </div>
+
+                        </div>
+
+                        <div className="pt-3 border-t border-gray-100">
+                            <div className="flex justify-between text-sm font-medium text-gray-500 mb-2">
+                                            <span>
+                                                {answered} sur {total} questions
+                                                répondues
+                                            </span>
+                                <span className="text-orange-600">
+                                                {progress}%
+                                            </span>
+                            </div>
+                            <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                                <div
+                                    className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full transition-all duration-300 ease-out"
+                                    style={{
+                                        width: `${progress}%`,
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </FadeIn>
+                <div className="max-w-6xl">
                     {!isParticipantConfirmed ? (
                         <div className="space-y-6">
                             <FadeIn delay={0}>
@@ -471,59 +559,6 @@ export default function SurveyFill({
                                             <p className="text-gray-600 mt-1">
                                                 {enquete.description}
                                             </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </FadeIn>
-
-                            {/* Recap profil avec progression */}
-                            <FadeIn delay={100}>
-                                <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm sticky top-4 z-10">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                                                <User className="w-5 h-5 text-gray-600" />
-                                            </div>
-                                            <div>
-                                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                                                    Participant Actuel
-                                                </p>
-                                                <p className="text-sm font-bold text-gray-900">
-                                                    {
-                                                        selectedParticipant?.prenom
-                                                    }{" "}
-                                                    {selectedParticipant?.nom}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setIsParticipantConfirmed(false)
-                                            }
-                                            className="text-xs font-semibold text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition-colors"
-                                        >
-                                            Changer de participant
-                                        </button>
-                                    </div>
-
-                                    <div className="pt-3 border-t border-gray-100">
-                                        <div className="flex justify-between text-sm font-medium text-gray-500 mb-2">
-                                            <span>
-                                                {answered} sur {total} questions
-                                                répondues
-                                            </span>
-                                            <span className="text-orange-600">
-                                                {progress}%
-                                            </span>
-                                        </div>
-                                        <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                                            <div
-                                                className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full transition-all duration-300 ease-out"
-                                                style={{
-                                                    width: `${progress}%`,
-                                                }}
-                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -841,6 +876,7 @@ export default function SurveyFill({
                         </div>
                     )}
                 </div>
+
             </DashboardLayout>
         </>
     );
