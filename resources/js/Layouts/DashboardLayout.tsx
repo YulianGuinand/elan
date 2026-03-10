@@ -9,6 +9,7 @@ import FadeIn from "@/Components/Animations/FadeIn";
 interface BreadcrumbItem {
     label: string;
     href?: string;
+    onClick?: () => void;
 }
 
 interface DashboardLayoutProps extends PropsWithChildren {

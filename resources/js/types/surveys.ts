@@ -6,6 +6,13 @@ export interface Choix {
     libelle: string;
 }
 
+export interface ThemeEnquete {
+    id: number;
+    libelle: string;
+    ordre: number;
+    questions: QuestionEnquete[];
+}
+
 export interface QuestionEnquete {
     id: number;
     libelle: string;
@@ -13,6 +20,7 @@ export interface QuestionEnquete {
     type_reponse: string | null;
     type_reponse_id: number;
     choix: Choix[];
+    theme?: ThemeEnquete;
 }
 
 export interface Survey {
@@ -27,6 +35,7 @@ export interface Survey {
     utilisateur_id: number;
     nb_questions: number;
     questions: QuestionEnquete[];
+    themes?: ThemeEnquete[];
     created_at: string;
 }
 
@@ -50,3 +59,4 @@ export interface TypeReponse {
     id: number;
     libelle: string;
 }
+// End of types

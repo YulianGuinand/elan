@@ -4,6 +4,7 @@ import { Menu, Plus } from "lucide-react";
 interface BreadcrumbItem {
     label: string;
     href?: string;
+    onClick?: () => void;
 }
 
 interface HeaderProps {
@@ -54,6 +55,13 @@ export default function Header({
                                             >
                                                 {item.label}
                                             </Link>
+                                        ) : item.onClick ? (
+                                            <button
+                                                onClick={item.onClick}
+                                                className="text-elan-blue hover:text-elan-green transition-colors"
+                                            >
+                                                {item.label}
+                                            </button>
                                         ) : (
                                             <span className="text-gray-500">
                                                 {item.label}
