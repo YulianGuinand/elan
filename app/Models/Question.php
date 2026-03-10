@@ -11,6 +11,7 @@ class Question extends Model
         'numero',
         'enquete_id',
         'type_reponse_id',
+        'theme_id'
     ];
 
     public function enquete()
@@ -23,9 +24,9 @@ class Question extends Model
         return $this->belongsTo(Type_Reponse::class);
     }
 
-    public function themes()
+    public function theme()
     {
-        return $this->belongsToMany(theme::class, 'etredefinit')->withTimestamps();
+        return $this->belongsTo(Theme::class);
     }
 
     public function choix()
