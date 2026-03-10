@@ -6,6 +6,7 @@ use App\Models\Enquete;
 use App\Models\Question;
 use App\Models\Type_Reponse;
 use App\Models\Participant;
+use App\Models\Theme;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -74,6 +75,8 @@ class SurveyController extends Controller
             'questions.*.type_reponse_id' => 'required|exists:type__reponses,id',
             'questions.*.choix'           => 'nullable|array',
             'questions.*.choix.*'         => 'string',
+            'questions.*.themeId' => 'string',
+            'themes' => 'required|array'
         ]);
 
         $enquete = Enquete::create([
@@ -84,17 +87,30 @@ class SurveyController extends Controller
             'type_campagne'  => $validated['type_campagne'],
             'utilisateur_id' => Auth::id(),
         ]);
+        // dd($validated);
+        $themes = [];
 
-        foreach ($validated['questions'] ?? [] as $q) {
-            $question = $enquete->questions()->create([
-                'libelle'         => $q['libelle'],
-                'numero'          => $q['numero'],
-                'type_reponse_id' => $q['type_reponse_id'],
-            ]);
+        foreach ($validated['themes'] as $t) {
+            $theme = Theme::create(["libelle" => $t['libelle'], "ordre" => $t['ordre']]);
 
-            if (!empty($q['choix'])) {
-                foreach ($q['choix'] as $choixLibelle) {
-                    $question->choix()->create(['libelle' => $choixLibelle]);
+            array_push($themes, ["id" => $theme->id, "_id" => $t["_id"]]);
+        }
+
+        foreach ($themes as $theme) {
+            foreach ($validated['questions'] ?? [] as $question) {
+                if ($question['themeId'] === $theme['_id']) {
+                    $q = Question::create([
+                        'libelle'         => $question['libelle'],
+                        'numero'          => $question['numero'],
+                        'enquete_id' => $enquete->id,
+                        'type_reponse_id' => $question['type_reponse_id'],
+                        'theme_id'        => $theme['id'],
+                    ]);
+                }
+                if (!empty($question['choix'])) {
+                    foreach ($question['choix'] as $choixLibelle) {
+                        $q->choix()->create(['libelle' => $choixLibelle]);
+                    }
                 }
             }
         }

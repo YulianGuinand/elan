@@ -19,10 +19,6 @@ export default function SurveyPreview({ typesReponse }: Props) {
     const { state, setStep, clearDraft } = useSurveyBuilder();
 
     const handlePublish = () => {
-        // Formatter les données pour le backend Laravel (SurveyController@storeFromBuilder)
-        // Expected: titre, description, date_debut, date_fin, type_campagne, questions.*.libelle, questions.*.numero, questions.*.type_reponse_id
-
-        // 1. Aplatir toutes les questions de tous les thèmes
         let globalQuestionNumber = 1;
         const flatQuestions = state.themes.flatMap((theme) =>
             theme.questions.map((q) => {
@@ -66,6 +62,7 @@ export default function SurveyPreview({ typesReponse }: Props) {
                     choix: q.options
                         ? q.options.map((o) => o.label || o.value)
                         : [],
+                    themeId: theme.id,
                 };
             }),
         );
@@ -77,7 +74,16 @@ export default function SurveyPreview({ typesReponse }: Props) {
             date_fin: state.basicInfo.endDate,
             type_campagne: state.basicInfo.type_campagne,
             questions: flatQuestions,
+            themes: state.themes.map((t) => {
+                return {
+                    _id: t.id,
+                    libelle: t.title,
+                    ordre: t.order,
+                };
+            }),
         };
+
+        console.log(payload);
 
         const url = state.surveyId
             ? route("surveys.update", { id: state.surveyId })

@@ -2,16 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+
 use Illuminate\Database\Eloquent\Model;
+
 class Theme extends Model
 {
     protected $table = 'themes';
 
     protected $fillable = [
-        'libelle'
+        'libelle',
+        'ordre'
     ];
-    public function questions()
+    public function questions(): HasMany
     {
-        return $this->BelongsToMAny(Question::class, 'etredefinit');
+        return $this->hasMany(Question::class)->orderBy('numero');
     }
 }
