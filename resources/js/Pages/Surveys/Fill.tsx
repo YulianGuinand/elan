@@ -292,7 +292,7 @@ export default function SurveyFill({
                                                         className="group flex items-center gap-3 px-8 py-3.5 bg-[#F58232] text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-orange-500/20 hover:bg-orange-600 active:scale-95 transition-all"
                                                     >
                                                         <span>
-                                                            Question Suivante
+                                                            Theme Suivante
                                                         </span>
                                                         <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                                     </button>
@@ -302,7 +302,7 @@ export default function SurveyFill({
                                                         className="group flex items-center gap-3 px-8 py-3.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-slate-900/10 hover:bg-black active:scale-95 transition-all"
                                                     >
                                                         <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                                        Soumettre l'enquête
+                                                        Soumettre l&apos;enquête
                                                     </button>
                                                 )}
                                             </div>
