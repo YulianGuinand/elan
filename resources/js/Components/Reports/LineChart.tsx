@@ -11,6 +11,19 @@ export default function LineChart({
     title,
     detailsLink,
 }: LineChartProps) {
+    if (!data.length) {
+        return (
+            <div className="bg-white rounded-lg shadow-sm p-6 h-full">
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+                </div>
+                <div className="h-[250px] flex items-center justify-center text-sm text-gray-500">
+                    Aucune donnée disponible
+                </div>
+            </div>
+        );
+    }
+
     // Calcul des dimensions du graphique
     const width = 600;
     const height = 300;
@@ -23,10 +36,11 @@ export default function LineChart({
     const values = data.map((d) => d.value);
     const minValue = Math.min(...values);
     const maxValue = Math.max(...values);
-    const valueRange = maxValue - minValue;
+    const valueRange = maxValue - minValue || 1;
 
     // Fonction pour convertir les données en points SVG
-    const getX = (index: number) => (index / (data.length - 1)) * chartWidth;
+    const getX = (index: number) =>
+        data.length === 1 ? chartWidth / 2 : (index / (data.length - 1)) * chartWidth;
     const getY = (value: number) =>
         chartHeight - ((value - minValue) / valueRange) * chartHeight;
 
