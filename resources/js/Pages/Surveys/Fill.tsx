@@ -55,7 +55,7 @@ export default function SurveyFill({
     const [searchQuery, setSearchQuery] = useState(filters.search || "");
     const [roleFilter, setRoleFilter] = useState(filters.role || "Tous");
 
-    const totalQuestions = enquete.questions.length;
+    const totalQuestions = (enquete.questions || []).length;
 
     // Calcul de la progression sur le theme actuel pour le compteur "X sur Y"
     const themes = useMemo((): ThemeEnquete[] => {
@@ -71,7 +71,7 @@ export default function SurveyFill({
                 id: 0,
                 libelle: "Général",
                 ordre: 0,
-                questions: enquete.questions,
+                questions: enquete.questions || [],
             },
         ];
     }, [enquete]);

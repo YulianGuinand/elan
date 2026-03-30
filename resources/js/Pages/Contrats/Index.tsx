@@ -82,7 +82,7 @@ export default function ContratsIndex({ contrats, filters }: Props) {
                         : undefined
                 }
             >
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
                     <FadeIn delay={0}>
                         <div className="flex flex-col sm:flex-row justify-between gap-4">
                             <p className="text-gray-600 text-sm">

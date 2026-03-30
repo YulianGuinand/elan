@@ -43,7 +43,7 @@ export default function Reports({
                     { label: "Rapports" },
                 ]}
             >
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
                     {/* En-tête avec description et boutons d'export */}
                     <FadeIn delay={0}>
                         <div className="flex items-start justify-between flex-wrap gap-4">

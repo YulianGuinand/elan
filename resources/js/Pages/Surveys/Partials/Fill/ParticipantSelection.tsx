@@ -65,7 +65,7 @@ export default function ParticipantSelection({
                     <FadeIn delay={100}>
                         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
                             <div className="flex items-center gap-2 mb-4">
-                                <Info className="w-6 h-6 text-orange-500" />
+                                <Info className="w-5 h-5 text-orange-500" />
                                 <h3 className="font-black text-base text-gray-900 tracking-tight">
                                     Détails de l&apos;enquête
                                 </h3>
@@ -102,11 +102,11 @@ export default function ParticipantSelection({
                     </FadeIn>
 
                     <FadeIn delay={200}>
-                        <div className="bg-[#F58232] rounded-2xl p-6 text-white shadow-2xl shadow-orange-500/30 relative overflow-hidden group">
+                        <div className="bg-[#F58232] rounded-2xl p-6 text-white relative overflow-hidden group">
                             <div className="absolute top-[-20px] right-[-20px] w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-700" />
                             <div className="relative z-10">
                                 <div className="flex items-center gap-2 mb-4">
-                                    <HelpCircle className="w-6 h-6" />
+                                    <HelpCircle className="w-5 h-5" />
                                     <h3 className="font-black text-base tracking-tight">
                                         Besoin d&apos;aide ?
                                     </h3>

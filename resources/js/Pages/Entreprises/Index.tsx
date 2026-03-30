@@ -5,13 +5,10 @@ import EntrepriseTable from "@/Components/Entreprises/EntrepriseTable";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head } from "@inertiajs/react";
 import {
-    Building2,
     FileText,
     List,
     PenLine,
-    Upload,
-    Users,
-    Zap,
+    Upload
 } from "lucide-react";
 import { useState } from "react";
 
@@ -160,48 +157,6 @@ export default function EntreprisesIndex({ entreprises }: Props) {
                                     </button>
                                 </div>
 
-                                {/* Bloc pourquoi ajouter des entreprises */}
-                                <div className="bg-orange-50 border border-orange-200 rounded-xl p-5">
-                                    <div className="flex items-start gap-2 mb-3">
-                                        <Zap className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
-                                        <h3 className="text-sm font-semibold text-orange-800">
-                                            Pourquoi ajouter des entreprises ?
-                                        </h3>
-                                    </div>
-                                    <ul className="space-y-2">
-                                        {[
-                                            {
-                                                icon: (
-                                                    <FileText className="w-3.5 h-3.5 text-orange-500 flex-shrink-0 mt-0.5" />
-                                                ),
-                                                text: "Générer automatiquement les contrats d'apprentissage.",
-                                            },
-                                            {
-                                                icon: (
-                                                    <Users className="w-3.5 h-3.5 text-orange-500 flex-shrink-0 mt-0.5" />
-                                                ),
-                                                text: "Suivre les visites en entreprise des tuteurs.",
-                                            },
-                                            {
-                                                icon: (
-                                                    <Building2 className="w-3.5 h-3.5 text-orange-500 flex-shrink-0 mt-0.5" />
-                                                ),
-                                                text: "Gérer la facturation de la taxe d'apprentissage.",
-                                            },
-                                        ].map((item, i) => (
-                                            <li
-                                                key={i}
-                                                className="flex items-start gap-2"
-                                            >
-                                                {item.icon}
-                                                <span className="text-xs text-orange-700">
-                                                    {item.text}
-                                                </span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-
                                 {/* Bloc statistiques */}
                                 <div className="bg-white rounded-xl border border-gray-200 p-5">
                                     <h3 className="text-sm font-semibold text-gray-800 mb-3">
@@ -233,10 +188,9 @@ export default function EntreprisesIndex({ entreprises }: Props) {
                             </div>
                         </div>
 
-                        {/* Récapitulatif dernières entreprises (visible si onglet saisie ou import) */}
                         {activeTab !== "liste" && entreprises.length > 0 && (
                             <div>
-                                <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center justify-between my-4">
                                     <h2 className="text-sm font-semibold text-gray-800">
                                         Dernières entreprises ajoutées
                                     </h2>

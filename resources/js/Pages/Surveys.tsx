@@ -125,7 +125,7 @@ export default function Surveys({
                         : undefined
                 }
             >
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
                     {/* Stats */}
                     <FadeIn delay={0}>
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

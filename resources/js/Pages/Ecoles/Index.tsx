@@ -51,7 +51,7 @@ export default function EcolesIndex({ ecoles, filters }: Props) {
                         : undefined
                 }
             >
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
                     <FadeIn
                         delay={0}
                         className="flex flex-col sm:flex-row justify-between gap-4"

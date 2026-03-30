@@ -41,7 +41,7 @@ export default function Dashboard({
                     onClick: () => router.get(route("surveys.create")),
                 }}
             >
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
                     {/* Welcome Banner */}
                     <FadeIn delay={0}>
                         <WelcomeBanner

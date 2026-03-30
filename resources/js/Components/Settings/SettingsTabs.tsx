@@ -9,7 +9,7 @@ const tabs = [
     { id: "account" as const, label: "Mon Compte" },
     { id: "notifications" as const, label: "Notifications" },
     { id: "general" as const, label: "Général" },
-    { id: "integrations" as const, label: "Intégrations" },
+    // { id: "integrations" as const, label: "Intégrations" },
 ];
 
 export default function SettingsTabs({

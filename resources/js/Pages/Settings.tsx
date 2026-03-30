@@ -45,7 +45,7 @@ export default function Settings({
                     { label: "Paramètres" },
                 ]}
             >
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
                     {/* Description */}
                     <FadeIn delay={0}>
                         <p className="text-gray-600">

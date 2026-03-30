@@ -1,5 +1,3 @@
-import React from 'react';
-import { Tag } from 'lucide-react';
 import { QuestionEnquete } from "@/types/surveys";
 
 interface Props {
@@ -44,7 +42,7 @@ export default function QuestionRenderer({ question: q, value, onChange, onCheck
             </div>
 
             <div className="pl-0 md:pl-10">
-                {q.choix && q.choix.length > 0 ? (
+                {Array.isArray(q.choix) && q.choix.length > 0 ? (
                     isSelect ? (
                         <div className="relative">
                             <select
@@ -63,7 +61,7 @@ export default function QuestionRenderer({ question: q, value, onChange, onCheck
                         </div>
                     ) : isLikert ? (
                         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                            {q.choix.map((c, idx) => {
+                            {(Array.isArray(q.choix) ? q.choix : []).map((c, idx) => {
                                 const isSelected = value === String(c.id);
                                 return (
                                     <label key={c.id} className="cursor-pointer group">
@@ -77,8 +75,8 @@ export default function QuestionRenderer({ question: q, value, onChange, onCheck
                                         />
                                         <div className={`
                                             flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all duration-300 h-full
-                                            ${isSelected 
-                                                ? "border-orange-500 bg-white shadow-md shadow-orange-500/5 ring-4 ring-orange-500/5" 
+                                            ${isSelected
+                                                ? "border-orange-500 bg-white shadow-md shadow-orange-500/5 ring-4 ring-orange-500/5"
                                                 : "border-gray-100 bg-white hover:border-gray-200"}
                                         `}>
                                             <span className={`text-2xl transition-all duration-300 ${isSelected ? "scale-110" : "filter grayscale opacity-40 group-hover:opacity-100 group-hover:grayscale-0"}`}>
@@ -94,7 +92,7 @@ export default function QuestionRenderer({ question: q, value, onChange, onCheck
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {q.choix.map((c) => {
+                            {(Array.isArray(q.choix) ? q.choix : []).map((c) => {
                                 const isSelected = isMultiple
                                     ? Array.isArray(value) && value.includes(String(c.id))
                                     : value === String(c.id);
@@ -102,8 +100,8 @@ export default function QuestionRenderer({ question: q, value, onChange, onCheck
                                 return (
                                     <label key={c.id} className={`
                                         flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200
-                                        ${isSelected 
-                                            ? "border-orange-500 bg-orange-50/30" 
+                                        ${isSelected
+                                            ? "border-orange-500 bg-orange-50/30"
                                             : "border-gray-50 bg-gray-50/30 hover:border-gray-100 hover:bg-white"}
                                     `}>
                                         <div className={`

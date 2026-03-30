@@ -302,26 +302,27 @@ class SurveyController extends Controller
 
     private function formatEnquete(Enquete $e): array
     {
-        $questions = $e->relationLoaded('questions')
-            ? $e->questions->map(function (Question $q) {
-                $theme = $q->theme;
-                return [
-                    'id'            => $q->id,
-                    'libelle'       => $q->libelle,
-                    'numero'        => $q->numero,
-                    'type_reponse'  => $q->type_reponse?->libelle,
-                    'type_reponse_id' => $q->type_reponse_id,
-                    'choix'         => $q->relationLoaded('choix')
-                        ? $q->choix->map(fn($c) => ['id' => $c->id, 'libelle' => $c->libelle])
-                        : [],
-                    'theme'         => $theme ? [
-                        'id'      => $theme->id,
-                        'libelle' => $theme->libelle,
-                        'ordre'   => $theme->ordre ?? 0,
-                    ] : null,
-                ];
-            })->values()->toArray()
-            : [];
+        // S'assurer que les relations sont toujours chargées
+        if (!$e->relationLoaded('questions')) {
+            $e->load(['questions.type_reponse', 'questions.choix', 'questions.theme']);
+        }
+
+        $questions = $e->questions->map(function (Question $q) {
+            $theme = $q->theme;
+            return [
+                'id'            => $q->id,
+                'libelle'       => $q->libelle,
+                'numero'        => $q->numero,
+                'type_reponse'  => $q->type_reponse?->libelle,
+                'type_reponse_id' => $q->type_reponse_id,
+                'choix'         => $q->choix ? $q->choix->map(fn($c) => ['id' => $c->id, 'libelle' => $c->libelle])->toArray() : [],
+                'theme'         => $theme ? [
+                    'id'      => $theme->id,
+                    'libelle' => $theme->libelle,
+                    'ordre'   => $theme->ordre ?? 0,
+                ] : null,
+            ];
+        })->values()->toArray();
 
         // Grouper les questions par thèmes pour la navigation par étapes
         $themesMap = [];

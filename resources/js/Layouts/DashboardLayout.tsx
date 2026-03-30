@@ -4,7 +4,6 @@ import Sidebar from "@/Components/Dashboard/Sidebar";
 import { PageProps } from "@/types";
 import { usePage } from "@inertiajs/react";
 import { PropsWithChildren, useEffect, useState } from "react";
-import FadeIn from "@/Components/Animations/FadeIn";
 
 interface BreadcrumbItem {
     label: string;
@@ -35,13 +34,12 @@ export default function DashboardLayout({
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const { toasts, add, remove } = useToastManager();
 
-    // Afficher les messages flash (succès / erreur) à chaque navigation Inertia
+    // FLASH
     useEffect(() => {
         if (flash?.success) add(flash.success, "success");
         if (flash?.error) add(flash.error, "error");
         if (flash?.message) add(flash.message, "info");
 
-        // Erreurs de validation : afficher la première
         if (errors && Object.keys(errors).length > 0) {
             const firstError = Object.values(errors)[0];
             add(firstError, "error");
