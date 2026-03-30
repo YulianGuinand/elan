@@ -21,8 +21,14 @@ export interface DonutChartSegment {
 }
 
 export interface ReportFilters {
+    [key: string]: string;
     period: string;
     survey: string;
     audience: string;
     indicator: string;
+}
+
+export interface ReportSurveyOption {
+    value: string;
+    label: string;
 }

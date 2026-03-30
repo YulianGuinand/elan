@@ -9,28 +9,46 @@ import {
     DonutChartSegment,
     ReportFilters,
     ReportKPI,
+    ReportSurveyOption,
 } from "@/types/reports";
-import { Head } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import { Download, FileText } from "lucide-react";
-import { useState } from "react";
+import { useMemo } from "react";
 
 interface ReportsProps {
     kpis: ReportKPI[];
     satisfactionEvolution: ChartDataPoint[];
     audienceDistribution: DonutChartSegment[];
+    filters: ReportFilters;
+    surveyOptions: ReportSurveyOption[];
+    hasData: boolean;
 }
 
 export default function Reports({
     kpis,
     satisfactionEvolution,
     audienceDistribution,
+    filters,
+    surveyOptions,
+    hasData,
 }: ReportsProps) {
-    const [filters, setFilters] = useState<ReportFilters>({
-        period: "30days",
-        survey: "all",
-        audience: "all",
-        indicator: "overview",
-    });
+    const updateFilters = (nextFilters: ReportFilters) => {
+        router.get("/rapports", nextFilters, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    };
+
+    const exportUrl = useMemo(() => {
+        const params = new URLSearchParams({
+            period: filters.period,
+            survey: filters.survey,
+            audience: filters.audience,
+            indicator: filters.indicator,
+        });
+        return `/rapports/export?${params.toString()}`;
+    }, [filters]);
 
     return (
         <>
@@ -55,14 +73,27 @@ export default function Reports({
                                 </p>
                             </div>
                             <div className="flex gap-3">
-                                <button className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                                <a
+                                    href={`${exportUrl}&format=csv`}
+                                    className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                                >
                                     <Download className="w-4 h-4" />
                                     CSV
-                                </button>
-                                <button className="inline-flex items-center gap-2 px-4 py-2 bg-elan-orange rounded-lg text-sm font-medium text-white hover:bg-elan-orange/90 transition-colors">
+                                </a>
+                                <a
+                                    href={`${exportUrl}&format=xlsx`}
+                                    className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Excel
+                                </a>
+                                <a
+                                    href={`${exportUrl}&format=pdf`}
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-elan-orange rounded-lg text-sm font-medium text-white hover:bg-elan-orange/90 transition-colors"
+                                >
                                     <FileText className="w-4 h-4" />
                                     Exporter PDF
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </FadeIn>
@@ -71,9 +102,18 @@ export default function Reports({
                     <FadeIn delay={100}>
                         <ReportFilterBar
                             filters={filters}
-                            onFiltersChange={setFilters}
+                            surveys={surveyOptions}
+                            onFiltersChange={updateFilters}
                         />
                     </FadeIn>
+
+                    {!hasData && (
+                        <FadeIn delay={120}>
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-900 text-sm">
+                                Aucune donnée disponible pour ces filtres. Les indicateurs sont affichés à 0 et les exports restent disponibles.
+                            </div>
+                        </FadeIn>
+                    )}
 
                     {/* Cartes KPI */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

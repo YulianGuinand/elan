@@ -220,6 +220,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ============================================
     Route::get('/rapports', [ReportsController::class, 'index'])
         ->name('reports.index');
+    Route::get('/rapports/export', [ReportsController::class, 'export'])
+        ->name('reports.export');
 
     // ============================================
     // PARAMETRES

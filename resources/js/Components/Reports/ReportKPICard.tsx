@@ -30,6 +30,7 @@ export default function ReportKPICard({ kpi }: ReportKPICardProps) {
     const IconComponent = iconMap[kpi.icon];
     const colorClass = colorMap[kpi.icon];
     const isPositive = kpi.change > 0;
+    const isNeutral = kpi.change === 0;
 
     return (
         <div className="bg-white rounded-lg shadow-sm p-6 h-full flex flex-col justify-between">
@@ -56,10 +57,14 @@ export default function ReportKPICard({ kpi }: ReportKPICardProps) {
 
             <div
                 className={`inline-flex items-center text-sm font-medium ${
-                    isPositive ? "text-green-600" : "text-red-600"
+                    isNeutral
+                        ? "text-gray-500"
+                        : isPositive
+                        ? "text-green-600"
+                        : "text-red-600"
                 }`}
             >
-                {isPositive ? (
+                {isNeutral ? null : isPositive ? (
                     <ArrowUp className="w-4 h-4 mr-1" />
                 ) : (
                     <ArrowDown className="w-4 h-4 mr-1" />

@@ -1,13 +1,15 @@
-import { ReportFilters } from "@/types/reports";
+import { ReportFilters, ReportSurveyOption } from "@/types/reports";
 import { BarChart3, Calendar, TrendingUp, Users } from "lucide-react";
 
 interface ReportFilterBarProps {
     filters: ReportFilters;
+    surveys: ReportSurveyOption[];
     onFiltersChange: (filters: ReportFilters) => void;
 }
 
 export default function ReportFilterBar({
     filters,
+    surveys,
     onFiltersChange,
 }: ReportFilterBarProps) {
     return (
@@ -57,13 +59,11 @@ export default function ReportFilterBar({
                             className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none transition-all bg-white appearance-none"
                         >
                             <option value="all">Toutes les enquêtes</option>
-                            <option value="apprentis">Enquête Apprentis</option>
-                            <option value="formateurs">
-                                Enquête Formateurs
-                            </option>
-                            <option value="entreprises">
-                                Enquête Entreprises
-                            </option>
+                            {surveys.map((survey) => (
+                                <option key={survey.value} value={survey.value}>
+                                    {survey.label}
+                                </option>
+                            ))}
                         </select>
                     </div>
                 </div>

@@ -20,6 +20,17 @@ export default function DonutChart({
     // Calculer le total
     const total = data.reduce((sum, segment) => sum + segment.value, 0);
 
+    if (!data.length) {
+        return (
+            <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">{title}</h3>
+                <div className="h-[300px] flex items-center justify-center text-sm text-gray-500">
+                    Aucune donnée disponible
+                </div>
+            </div>
+        );
+    }
+
     // Générer les arcs du donut
     let cumulativePercentage = 0;
 
@@ -71,14 +82,25 @@ export default function DonutChart({
                         height={size}
                         className="transform -rotate-90"
                     >
-                        {arcs.map((arc, index) => (
-                            <path
-                                key={index}
-                                d={arc.path}
-                                fill={arc.color}
-                                className="transition-opacity hover:opacity-80"
+                        {total > 0 ? (
+                            arcs.map((arc, index) => (
+                                <path
+                                    key={index}
+                                    d={arc.path}
+                                    fill={arc.color}
+                                    className="transition-opacity hover:opacity-80"
+                                />
+                            ))
+                        ) : (
+                            <circle
+                                cx={centerX}
+                                cy={centerY}
+                                r={(radius + innerRadius) / 2}
+                                stroke="#e5e7eb"
+                                strokeWidth={radius - innerRadius}
+                                fill="none"
                             />
-                        ))}
+                        )}
                     </svg>
 
                     {/* Texte au centre */}
@@ -88,7 +110,7 @@ export default function DonutChart({
                         </div>
                         {totalLabel && (
                             <div className="text-xs text-gray-500 uppercase tracking-wide">
-                                {totalLabel}
+                                {total > 0 ? totalLabel : "Aucune donnée"}
                             </div>
                         )}
                     </div>
