@@ -57,7 +57,7 @@ export default function Dashboard({
                     {/* Stats Cards Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {stats.map((stat, index) => (
-                            <FadeIn key={stat.id} delay={100 + index * 50}>
+                            <FadeIn key={stat.id} delay={100 + index * 50} className="h-full">
                                 <StatsCard stat={stat} />
                             </FadeIn>
                         ))}

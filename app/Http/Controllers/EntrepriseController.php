@@ -14,11 +14,67 @@ class EntrepriseController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $entreprises = Entreprise::orderBy('raison_sociale')->get();
+        $search = trim((string) $request->input('search', ''));
+        $ville = (string) $request->input('ville', 'all');
+        $contact = (string) $request->input('contact', 'all');
+
+        $query = Entreprise::query();
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('raison_sociale', 'like', "%{$search}%")
+                    ->orWhere('mail', 'like', "%{$search}%")
+                    ->orWhere('telephone', 'like', "%{$search}%")
+                    ->orWhere('interlocuteur', 'like', "%{$search}%")
+                    ->orWhere('ville', 'like', "%{$search}%");
+            });
+        }
+
+        if ($ville !== 'all') {
+            $query->where('ville', $ville);
+        }
+
+        if ($contact === 'with_contact') {
+            $query->whereNotNull('interlocuteur')->where('interlocuteur', '!=', '');
+        } elseif ($contact === 'without_contact') {
+            $query->where(function ($q) {
+                $q->whereNull('interlocuteur')->orWhere('interlocuteur', '');
+            });
+        }
+
+        $entreprises = $query
+            ->orderBy('raison_sociale')
+            ->paginate(5)
+            ->withQueryString();
+
+        $availableVilles = Entreprise::query()
+            ->select('ville')
+            ->whereNotNull('ville')
+            ->where('ville', '!=', '')
+            ->distinct()
+            ->orderBy('ville')
+            ->pluck('ville')
+            ->values();
+
+        $stats = [
+            'total' => Entreprise::count(),
+            'with_contact' => Entreprise::query()
+                ->whereNotNull('interlocuteur')
+                ->where('interlocuteur', '!=', '')
+                ->count(),
+        ];
+
         return Inertia::render('Entreprises/Index', [
             'entreprises' => $entreprises,
+            'filters' => [
+                'search' => $search,
+                'ville' => $ville,
+                'contact' => $contact,
+            ],
+            'availableVilles' => $availableVilles,
+            'stats' => $stats,
         ]);
     }
 

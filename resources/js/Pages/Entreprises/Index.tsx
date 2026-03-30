@@ -3,11 +3,11 @@ import EntrepriseCsvImport from "@/Components/Entreprises/EntrepriseCsvImport";
 import EntrepriseForm from "@/Components/Entreprises/EntrepriseForm";
 import EntrepriseTable from "@/Components/Entreprises/EntrepriseTable";
 import DashboardLayout from "@/Layouts/DashboardLayout";
-import { Head } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import {
-    FileText,
     List,
     PenLine,
+    Search,
     Upload
 } from "lucide-react";
 import { useState } from "react";
@@ -25,7 +25,25 @@ interface Entreprise {
 }
 
 interface Props {
-    entreprises: Entreprise[];
+    entreprises: {
+        data: Entreprise[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from: number | null;
+        to: number | null;
+    };
+    filters: {
+        search: string;
+        ville: string;
+        contact: "all" | "with_contact" | "without_contact";
+    };
+    availableVilles: string[];
+    stats: {
+        total: number;
+        with_contact: number;
+    };
 }
 
 const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
@@ -46,8 +64,77 @@ const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     },
 ];
 
-export default function EntreprisesIndex({ entreprises }: Props) {
-    const [activeTab, setActiveTab] = useState<Tab>("saisie");
+export default function EntreprisesIndex({
+    entreprises,
+    filters: initialFilters,
+    availableVilles,
+    stats,
+}: Props) {
+    const [activeTab, setActiveTab] = useState<Tab>("liste");
+    const [search, setSearch] = useState(initialFilters.search || "");
+    const [ville, setVille] = useState(initialFilters.ville || "all");
+    const [contact, setContact] = useState<
+        "all" | "with_contact" | "without_contact"
+    >(initialFilters.contact || "all");
+
+    const applyFilters = (page: number = 1) => {
+        router.get(
+            route("entreprises.index"),
+            {
+                search: search || undefined,
+                ville: ville !== "all" ? ville : undefined,
+                contact: contact !== "all" ? contact : undefined,
+                page,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+            },
+        );
+    };
+
+    const resetFilters = () => {
+        setSearch("");
+        setVille("all");
+        setContact("all");
+        router.get(
+            route("entreprises.index"),
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+            },
+        );
+    };
+
+    const getVisiblePages = (): Array<number | "..."> => {
+        const current = entreprises.current_page;
+        const last = entreprises.last_page;
+
+        if (last <= 7) {
+            return Array.from({ length: last }, (_, i) => i + 1) as Array<
+                number | "..."
+            >;
+        }
+
+        if (current <= 4) {
+            return [1, 2, 3, 4, 5, "...", last];
+        }
+
+        if (current >= last - 3) {
+            return [1, "...", last - 4, last - 3, last - 2, last - 1, last];
+        }
+
+        return [
+            1,
+            "...",
+            current - 1,
+            current,
+            current + 1,
+            "...",
+            last,
+        ];
+    };
 
     return (
         <>
@@ -60,7 +147,7 @@ export default function EntreprisesIndex({ entreprises }: Props) {
                     { label: "Entreprises" },
                 ]}
             >
-                <div className="space-y-6">
+                <div className="space-y-6 mb-24 w-full">
                     <FadeIn delay={0}>
                         {/* Description */}
                         <p className="text-gray-500 text-sm">
@@ -88,13 +175,9 @@ export default function EntreprisesIndex({ entreprises }: Props) {
                         </div>
                     </FadeIn>
 
-                    {/* Contenu principal + panneau latéral */}
-                    <FadeIn delay={100}>
-                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                            {/* Contenu principal (2/3) */}
-                            <div className="xl:col-span-2">
+                    <FadeIn delay={100} className="w-full">
                                 {activeTab === "saisie" && (
-                                    <div className="bg-white rounded-xl border border-gray-200 p-6">
+                                    <div className="bg-white rounded-xl border border-gray-200 p-6 w-full">
                                         <EntrepriseForm />
                                     </div>
                                 )}
@@ -106,89 +189,184 @@ export default function EntreprisesIndex({ entreprises }: Props) {
                                 )}
 
                                 {activeTab === "liste" && (
-                                    <EntrepriseTable
-                                        entreprises={entreprises}
-                                    />
+                                    <div className="space-y-4">
+                                        <div className="bg-white rounded-xl border border-gray-200 p-4">
+                                            <form
+                                                onSubmit={(e) => {
+                                                    e.preventDefault();
+                                                    applyFilters(1);
+                                                }}
+                                                className="grid grid-cols-1 md:grid-cols-4 gap-3"
+                                            >
+                                                <div className="md:col-span-2 relative">
+                                                    <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                                    <input
+                                                        type="text"
+                                                        value={search}
+                                                        onChange={(e) =>
+                                                            setSearch(
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        placeholder="Rechercher une entreprise..."
+                                                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                                                    />
+                                                </div>
+
+                                                <select
+                                                    value={ville}
+                                                    onChange={(e) =>
+                                                        setVille(
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                                                >
+                                                    <option value="all">
+                                                        Toutes les villes
+                                                    </option>
+                                                    {availableVilles.map((v) => (
+                                                        <option
+                                                            key={v}
+                                                            value={v}
+                                                        >
+                                                            {v}
+                                                        </option>
+                                                    ))}
+                                                </select>
+
+                                                <select
+                                                    value={contact}
+                                                    onChange={(e) =>
+                                                        setContact(
+                                                            e.target
+                                                                .value as
+                                                                | "all"
+                                                                | "with_contact"
+                                                                | "without_contact",
+                                                        )
+                                                    }
+                                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                                                >
+                                                    <option value="all">
+                                                        Tous les contacts
+                                                    </option>
+                                                    <option value="with_contact">
+                                                        Avec interlocuteur
+                                                    </option>
+                                                    <option value="without_contact">
+                                                        Sans interlocuteur
+                                                    </option>
+                                                </select>
+
+                                                <div className="md:col-span-4 flex flex-wrap gap-2 justify-end">
+                                                    <button
+                                                        type="button"
+                                                        onClick={resetFilters}
+                                                        className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                                    >
+                                                        Réinitialiser
+                                                    </button>
+                                                    <button
+                                                        type="submit"
+                                                        className="px-4 py-2 text-sm bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                                                    >
+                                                        Appliquer
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+
+                                        <EntrepriseTable
+                                            entreprises={entreprises.data}
+                                            totalCount={entreprises.total}
+                                        />
+
+                                        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center justify-between gap-4">
+                                                <p className="text-sm text-gray-600">
+                                                    Affichage de{" "}
+                                                    <span className="font-semibold">
+                                                        {entreprises.from ?? 0}
+                                                    </span>{" "}
+                                                    à{" "}
+                                                    <span className="font-semibold">
+                                                        {entreprises.to ?? 0}
+                                                    </span>{" "}
+                                                    sur{" "}
+                                                    <span className="font-semibold">
+                                                        {entreprises.total}
+                                                    </span>
+                                                </p>
+                                                <div className="flex items-center gap-2 flex-wrap justify-end">
+                                                    <button
+                                                        type="button"
+                                                        disabled={
+                                                            entreprises.current_page <=
+                                                            1
+                                                        }
+                                                        onClick={() =>
+                                                            applyFilters(
+                                                                entreprises.current_page -
+                                                                    1,
+                                                            )
+                                                        }
+                                                        className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                                                    >
+                                                        Précédent
+                                                    </button>
+
+                                                    {getVisiblePages().map(
+                                                        (page, index) =>
+                                                            page === "..." ? (
+                                                                <span
+                                                                    key={`ellipsis-${index}`}
+                                                                    className="px-2 text-sm text-gray-400"
+                                                                >
+                                                                    ...
+                                                                </span>
+                                                            ) : (
+                                                                <button
+                                                                    key={page}
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        applyFilters(
+                                                                            page,
+                                                                        )
+                                                                    }
+                                                                    className={`min-w-[36px] px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                                                                        entreprises.current_page ===
+                                                                        page
+                                                                            ? "bg-orange-500 text-white border-orange-500"
+                                                                            : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                                                                    }`}
+                                                                >
+                                                                    {page}
+                                                                </button>
+                                                            ),
+                                                    )}
+
+                                                    <button
+                                                        type="button"
+                                                        disabled={
+                                                            entreprises.current_page >=
+                                                            entreprises.last_page
+                                                        }
+                                                        onClick={() =>
+                                                            applyFilters(
+                                                                entreprises.current_page +
+                                                                    1,
+                                                            )
+                                                        }
+                                                        className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                                                    >
+                                                        Suivant
+                                                    </button>
+                                                </div>
+                                            </div>
+                                    </div>
                                 )}
-                            </div>
 
-                            {/* Panneau latéral droit (1/3) */}
-                            <div className="space-y-4">
-                                {/* Bloc importation CSV rapide */}
-                                <div className="bg-white rounded-xl border border-gray-200 p-5">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <div className="w-7 h-7 bg-orange-100 rounded-md flex items-center justify-center">
-                                            <FileText className="w-4 h-4 text-orange-500" />
-                                        </div>
-                                        <h3 className="text-sm font-semibold text-gray-800">
-                                            Importation CSV
-                                        </h3>
-                                    </div>
-                                    <p className="text-xs text-gray-500 mb-4">
-                                        Ajoutez plusieurs entreprises en une
-                                        seule fois en téléchargeant votre
-                                        fichier.
-                                    </p>
-
-                                    {/* Zone mini drag & drop visuelle */}
-                                    <button
-                                        onClick={() => setActiveTab("import")}
-                                        className="w-full border-2 border-dashed border-orange-300 rounded-lg p-5 flex flex-col items-center bg-orange-50 hover:bg-orange-100 transition-colors"
-                                    >
-                                        <Upload className="w-8 h-8 text-orange-400 mb-2" />
-                                        <p className="text-xs font-semibold text-gray-700">
-                                            Glissez-déposez votre fichier
-                                        </p>
-                                        <p className="text-xs text-gray-400 mt-0.5">
-                                            Format accepté : .CSV, .XLSX (Max
-                                            10Mo)
-                                        </p>
-                                        <span className="mt-2 text-xs font-medium text-orange-500 underline underline-offset-2">
-                                            ou parcourir vos fichiers
-                                        </span>
-                                    </button>
-
-                                    <button
-                                        onClick={() => setActiveTab("import")}
-                                        className="mt-3 w-full flex items-center justify-center gap-2 text-xs text-gray-500 hover:text-orange-500 transition-colors py-1"
-                                    >
-                                        <FileText className="w-3.5 h-3.5" />
-                                        Télécharger le modèle
-                                    </button>
-                                </div>
-
-                                {/* Bloc statistiques */}
-                                <div className="bg-white rounded-xl border border-gray-200 p-5">
-                                    <h3 className="text-sm font-semibold text-gray-800 mb-3">
-                                        Aperçu rapide
-                                    </h3>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="bg-gray-50 rounded-lg p-3 text-center">
-                                            <p className="text-2xl font-bold text-orange-500">
-                                                {entreprises.length}
-                                            </p>
-                                            <p className="text-xs text-gray-500 mt-0.5">
-                                                Entreprises
-                                            </p>
-                                        </div>
-                                        <div className="bg-gray-50 rounded-lg p-3 text-center">
-                                            <p className="text-2xl font-bold text-orange-500">
-                                                {
-                                                    entreprises.filter(
-                                                        (e) => e.interlocuteur,
-                                                    ).length
-                                                }
-                                            </p>
-                                            <p className="text-xs text-gray-500 mt-0.5">
-                                                Avec contact
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {activeTab !== "liste" && entreprises.length > 0 && (
+                        {activeTab !== "liste" && entreprises.data.length > 0 && (
                             <div>
                                 <div className="flex items-center justify-between my-4">
                                     <h2 className="text-sm font-semibold text-gray-800">
@@ -202,7 +380,8 @@ export default function EntreprisesIndex({ entreprises }: Props) {
                                     </button>
                                 </div>
                                 <EntrepriseTable
-                                    entreprises={entreprises.slice(0, 5)}
+                                    entreprises={entreprises.data.slice(0, 5)}
+                                    totalCount={stats.total}
                                 />
                             </div>
                         )}

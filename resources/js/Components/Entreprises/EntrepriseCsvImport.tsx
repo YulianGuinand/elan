@@ -37,7 +37,7 @@ export default function EntrepriseCsvImport() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 w-full">
             <div>
                 <h2 className="text-base font-semibold text-gray-800 mb-1">
                     Importation CSV / Excel

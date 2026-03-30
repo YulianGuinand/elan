@@ -28,6 +28,7 @@ interface Entreprise {
 
 interface EntrepriseTableProps {
     entreprises: Entreprise[];
+    totalCount?: number;
 }
 
 function getInitials(name: string | null): string {
@@ -40,7 +41,10 @@ function getInitials(name: string | null): string {
         .toUpperCase();
 }
 
-export default function EntrepriseTable({ entreprises }: EntrepriseTableProps) {
+export default function EntrepriseTable({
+    entreprises,
+    totalCount,
+}: EntrepriseTableProps) {
     const [selected, setSelected] = useState<number[]>([]);
 
     const allSelected =
@@ -98,7 +102,7 @@ export default function EntrepriseTable({ entreprises }: EntrepriseTableProps) {
                         Entreprises enregistrées
                     </h3>
                     <span className="ml-1 px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 text-xs font-semibold">
-                        {entreprises.length}
+                        {totalCount ?? entreprises.length}
                     </span>
                 </div>
 

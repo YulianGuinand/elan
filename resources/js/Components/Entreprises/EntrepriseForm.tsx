@@ -53,7 +53,7 @@ export default function EntrepriseForm({ onCancel }: EntrepriseFormProps) {
     };
 
     return (
-        <form onSubmit={submit} className="space-y-6">
+        <form onSubmit={submit} className="space-y-6 w-full">
             {/* En-tête section */}
             <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
                 <div className="w-7 h-7 bg-orange-100 rounded-md flex items-center justify-center">

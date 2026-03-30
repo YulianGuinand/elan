@@ -27,7 +27,7 @@ export default function StatsCard({ stat }: StatsCardProps) {
     const isNegative = stat.change < 0;
 
     return (
-        <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white h-full rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between">
                 <div className="flex-1">
                     <p className="text-sm font-medium text-gray-600 mb-2">
