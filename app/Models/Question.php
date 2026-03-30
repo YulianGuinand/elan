@@ -11,7 +11,7 @@ class Question extends Model
         'numero',
         'enquete_id',
         'type_reponse_id',
-        'theme_id',
+        'theme_id'
     ];
 
     public function enquete()
@@ -26,7 +26,7 @@ class Question extends Model
 
     public function theme()
     {
-        return $this->belongsTo(Theme::class, 'theme_id');
+        return $this->belongsTo(Theme::class);
     }
 
     public function choix()

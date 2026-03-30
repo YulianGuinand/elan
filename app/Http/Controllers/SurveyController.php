@@ -6,8 +6,10 @@ use App\Models\Enquete;
 use App\Models\Question;
 use App\Models\Type_Reponse;
 use App\Models\Participant;
+use App\Models\Theme;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,7 +23,7 @@ class SurveyController extends Controller
     {
         $user = Auth::user();
 
-        $enquetes = Enquete::with(['utilisateur', 'questions.theme'])
+        $enquetes = Enquete::with(['utilisateur', 'questions.type_reponse', 'questions.theme', 'questions.choix'])
             ->orderByDesc('created_at')
             ->get()
             ->map(fn(Enquete $e) => $this->formatEnquete($e));
@@ -75,34 +77,73 @@ class SurveyController extends Controller
             'questions.*.theme_id'        => 'nullable|exists:themes,id',
             'questions.*.choix'           => 'nullable|array',
             'questions.*.choix.*'         => 'string',
+            'questions.*.themeId' => 'string',
+            'themes' => 'required|array'
         ]);
 
-        $enquete = Enquete::create([
-            'titre'          => $validated['titre'],
-            'description'    => $validated['description'] ?? '',
-            'date_debut'     => $validated['date_debut'],
-            'date_fin'       => $validated['date_fin'],
-            'type_campagne'  => $validated['type_campagne'],
-            'utilisateur_id' => Auth::id(),
-        ]);
-
-        foreach ($validated['questions'] ?? [] as $q) {
-            $question = $enquete->questions()->create([
-                'libelle'         => $q['libelle'],
-                'numero'          => $q['numero'],
-                'type_reponse_id' => $q['type_reponse_id'],
-                'theme_id'        => $q['theme_id'] ?? null,
+        return DB::transaction(function () use ($validated) {
+            $enquete = Enquete::create([
+                'titre'          => $validated['titre'],
+                'description'    => $validated['description'] ?? '',
+                'date_debut'     => $validated['date_debut'],
+                'date_fin'       => $validated['date_fin'],
+                'type_campagne'  => $validated['type_campagne'],
+                'utilisateur_id' => Auth::id(),
             ]);
 
-            if (!empty($q['choix'])) {
-                foreach ($q['choix'] as $choixLibelle) {
-                    $question->choix()->create(['libelle' => $choixLibelle]);
+            $now = now();
+
+            $themesMapping = [];
+            foreach ($validated['themes'] as $t) {
+                $theme = Theme::create([
+                    "libelle" => $t['libelle'],
+                    "ordre"   => $t['ordre']
+                ]);
+                $themesMapping[$t['_id']] = $theme->id;
+            }
+
+            $questionsData = [];
+            foreach ($validated['questions'] ?? [] as $question) {
+                $questionsData[] = [
+                    'enquete_id'      => $enquete->id,
+                    'libelle'         => $question['libelle'],
+                    'numero'          => $question['numero'],
+                    'type_reponse_id' => $question['type_reponse_id'],
+                    'theme_id'        => $themesMapping[$question['themeId']] ?? null,
+                    'created_at'      => $now,
+                    'updated_at'      => $now,
+                ];
+            }
+            Question::insert($questionsData);
+
+            $insertedQuestions = Question::where('enquete_id', $enquete->id)->get()->keyBy(function ($q) {
+                return $q->numero . '|' . $q->libelle;
+            });
+
+            $choicesData = [];
+            foreach ($validated['questions'] ?? [] as $question) {
+                $key = $question['numero'] . '|' . $question['libelle'];
+                $questionId = $insertedQuestions->get($key)?->id;
+
+                if ($questionId && !empty($question['choix'])) {
+                    foreach ($question['choix'] as $choixLibelle) {
+                        $choicesData[] = [
+                            'question_id' => $questionId,
+                            'libelle'     => $choixLibelle,
+                            'created_at'  => $now,
+                            'updated_at'  => $now,
+                        ];
+                    }
                 }
             }
-        }
 
-        return redirect()->route('surveys.index')
-            ->with('success', 'Enquête créée avec succès.');
+            if (!empty($choicesData)) {
+                \App\Models\Choix::insert($choicesData);
+            }
+
+            return redirect()->route('surveys.index')
+                ->with('success', 'Enquête créée avec succes.');
+        });
     }
 
     /**
@@ -115,7 +156,7 @@ class SurveyController extends Controller
             ->where('id', $id);
 
         if (!$user->isSuperAdmin()) {
-            $enqueteQuery->where('utilisateur_id', $user->id); // admin modifies only their own
+            $enqueteQuery->where('utilisateur_id', $user->id);
         }
 
         $enquete = $enqueteQuery->firstOrFail();
@@ -123,7 +164,7 @@ class SurveyController extends Controller
         $typesReponse = Type_Reponse::all(['id', 'libelle']);
 
         return Inertia::render('Surveys/Edit', [
-            'enquete'      => $this->formatEnquete($enquete),
+            'enquete'      => $this->formatEnquete($enquete->load(['questions.type_reponse', 'questions.choix', 'questions.theme'])),
             'typesReponse' => $typesReponse,
         ]);
     }
@@ -155,39 +196,78 @@ class SurveyController extends Controller
             'questions.*.theme_id'        => 'nullable|exists:themes,id',
             'questions.*.choix'           => 'nullable|array',
             'questions.*.choix.*'         => 'string',
+            'questions.*.themeId'         => 'nullable|string',
+            'themes' => 'required|array'
         ]);
 
-        $enquete->update([
-            'titre'         => $validated['titre'],
-            'description'   => $validated['description'] ?? '',
-            'date_debut'    => $validated['date_debut'],
-            'date_fin'      => $validated['date_fin'],
-            'type_campagne' => $validated['type_campagne'],
-        ]);
-
-        // Pour simplifier, on supprime et recrée les questions (en cascade via foreign keys, les choix associés seront supprimés)
-        $enquete->questions()->delete();
-
-        foreach ($validated['questions'] ?? [] as $q) {
-            $question = $enquete->questions()->create([
-                'libelle'         => $q['libelle'],
-                'numero'          => $q['numero'],
-                'type_reponse_id' => $q['type_reponse_id'],
-                'theme_id'        => $q['theme_id'] ?? null,
+        return DB::transaction(function () use ($validated, $enquete) {
+            $enquete->update([
+                'titre'         => $validated['titre'],
+                'description'   => $validated['description'] ?? '',
+                'date_debut'    => $validated['date_debut'],
+                'date_fin'      => $validated['date_fin'],
+                'type_campagne' => $validated['type_campagne'],
             ]);
 
-            if (!empty($q['choix'])) {
-                foreach ($q['choix'] as $choixLibelle) {
-                    $question->choix()->create(['libelle' => $choixLibelle]);
+            $now = now();
+
+            $oldThemeIds = $enquete->questions()->pluck('theme_id')->unique()->filter()->toArray();
+            $enquete->questions()->delete();
+            if (!empty($oldThemeIds)) {
+                Theme::whereIn('id', $oldThemeIds)->delete();
+            }
+
+            $themesMapping = [];
+            foreach ($validated['themes'] as $t) {
+                $theme = Theme::create([
+                    "libelle" => $t['libelle'],
+                    "ordre"   => $t['ordre']
+                ]);
+                $themesMapping[$t['_id']] = $theme->id;
+            }
+
+            $questionsData = [];
+            foreach ($validated['questions'] ?? [] as $q) {
+                $questionsData[] = [
+                    'enquete_id'      => $enquete->id,
+                    'libelle'         => $q['libelle'],
+                    'numero'          => $q['numero'],
+                    'type_reponse_id' => $q['type_reponse_id'],
+                    'theme_id'        => $themesMapping[$q['themeId']] ?? null,
+                    'created_at'      => $now,
+                    'updated_at'      => $now,
+                ];
+            }
+            Question::insert($questionsData);
+
+            $insertedQuestions = Question::where('enquete_id', $enquete->id)->get()->keyBy(function ($q) {
+                return $q->numero . '|' . $q->libelle;
+            });
+
+            $choicesData = [];
+            foreach ($validated['questions'] ?? [] as $q) {
+                $key = $q['numero'] . '|' . $q['libelle'];
+                $questionId = $insertedQuestions->get($key)?->id;
+
+                if ($questionId && !empty($q['choix'])) {
+                    foreach ($q['choix'] as $choixLibelle) {
+                        $choicesData[] = [
+                            'question_id' => $questionId,
+                            'libelle'     => $choixLibelle,
+                            'created_at'  => $now,
+                            'updated_at'  => $now,
+                        ];
+                    }
                 }
             }
-        }
 
-        // Nettoyage des thèmes sans questions
-        \App\Models\Theme::doesntHave('questions')->delete();
+            if (!empty($choicesData)) {
+                \App\Models\Choix::insert($choicesData);
+            }
 
-        return redirect()->route('surveys.index')
-            ->with('success', 'Enquête mise à jour avec succès.');
+            return redirect()->route('surveys.index')
+                ->with('success', 'Enquête mise à jour avec succes.');
+        });
     }
 
     /**
@@ -218,9 +298,6 @@ class SurveyController extends Controller
      */
     public function destroyAll()
     {
-        $user = Auth::user();
-
-        // Seuls les superadmins accedent à cette méthode (via le middleware), donc clean everything
         Enquete::query()->delete();
 
         return redirect()->route('surveys.index')
@@ -258,7 +335,7 @@ class SurveyController extends Controller
         $allRoles = Participant::distinct()->pluck('role')->filter()->values();
 
         return Inertia::render('Surveys/Fill', [
-            'enquete' => $this->formatEnquete($enquete),
+            'enquete' => $this->formatEnquete($enquete->load(['questions.type_reponse', 'questions.choix', 'questions.theme'])),
             'participants' => $participants,
             'filters' => [
                 'search' => $search,
@@ -276,7 +353,6 @@ class SurveyController extends Controller
         $enquete = Enquete::with('questions')->findOrFail($id);
         $user    = Auth::user();
 
-        // Validation dynamique : une reponse par question
         $rules = [
             'participant_id' => 'required|exists:participants,id',
         ];
@@ -285,7 +361,6 @@ class SurveyController extends Controller
         }
         $validated = $request->validate($rules);
 
-        // Visuel → dd() pour l'instant (pas de table reponses en BDD)
         dd([
             'action'         => 'Soumettre réponses enquête',
             'enquete_id'     => $id,
@@ -368,10 +443,43 @@ class SurveyController extends Controller
             'statut'        => $e->statut,
             'utilisateur'   => $e->utilisateur?->name ?? '—',
             'utilisateur_id' => $e->utilisateur_id,
-            'nb_questions'  => count($questions),
-            'questions'     => $questions,
-            'themes'        => $formattedThemes,
+            'nb_questions'  => $e->questions?->count() ?? 0,
             'created_at'    => $e->created_at?->format('d/m/Y'),
+            'questions'     => $e->relationLoaded('questions')
+                ? $e->questions->map(fn(Question $q) => [
+                    'id'            => $q->id,
+                    'libelle'       => $q->libelle,
+                    'numero'        => $q->numero,
+                    'type_reponse'  => $q->type_reponse?->libelle,
+                    'type_reponse_id' => $q->type_reponse_id,
+                    'theme'         => $q->theme ? [
+                        'id' => $q->theme->id,
+                        'libelle' => $q->theme->libelle,
+                        'ordre' => $q->theme->ordre
+                    ] : null,
+                    'choix'         => $q->relationLoaded('choix')
+                        ? $q->choix->map(fn($c) => ['id' => $c->id, 'libelle' => $c->libelle])
+                        : [],
+                ])->values()
+                : [],
+            'themes'        => $e->relationLoaded('questions')
+                ? $e->questions->groupBy('theme_id')->map(function ($questions, $themeId) {
+                    $theme = $questions->first()->theme;
+                    return [
+                        'id' => $theme ? $theme->id : null,
+                        'libelle' => $theme ? $theme->libelle : 'Sans theme',
+                        'ordre' => $theme ? $theme->ordre : 0,
+                        'questions' => $questions->map(fn($q) => [
+                            'id' => $q->id,
+                            'libelle' => $q->libelle,
+                            'numero' => $q->numero,
+                            'type_reponse' => $q->type_reponse?->libelle,
+                            'type_reponse_id' => $q->type_reponse_id,
+                            'choix' => $q->choix->map(fn($c) => ['id' => $c->id, 'libelle' => $c->libelle])
+                        ])->values()
+                    ];
+                })->values()
+                : []
         ];
     }
 }

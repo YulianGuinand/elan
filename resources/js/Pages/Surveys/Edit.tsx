@@ -55,71 +55,36 @@ function EditSurveyContent({ typesReponse, enquete }: Props) {
 }
 
 export default function SurveyEdit({ enquete, typesReponse }: Props) {
-    // 1. Map Laravel "Enquete" to "SurveyBuilderState"
-    // Since the database currently has a flat list of questions, we put them all in one default Theme.
+    // Convert API format dd/mm/yyyy to HTML input format yyyy-mm-dd
+    const parseDate = (dateStr: string) => {
+        if (!dateStr) return "";
+        return dateStr.split("/").reverse().join("-");
+    };
 
-    // Map choice objects back to QuestionOptions
-    const formatQuestions = (): Question[] => {
-        return enquete.questions.map((q, idx) => {
-            // Map the type title back to the builder's string key
-            let builderType = "text";
-            switch (q.type_reponse) {
-                case "Texte court":
-                    builderType = "text";
-                    break;
-                case "Texte long":
-                    builderType = "textarea";
-                    break;
-                case "Choix unique":
-                    builderType = "radio";
-                    break;
-                case "Choix multiples":
-                    builderType = "checkbox";
-                    break;
-                case "Liste déroulante":
-                    builderType = "select";
-                    break;
-                case "Nombre":
-                    builderType = "number";
-                    break;
-                case "Date":
-                    builderType = "date";
-                    break;
-                case "Échelle linéaire":
-                    builderType = "likert";
-                    break;
-            }
+    const initialThemes: Theme[] = enquete.themes?.map((t: any) => ({
+        id: nanoid(),
+        title: t.libelle,
+        description: "",
+        order: t.ordre || 0,
+        questions: t.questions.map((q: any, idx: number) => {
+            let builderType = q.type_reponse || "text";
 
             return {
                 id: nanoid(),
                 type: builderType as any,
                 label: q.libelle,
-                required: false, // The DB does not store required yet, fallback to false
+                required: q.required || false,
                 order: q.numero || idx,
                 options: q.choix
-                    ? q.choix.map((c) => ({
+                    ? q.choix.map((c: any) => ({
                           id: nanoid(),
                           label: c.libelle,
                           value: c.libelle,
                       }))
                     : undefined,
             };
-        });
-    };
-
-    const initialTheme: Theme = {
-        id: nanoid(),
-        title: "Questions de l'enquête",
-        description: "",
-        order: 0,
-        questions: formatQuestions(),
-    };
-
-    // Convert API format dd/mm/yyyy to HTML input format yyyy-mm-dd
-    const parseDate = (dateStr: string) => {
-        if (!dateStr) return "";
-        return dateStr.split("/").reverse().join("-");
-    };
+        })
+    })) || [];
 
     const initialStateOverride: Partial<SurveyBuilderState> = {
         surveyId: enquete.id,
@@ -132,7 +97,15 @@ export default function SurveyEdit({ enquete, typesReponse }: Props) {
             startDate: parseDate(enquete.date_debut),
             endDate: parseDate(enquete.date_fin),
         },
-        themes: [initialTheme],
+        themes: initialThemes.length > 0 ? initialThemes : [
+            {
+                id: nanoid(),
+                title: "Questions de l'enquête",
+                description: "",
+                order: 0,
+                questions: [],
+            }
+        ],
     };
 
     return (

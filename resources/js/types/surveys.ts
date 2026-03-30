@@ -19,8 +19,20 @@ export interface QuestionEnquete {
     numero: number;
     type_reponse: string | null;
     type_reponse_id: number;
+    theme?: {
+        id: number;
+        libelle: string;
+        ordre: number;
+    } | null;
     choix: Choix[];
-    theme?: ThemeEnquete;
+    required?: boolean;
+}
+
+export interface ThemeEnquete {
+    id: number;
+    libelle: string;
+    ordre: number;
+    questions: QuestionEnquete[];
 }
 
 export interface Survey {
