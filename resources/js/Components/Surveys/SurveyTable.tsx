@@ -1,6 +1,6 @@
 import { StatutEnquete, Survey } from "@/types/surveys";
 import { router } from "@inertiajs/react";
-import { Calendar, Edit, FileText, Send, Trash2 } from "lucide-react";
+import { ArrowRight, Calendar, Edit, FileText, Send, Trash2 } from "lucide-react";
 
 interface SurveyTableProps {
     surveys: Survey[];
@@ -129,8 +129,9 @@ export default function SurveyTable({
                                     <td className="px-5 py-4">
                                         <div className="flex items-center gap-1.5 text-xs text-gray-600">
                                             <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                                            <span>
-                                                {survey.date_debut} →{" "}
+                                            <span className="flex flex-row items-center gap-2">
+                                                {survey.date_debut}
+                                                <ArrowRight className="size-3.5" />
                                                 {survey.date_fin}
                                             </span>
                                         </div>

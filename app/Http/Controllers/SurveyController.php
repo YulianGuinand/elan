@@ -74,6 +74,7 @@ class SurveyController extends Controller
             'questions.*.libelle'         => 'required|string',
             'questions.*.numero'          => 'required|integer',
             'questions.*.type_reponse_id' => 'required|exists:type__reponses,id',
+            'questions.*.theme_id'        => 'nullable|exists:themes,id',
             'questions.*.choix'           => 'nullable|array',
             'questions.*.choix.*'         => 'string',
             'questions.*.themeId' => 'string',
@@ -151,7 +152,7 @@ class SurveyController extends Controller
     public function edit(string $id): Response
     {
         $user    = Auth::user();
-        $enqueteQuery = Enquete::with(['questions.type_reponse', 'questions.choix'])
+        $enqueteQuery = Enquete::with(['questions.type_reponse', 'questions.choix', 'questions.theme'])
             ->where('id', $id);
 
         if (!$user->isSuperAdmin()) {
@@ -192,6 +193,7 @@ class SurveyController extends Controller
             'questions.*.libelle'         => 'required|string',
             'questions.*.numero'          => 'required|integer',
             'questions.*.type_reponse_id' => 'required|exists:type__reponses,id',
+            'questions.*.theme_id'        => 'nullable|exists:themes,id',
             'questions.*.choix'           => 'nullable|array',
             'questions.*.choix.*'         => 'string',
             'questions.*.themeId'         => 'nullable|string',
@@ -284,6 +286,9 @@ class SurveyController extends Controller
 
         $enquete->delete();
 
+        // Nettoyage des thèmes orphelins après suppression de l'enquête
+        \App\Models\Theme::doesntHave('questions')->delete();
+
         return redirect()->route('surveys.index')
             ->with('success', 'Enquête supprimée.');
     }
@@ -304,7 +309,7 @@ class SurveyController extends Controller
      */
     public function fill(Request $request, string $id): Response
     {
-        $enquete = Enquete::with(['questions.type_reponse', 'questions.choix'])
+        $enquete = Enquete::with(['questions.type_reponse', 'questions.choix', 'questions.theme'])
             ->findOrFail($id);
 
         $search = $request->input('search');
@@ -372,6 +377,62 @@ class SurveyController extends Controller
 
     private function formatEnquete(Enquete $e): array
     {
+        // S'assurer que les relations sont toujours chargées
+        if (!$e->relationLoaded('questions')) {
+            $e->load(['questions.type_reponse', 'questions.choix', 'questions.theme']);
+        }
+
+        $questions = $e->questions->map(function (Question $q) {
+            $theme = $q->theme;
+            return [
+                'id'            => $q->id,
+                'libelle'       => $q->libelle,
+                'numero'        => $q->numero,
+                'type_reponse'  => $q->type_reponse?->libelle,
+                'type_reponse_id' => $q->type_reponse_id,
+                'choix'         => $q->choix ? $q->choix->map(fn($c) => ['id' => $c->id, 'libelle' => $c->libelle])->toArray() : [],
+                'theme'         => $theme ? [
+                    'id'      => $theme->id,
+                    'libelle' => $theme->libelle,
+                    'ordre'   => $theme->ordre ?? 0,
+                ] : null,
+            ];
+        })->values()->toArray();
+
+        // Grouper les questions par thèmes pour la navigation par étapes
+        $themesMap = [];
+        $noThemeQuestions = [];
+
+        foreach ($questions as $q) {
+            if ($q['theme']) {
+                $tId = $q['theme']['id'];
+                if (!isset($themesMap[$tId])) {
+                    $themesMap[$tId] = [
+                        'id'        => $q['theme']['id'],
+                        'libelle'   => $q['theme']['libelle'],
+                        'ordre'     => $q['theme']['ordre'] ?? 0,
+                        'questions' => [],
+                    ];
+                }
+                $themesMap[$tId]['questions'][] = $q;
+            } else {
+                $noThemeQuestions[] = $q;
+            }
+        }
+
+        $formattedThemes = array_values($themesMap);
+        usort($formattedThemes, fn($a, $b) => $a['ordre'] <=> $b['ordre']);
+
+        // Si des questions n'ont pas de thème, on les met dans un thème par défaut à la fin
+        if (!empty($noThemeQuestions)) {
+            $formattedThemes[] = [
+                'id'        => 0,
+                'libelle'   => 'Questions Générales',
+                'ordre'     => 999,
+                'questions' => $noThemeQuestions,
+            ];
+        }
+
         return [
             'id'            => $e->id,
             'titre'         => $e->titre,

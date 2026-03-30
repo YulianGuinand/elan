@@ -6,6 +6,13 @@ export interface Choix {
     libelle: string;
 }
 
+export interface ThemeEnquete {
+    id: number;
+    libelle: string;
+    ordre: number;
+    questions: QuestionEnquete[];
+}
+
 export interface QuestionEnquete {
     id: number;
     libelle: string;
@@ -64,3 +71,4 @@ export interface TypeReponse {
     id: number;
     libelle: string;
 }
+// End of types

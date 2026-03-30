@@ -1,6 +1,5 @@
 import FadeIn from "@/Components/Animations/FadeIn";
 import DashboardLayout from "@/Layouts/DashboardLayout";
-import { Survey } from "@/types/surveys";
 import { Head, router } from "@inertiajs/react";
 import {
     CheckCircle,
@@ -55,89 +54,110 @@ export default function SurveyFill({
     const [isParticipantConfirmed, setIsParticipantConfirmed] = useState(false);
     const [answers, setAnswers] = useState<Record<number, any>>({});
 
-    // State pour la sélection du participant
+    const [currentThemeIndex, setCurrentThemeIndex] = useState(0);
+
     const [searchQuery, setSearchQuery] = useState(filters.search || "");
     const [roleFilter, setRoleFilter] = useState(filters.role || "Tous");
 
-    const roles = useMemo(() => {
-        return ["Tous", ...availableRoles];
-    }, [availableRoles]);
+    const totalQuestions = (enquete.questions || []).length;
 
-    // Système de recherche avec debounce
+    // Calcul de la progression sur le theme actuel pour le compteur "X sur Y"
+    const themes = useMemo((): ThemeEnquete[] => {
+        const surveyWithThemes = enquete as Survey & {
+            themes?: ThemeEnquete[];
+        };
+        if (surveyWithThemes.themes && surveyWithThemes.themes.length > 0) {
+            return surveyWithThemes.themes;
+        }
+
+        return [
+            {
+                id: 0,
+                libelle: "Général",
+                ordre: 0,
+                questions: enquete.questions || [],
+            },
+        ];
+    }, [enquete]);
+
+    const currentTheme = themes[currentThemeIndex] || themes[0];
+
+    // Nombre de questions repondues globalement pour la barre de progression
+    const answeredCount = Object.keys(answers).filter(
+        (k) => answers[Number(k)] !== undefined && answers[Number(k)] !== "",
+    ).length;
+    const progress =
+        totalQuestions > 0
+            ? Math.round((answeredCount / totalQuestions) * 100)
+            : 0;
+
+    const isFirstTheme = currentThemeIndex === 0;
+    const isLastTheme = currentThemeIndex === themes.length - 1;
+
+    // Debounce pour la recherche
     useEffect(() => {
         if (searchQuery === (filters.search || "")) return;
-
         const timeoutId = setTimeout(() => {
             router.get(
                 route("surveys.fill", { id: enquete.id }),
                 { search: searchQuery, role: roleFilter },
-                {
-                    preserveState: true,
-                    replace: true,
-                    only: ["participants"],
-                },
+                { preserveState: true, replace: true, only: ["participants"] },
             );
         }, 300);
-
         return () => clearTimeout(timeoutId);
-    }, [searchQuery]);
+    }, [searchQuery, filters.search, enquete.id, roleFilter]);
 
+    // Handlers
     const handleRoleChange = (role: string) => {
         setRoleFilter(role);
         router.get(
             route("surveys.fill", { id: enquete.id }),
             { search: searchQuery, role: role },
-            {
-                preserveState: true,
-                replace: true,
-                only: ["participants"],
-            },
-        );
-    };
-
-    const handlePageChange = (page: number) => {
-        router.get(
-            route("surveys.fill", { id: enquete.id }),
-            { search: searchQuery, role: roleFilter, page: page },
             { preserveState: true, replace: true, only: ["participants"] },
         );
     };
 
-    const paginatedParticipants = participants.data;
-    const totalPages = participants.last_page;
-    const currentPage = participants.current_page;
-
-    const total = enquete.questions.length;
-    const answered = Object.keys(answers).length;
-    const progress = total > 0 ? Math.round((answered / total) * 100) : 0;
-
-    const handleChange = (questionId: number, value: any) => {
+    const handleChange = useCallback((questionId: number, value: any) => {
         setAnswers((prev) => ({ ...prev, [questionId]: value }));
+    }, []);
+
+    const handleCheckboxChange = useCallback(
+        (questionId: number, value: string, checked: boolean) => {
+            setAnswers((prev) => {
+                const current = Array.isArray(prev[questionId])
+                    ? prev[questionId]
+                    : [];
+                if (checked) {
+                    return { ...prev, [questionId]: [...current, value] };
+                } else {
+                    return {
+                        ...prev,
+                        [questionId]: current.filter(
+                            (v: string) => v !== value,
+                        ),
+                    };
+                }
+            });
+        },
+        [],
+    );
+
+    const nextTheme = () => {
+        if (!isLastTheme) {
+            setCurrentThemeIndex((prev) => prev + 1);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
     };
 
-    const handleCheckboxChange = (
-        questionId: number,
-        value: string,
-        checked: boolean,
-    ) => {
-        setAnswers((prev) => {
-            const current = Array.isArray(prev[questionId])
-                ? prev[questionId]
-                : [];
-            if (checked) {
-                return { ...prev, [questionId]: [...current, value] };
-            } else {
-                return {
-                    ...prev,
-                    [questionId]: current.filter((v: string) => v !== value),
-                };
-            }
-        });
+    const prevTheme = () => {
+        if (!isFirstTheme) {
+            setCurrentThemeIndex((prev) => prev - 1);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
         const formattedAnswers = { ...answers };
         Object.keys(formattedAnswers).forEach((key) => {
             if (Array.isArray(formattedAnswers[Number(key)])) {
@@ -164,395 +184,79 @@ export default function SurveyFill({
 
     return (
         <>
-            <Head title={`Remplir — ${enquete.titre}`} />
-            <DashboardLayout
-                title="Remplir l'enquête"
-                breadcrumbs={[
-                    { label: "Accueil", href: "/tableau-de-bord" },
-                    { label: "Enquêtes", href: "/enquetes" },
-                    { label: "Sélection du participant" },
-                ]}
-            >
-                <div className="max-w-6xl mx-auto">
-                    {!isParticipantConfirmed ? (
-                        <div className="space-y-6">
-                            <FadeIn delay={0}>
-                                <div className="mb-8">
-                                    <h1 className="text-3xl font-bold text-gray-900">
-                                        Sélection du Participant
-                                    </h1>
-                                    <p className="text-gray-500 mt-2">
-                                        Veuillez identifier la personne qui
-                                        répondra au questionnaire.
-                                    </p>
-                                </div>
-                            </FadeIn>
+            <Head
+                title={`${isParticipantConfirmed ? `Remplissage — ${selectedParticipant?.prenom}` : "Sélection"} — ${enquete.titre}`}
+            />
 
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                {/* Colonne Gauche: Détails et Aide */}
-                                <div className="space-y-6">
-                                    <FadeIn delay={100}>
-                                        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-                                            <div className="flex items-center gap-2 mb-6 text-gray-800">
-                                                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500">
-                                                    <Info className="w-5 h-5" />
-                                                </div>
-                                                <h3 className="font-bold text-lg">
-                                                    Détails de l'enquête
-                                                </h3>
-                                            </div>
-
-                                            <div className="space-y-4">
-                                                <div>
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                                        Titre
-                                                    </span>
-                                                    <p className="text-gray-900 font-semibold">
-                                                        {enquete.titre}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                                        Description
-                                                    </span>
-                                                    <p className="text-gray-600 text-sm leading-relaxed">
-                                                        {enquete.description ||
-                                                            "Aucune description fournie."}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                                        Catégorie
-                                                    </span>
-                                                    <span className="inline-block px-3 py-1 bg-orange-50 text-orange-600 rounded-lg text-xs font-bold">
-                                                        {enquete.type_campagne ||
-                                                            "Générale"}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </FadeIn>
-
-                                    <FadeIn delay={200}>
-                                        <div className="bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl p-6 text-white shadow-lg shadow-orange-200">
-                                            <div className="flex items-center gap-2 mb-4">
-                                                <HelpCircle className="w-6 h-6" />
-                                                <h3 className="font-bold text-lg">
-                                                    Besoin d'aide ?
-                                                </h3>
-                                            </div>
-                                            <p className="text-orange-50 text-sm mb-6 leading-relaxed">
-                                                Si le participant n'est pas dans
-                                                la liste, assurez-vous qu'il a
-                                                bien été importé dans la base de
-                                                données globale des contacts.
-                                            </p>
-                                            <button
-                                                onClick={() =>
-                                                    router.get(
-                                                        route(
-                                                            "participants.index",
-                                                        ),
-                                                    )
-                                                }
-                                                className="w-full py-3 bg-white text-orange-500 font-bold rounded-xl hover:bg-orange-50 transition-colors shadow-sm"
-                                            >
-                                                Consulter les contacts
-                                            </button>
-                                        </div>
-                                    </FadeIn>
-                                </div>
-
-                                {/* Colonne Droite: Filtres et Liste */}
-                                <div className="lg:col-span-2">
-                                    <FadeIn delay={150}>
-                                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                                            {/* Header Filtres */}
-                                            <div className="p-4 border-b border-gray-50 flex flex-col md:flex-row gap-4 items-center justify-between">
-                                                <div className="flex bg-gray-50 p-1 rounded-xl w-full md:w-auto overflow-x-auto">
-                                                    {roles.map((role) => (
-                                                        <button
-                                                            key={role}
-                                                            onClick={() =>
-                                                                handleRoleChange(
-                                                                    role,
-                                                                )
-                                                            }
-                                                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
-                                                                roleFilter ===
-                                                                role
-                                                                    ? "bg-white text-gray-900 shadow-sm"
-                                                                    : "text-gray-500 hover:text-gray-700"
-                                                            }`}
-                                                        >
-                                                            {role}
-                                                        </button>
-                                                    ))}
-                                                </div>
-
-                                                <div className="relative w-full md:w-64">
-                                                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                                    <input
-                                                        type="text"
-                                                        value={searchQuery}
-                                                        onChange={(e) => {
-                                                            setSearchQuery(
-                                                                e.target.value,
-                                                            );
-                                                        }}
-                                                        placeholder="Rechercher..."
-                                                        className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {/* Table */}
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full">
-                                                    <thead>
-                                                        <tr className="border-b border-gray-50 text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50/50">
-                                                            <th className="px-6 py-4 text-left">
-                                                                Participant
-                                                            </th>
-                                                            <th className="px-6 py-4 text-left">
-                                                                Rôle
-                                                            </th>
-                                                            <th className="px-6 py-4 text-right">
-                                                                Actions
-                                                            </th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-gray-50">
-                                                        {paginatedParticipants.length >
-                                                        0 ? (
-                                                            paginatedParticipants.map(
-                                                                (
-                                                                    participant,
-                                                                ) => (
-                                                                    <tr
-                                                                        key={
-                                                                            participant.id
-                                                                        }
-                                                                        className="group hover:bg-gray-50/50 transition-colors"
-                                                                    >
-                                                                        <td className="px-6 py-4">
-                                                                            <div className="flex items-center gap-3">
-                                                                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-xs ring-4 ring-white shadow-sm overflow-hidden">
-                                                                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 group-hover:from-orange-50 group-hover:to-orange-100 transition-colors">
-                                                                                        {getInitials(
-                                                                                            participant.prenom,
-                                                                                            participant.nom,
-                                                                                        )}
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div>
-                                                                                    <p className="text-sm font-bold text-gray-900">
-                                                                                        {
-                                                                                            participant.prenom
-                                                                                        }{" "}
-                                                                                        {
-                                                                                            participant.nom
-                                                                                        }
-                                                                                    </p>
-                                                                                    <p className="text-xs text-gray-500">
-                                                                                        {
-                                                                                            participant.mail
-                                                                                        }
-                                                                                    </p>
-                                                                                </div>
-                                                                            </div>
-                                                                        </td>
-                                                                        <td className="px-6 py-4">
-                                                                            <span className="inline-block px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg text-[10px] font-bold uppercase tracking-tight">
-                                                                                {participant.role ||
-                                                                                    "Participant"}
-                                                                            </span>
-                                                                        </td>
-                                                                        <td className="px-6 py-4 text-right">
-                                                                            <button
-                                                                                onClick={() =>
-                                                                                    handleSelectParticipant(
-                                                                                        participant,
-                                                                                    )
-                                                                                }
-                                                                                className="px-4 py-2 bg-orange-500 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-all shadow-md shadow-orange-500/10 hover:shadow-orange-500/20 active:scale-95"
-                                                                            >
-                                                                                Sélectionner
-                                                                            </button>
-                                                                        </td>
-                                                                    </tr>
-                                                                ),
-                                                            )
-                                                        ) : (
-                                                            <tr>
-                                                                <td
-                                                                    colSpan={3}
-                                                                    className="px-6 py-12 text-center text-gray-400 text-sm"
-                                                                >
-                                                                    Aucun
-                                                                    participant
-                                                                    trouvé pour
-                                                                    cette
-                                                                    recherche.
-                                                                </td>
-                                                            </tr>
-                                                        )}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-
-                                            {/* Footer Pagination */}
-                                            <div className="p-4 border-t border-gray-50 flex items-center justify-between">
-                                                <p className="text-xs text-gray-500 italic">
-                                                    Affichage de{" "}
-                                                    {participants.total > 0
-                                                        ? (participants.current_page -
-                                                              1) *
-                                                              participants.per_page +
-                                                          1
-                                                        : 0}{" "}
-                                                    à{" "}
-                                                    {Math.min(
-                                                        participants.current_page *
-                                                            participants.per_page,
-                                                        participants.total,
-                                                    )}{" "}
-                                                    sur {participants.total}{" "}
-                                                    participants
-                                                </p>
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        disabled={
-                                                            currentPage === 1
-                                                        }
-                                                        onClick={() =>
-                                                            handlePageChange(
-                                                                currentPage - 1,
-                                                            )
-                                                        }
-                                                        className="p-2 border border-gray-200 rounded-lg disabled:opacity-30 hover:bg-gray-50 transition-colors"
-                                                    >
-                                                        <ChevronLeft className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        disabled={
-                                                            currentPage >=
-                                                            totalPages
-                                                        }
-                                                        onClick={() =>
-                                                            handlePageChange(
-                                                                currentPage + 1,
-                                                            )
-                                                        }
-                                                        className="p-2 border border-gray-200 rounded-lg disabled:opacity-30 hover:bg-gray-50 transition-colors"
-                                                    >
-                                                        <ChevronRight className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </FadeIn>
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        /* SECTION 2: REMPLISSAGE DE L'ENQUÊTE (Ancien code conservé et amélioré) */
-                        <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-                            <FadeIn delay={0}>
-                                <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-inner text-orange-600">
-                                            <Send className="w-6 h-6" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h2 className="text-lg font-bold text-gray-900">
-                                                {enquete.titre}
-                                            </h2>
-                                            <p className="text-gray-600 mt-1">
-                                                {enquete.description}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </FadeIn>
-
-                            {/* Recap profil avec progression */}
+            {isParticipantConfirmed ? (
+                <DashboardLayout
+                    title={`Remplissage — ${enquete.titre}`}
+                    breadcrumbs={[
+                        { label: "Accueil", href: "/tableau-de-bord" },
+                        { label: "Enquêtes", href: "/enquetes" },
+                        {
+                            label: "Sélection",
+                            onClick: () => setIsParticipantConfirmed(false),
+                        },
+                        { label: "Saisie" },
+                    ]}
+                >
+                    <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 w-full items-start">
+                        {/* Barre Latérale Gauche */}
+                        <div className="lg:col-span-3 flex flex-col gap-6 w-full sticky top-8">
                             <FadeIn delay={100}>
-                                <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm sticky top-4 z-10">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                                                <User className="w-5 h-5 text-gray-600" />
-                                            </div>
-                                            <div>
-                                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                                                    Participant Actuel
-                                                </p>
-                                                <p className="text-sm font-bold text-gray-900">
-                                                    {
-                                                        selectedParticipant?.prenom
-                                                    }{" "}
-                                                    {selectedParticipant?.nom}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setIsParticipantConfirmed(false)
-                                            }
-                                            className="text-xs font-semibold text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition-colors"
-                                        >
-                                            Changer de participant
-                                        </button>
-                                    </div>
-
-                                    <div className="pt-3 border-t border-gray-100">
-                                        <div className="flex justify-between text-sm font-medium text-gray-500 mb-2">
-                                            <span>
-                                                {answered} sur {total} questions
-                                                répondues
-                                            </span>
-                                            <span className="text-orange-600">
-                                                {progress}%
-                                            </span>
-                                        </div>
-                                        <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                                            <div
-                                                className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full transition-all duration-300 ease-out"
-                                                style={{
-                                                    width: `${progress}%`,
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
+                                <FillSidebar
+                                    participant={selectedParticipant}
+                                    onChangeParticipant={() =>
+                                        setIsParticipantConfirmed(false)
+                                    }
+                                />
                             </FadeIn>
 
-                            {total === 0 ? (
-                                <FadeIn delay={200}>
-                                    <div className="bg-white rounded-2xl border border-dashed border-gray-300 p-12 text-center">
-                                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <CheckCircle className="w-8 h-8 text-gray-400" />
+                            <FadeIn delay={200}>
+                                <ThemeNavigation
+                                    themes={themes}
+                                    currentThemeIndex={currentThemeIndex}
+                                    setCurrentThemeIndex={setCurrentThemeIndex}
+                                    answers={answers}
+                                />
+                            </FadeIn>
+                        </div>
+
+                        {/* Zone Centrale de Questionnement */}
+                        <div className="lg:col-span-9 w-full min-w-0 flex flex-col gap-6">
+                            <FadeIn delay={300}>
+                                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+                                    <div className="p-6 md:p-8 space-y-6">
+                                        <div className="flex items-center justify-between gap-4">
+                                            <h2 className="text-xl font-black text-gray-900 tracking-tight">
+                                                {currentTheme.libelle}
+                                            </h2>
+                                            <span className="text-xs font-black text-gray-400 uppercase tracking-widest bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                                                Question{" "}
+                                                <span className="text-orange-500 font-black">
+                                                    {answeredCount}
+                                                </span>{" "}
+                                                sur {totalQuestions}
+                                            </span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-gray-900 mb-1">
-                                            Aucune question
-                                        </h3>
-                                        <p className="text-gray-500">
-                                            Cette enquête ne contient pas encore
-                                            de questions.
-                                        </p>
+
+                                        <div className="relative pt-1">
+                                            <div className="overflow-hidden h-2.5 flex rounded-full bg-gray-100">
+                                                <div
+                                                    style={{
+                                                        width: `${progress}%`,
+                                                    }}
+                                                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-[#F58232] transition-all duration-700 ease-out rounded-full"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                </FadeIn>
-                            ) : (
-                                <form
-                                    onSubmit={handleSubmit}
-                                    className="space-y-6"
-                                >
-                                    {enquete.questions.map((q, idx) => (
-                                        <FadeIn
-                                            key={q.id}
-                                            delay={150 + idx * 50}
+
+                                    <div className="p-6 md:p-8 border-t border-gray-50 bg-gray-50/20">
+                                        <form
+                                            onSubmit={handleSubmit}
+                                            className="space-y-6"
                                         >
                                             <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:border-orange-200 transition-colors duration-300 focus-within:ring-2 focus-within:ring-orange-500/20 focus-within:border-orange-400">
                                                 <div className="flex items-start gap-4 mb-5">
@@ -764,14 +468,12 @@ export default function SurveyFill({
                                                         <textarea
                                                             rows={4}
                                                             value={
-                                                                answers[q.id] ??
-                                                                ""
+                                                                answers[q.id]
                                                             }
-                                                            onChange={(e) =>
+                                                            onChange={(val) =>
                                                                 handleChange(
                                                                     q.id,
-                                                                    e.target
-                                                                        .value,
+                                                                    val,
                                                                 )
                                                             }
                                                             placeholder="Saisissez votre réponse..."
@@ -795,8 +497,8 @@ export default function SurveyFill({
                                                             onChange={(e) =>
                                                                 handleChange(
                                                                     q.id,
-                                                                    e.target
-                                                                        .value,
+                                                                    val,
+                                                                    checked,
                                                                 )
                                                             }
                                                             placeholder={
@@ -810,41 +512,72 @@ export default function SurveyFill({
                                                             }
                                                             className="w-full p-4 border-2 border-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-0 focus:border-orange-500 bg-gray-50 focus:bg-white transition-all shadow-inner"
                                                         />
-                                                    )}
-                                                </div>
+                                                    ),
+                                                )}
                                             </div>
-                                        </FadeIn>
-                                    ))}
 
-                                    <div className="flex justify-end gap-4 pt-4 pb-10">
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                router.visit(
-                                                    route("surveys.index"),
-                                                )
-                                            }
-                                            className="px-6 py-3 text-sm font-bold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:text-gray-900 transition-all"
-                                        >
-                                            Annuler
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            disabled={progress < 100}
-                                            className="flex items-center gap-2 px-8 py-3 text-sm font-bold text-white bg-orange-500 rounded-xl hover:bg-orange-600 transition-all shadow-lg hover:shadow-orange-500/25 disabled:opacity-50 disabled:cursor-not-allowed group"
-                                        >
-                                            <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                            {progress < 100
-                                                ? "Répondre à toutes les questions"
-                                                : "Soumettre le formulaire"}
-                                        </button>
+                                            <div className="flex items-center justify-between pt-8 border-t border-gray-100/50 mt-10">
+                                                <button
+                                                    type="button"
+                                                    onClick={prevTheme}
+                                                    disabled={isFirstTheme}
+                                                    className="px-6 py-3.5 bg-white border border-gray-200 rounded-xl text-xs font-black text-gray-500 uppercase tracking-widest hover:border-gray-300 hover:text-gray-900 transition-all disabled:opacity-20 shadow-sm disabled:cursor-not-allowed active:scale-95"
+                                                >
+                                                    Retour
+                                                </button>
+
+                                                {!isLastTheme ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={nextTheme}
+                                                        className="group flex items-center gap-3 px-8 py-3.5 bg-[#F58232] text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-orange-500/20 hover:bg-orange-600 active:scale-95 transition-all"
+                                                    >
+                                                        <span>
+                                                            Theme Suivante
+                                                        </span>
+                                                        <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        type="submit"
+                                                        className="group flex items-center gap-3 px-8 py-3.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-slate-900/10 hover:bg-black active:scale-95 transition-all"
+                                                    >
+                                                        <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                                        Soumettre l&apos;enquête
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </form>
                                     </div>
-                                </form>
-                            )}
+                                </div>
+                            </FadeIn>
                         </div>
-                    )}
-                </div>
-            </DashboardLayout>
+                    </div>
+                </DashboardLayout>
+            ) : (
+                <DashboardLayout
+                    title="Selection du participant"
+                    breadcrumbs={[
+                        { label: "Accueil", href: "/tableau-de-bord" },
+                        { label: "Enquêtes", href: "/enquetes" },
+                        { label: "Remplir" },
+                    ]}
+                >
+                    <ParticipantSelection
+                        participants={participants}
+                        searchQuery={searchQuery}
+                        onSearchChange={setSearchQuery}
+                        roleFilter={roleFilter}
+                        onRoleChange={handleRoleChange}
+                        onSelect={(p) => {
+                            setSelectedParticipant(p);
+                            setIsParticipantConfirmed(true);
+                        }}
+                        availableRoles={availableRoles}
+                        enquete={enquete}
+                    />
+                </DashboardLayout>
+            )}
         </>
     );
 }

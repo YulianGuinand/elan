@@ -8,6 +8,7 @@ import { PropsWithChildren, useEffect, useState } from "react";
 interface BreadcrumbItem {
     label: string;
     href?: string;
+    onClick?: () => void;
 }
 
 interface DashboardLayoutProps extends PropsWithChildren {
@@ -33,13 +34,12 @@ export default function DashboardLayout({
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const { toasts, add, remove } = useToastManager();
 
-    // Afficher les messages flash (succès / erreur) à chaque navigation Inertia
+    // FLASH
     useEffect(() => {
         if (flash?.success) add(flash.success, "success");
         if (flash?.error) add(flash.error, "error");
         if (flash?.message) add(flash.message, "info");
 
-        // Erreurs de validation : afficher la première
         if (errors && Object.keys(errors).length > 0) {
             const firstError = Object.values(errors)[0];
             add(firstError, "error");
@@ -71,7 +71,7 @@ export default function DashboardLayout({
 
                 {/* Page Content */}
                 <main
-                    className={`flex-1 ${
+                    className={`flex-1 flex gap-4 ${
                         noPadding ? "" : "px-4 sm:px-6 lg:px-8 py-4 sm:py-6"
                     }`}
                 >

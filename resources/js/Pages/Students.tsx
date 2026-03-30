@@ -89,7 +89,7 @@ export default function Students({
                         : undefined
                 }
             >
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
                     {/* Description et Bouton d'import */}
                     <FadeIn delay={0}>
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
