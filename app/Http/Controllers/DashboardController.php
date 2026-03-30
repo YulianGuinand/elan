@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -12,11 +14,20 @@ class DashboardController extends Controller
      */
     public function index(): Response
     {
+        // Recuperer l'utilisateur connecte
+        $user = Auth::user();
+        // Calcul du taux de reponse/participation moyen
+        $totalEnquetes = \App\Models\Enquete::count();
+        $totalParticipations = DB::table('participer')->count();
+        $tauxParticipation = $totalEnquetes > 0 ? round($totalParticipations / $totalEnquetes, 2) : 0;
+
         return Inertia::render('Dashboard', [
             'stats' => $this->getStatsData(),
             'participationData' => $this->getParticipationData(),
             'satisfactionData' => $this->getSatisfactionData(),
             'activeSurveys' => $this->getActiveSurveys(),
+            'userName' => $user ? $user->prenom ?? $user->name : '',
+            'tauxParticipation' => $tauxParticipation,
         ]);
     }
 
@@ -25,33 +36,58 @@ class DashboardController extends Controller
      */
     private function getStatsData(): array
     {
+        // Dynamique :
+        $totalEnquetes = \App\Models\Enquete::count();
+        $totalParticipations = DB::table('participer')->count();
+        // Taux de participation moyen par enquête
+        $tauxParticipation = $totalEnquetes > 0 ? round($totalParticipations / $totalEnquetes, 2) : 0;
+        // Relances en attente = participations sans aucune réponse à une question de l'enquête
+        $relancesEnAttente = DB::table('participer')
+            ->leftJoin('questions', 'participer.enquete_id', '=', 'questions.enquete_id')
+            ->leftJoin('repondre', function($join) {
+                $join->on('participer.participant_id', '=', 'repondre.participant_id')
+                     ->on('questions.id', '=', 'repondre.question_id');
+            })
+            ->whereNull('repondre.question_id')
+            ->select('participer.participant_id', 'participer.enquete_id')
+            ->distinct()
+            ->count();
+
+        // Détermination du type pour le taux de réponse
+        $typeTaux = null;
+        if ($tauxParticipation < 30) {
+            $typeTaux = 'warning';
+        } elseif ($tauxParticipation > 70) {
+            $typeTaux = 'success';
+        }
+
         return [
             [
                 'id' => '1',
                 'title' => 'Total Enquetes Envoyees',
-                'value' => '1,240',
-                'change' => 5.2,
-                'changeText' => '+5,2% mois dernier',
+                'value' => $totalEnquetes,
+                'change' => null,
+                'changeText' => null,
                 'icon' => 'send',
                 'type' => 'info',
             ],
             [
                 'id' => '2',
                 'title' => 'Taux de Reponse Moyen',
-                'value' => '68%',
-                'change' => 2.4,
-                'changeText' => '+2,4% mois dernier',
+                'value' => $tauxParticipation,
+                'change' => null,
+                'changeText' => null,
                 'icon' => 'response',
-                'type' => 'success',
+                'type' => $typeTaux,
             ],
             [
                 'id' => '3',
                 'title' => 'Relances en Attente',
-                'value' => 12,
-                'change' => 0,
-                'changeText' => 'Action requise',
+                'value' => $relancesEnAttente,
+                'change' => null,
+                'changeText' => null,
                 'icon' => 'alert',
-                'type' => 'warning',
+                'type' => ($relancesEnAttente == 0 ? 'success' : 'warning'),
             ],
         ];
     }
@@ -64,7 +100,7 @@ class DashboardController extends Controller
         return [
             'percentage' => 85,
             'channelName' => 'Enquetes Telephoniques',
-            'channelSubtitle' => 'Canal à fort engagement',
+            'channelSubtitle' => 'Canal A fort engagement',
         ];
     }
 

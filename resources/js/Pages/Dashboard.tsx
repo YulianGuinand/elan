@@ -18,6 +18,8 @@ interface DashboardProps {
     participationData: ParticipationData;
     satisfactionData: SatisfactionData;
     activeSurveys: SurveyItem[];
+    userName: string;
+    tauxParticipation: number;
 }
 
 export default function Dashboard({
@@ -25,6 +27,8 @@ export default function Dashboard({
     participationData,
     satisfactionData,
     activeSurveys,
+    userName,
+    tauxParticipation,
 }: DashboardProps) {
     return (
         <>
@@ -45,8 +49,8 @@ export default function Dashboard({
                     {/* Welcome Banner */}
                     <FadeIn delay={0}>
                         <WelcomeBanner
-                            userName="Jean"
-                            message="Vos enquêtes sont performantes. Les taux de réponse ont augmenté de 12% par rapport au mois dernier."
+                            userName={userName}
+                            message={`Vos enquêtes sont performantes. Le taux de réponse moyen est de ${tauxParticipation}.`}
                         />
                     </FadeIn>
 
