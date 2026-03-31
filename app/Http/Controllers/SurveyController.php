@@ -330,6 +330,8 @@ class SurveyController extends Controller
 
         $query = Participant::with('entreprises');
 
+        $cible = $enquete->type_campagne;
+
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nom', 'like', "%{$search}%")
@@ -338,14 +340,9 @@ class SurveyController extends Controller
             });
         }
 
-        if ($roleFilter !== 'Tous') {
-            $query->where('role', $roleFilter);
-        }
+        $query->where('role', $cible);
 
         $participants = $query->paginate(5)->withQueryString();
-
-        // On récupère tous les rôles uniques pour les filtres
-        $allRoles = Participant::distinct()->pluck('role')->filter()->values();
 
         return Inertia::render('Surveys/Fill', [
             'enquete' => $this->formatEnquete($enquete->load(['questions.type_reponse', 'questions.choix', 'questions.theme'])),
@@ -354,7 +351,7 @@ class SurveyController extends Controller
                 'search' => $search,
                 'role' => $roleFilter,
             ],
-            'availableRoles' => $allRoles,
+            'availableRoles' => [$cible],
         ]);
     }
 
