@@ -12,6 +12,7 @@ use App\Models\Theme;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -92,6 +93,13 @@ class SurveyController extends Controller
                 'type_campagne'  => $validated['type_campagne'],
                 'utilisateur_id' => Auth::id(),
             ]);
+
+            $participants = Participant::whereAll(["role"], "=", $enquete->type_campagne)->get();
+
+            foreach ($participants as $participant) {
+                $token = Str::uuid();
+                $enquete->participants()->attach($participant->id, ['jeton' => $token]);
+            }
 
             $now = now();
 

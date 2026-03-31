@@ -52,7 +52,7 @@ export default function SurveyBasicInfo() {
     };
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6">
+        <div className="space-y-6">
             <FadeIn delay={0}>
                 <Card>
                     <CardHeader
@@ -110,13 +110,10 @@ export default function SurveyBasicInfo() {
                             <InputLabel value="Type de campagne *" />
                             <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 {[
-                                    "Satisfaction apprentis",
-                                    "Insertion professionnelle",
-                                    "Besoins en formation",
-                                    "Feedback formation",
-                                    "Partenariats entreprises",
-                                    "Évaluation pédagogique",
-                                    "Autre",
+                                    "Apprentis",
+                                    "Alumnis",
+                                    "Entreprises",
+                                    "Formateurs",
                                 ].map((type) => (
                                     <button
                                         key={type}

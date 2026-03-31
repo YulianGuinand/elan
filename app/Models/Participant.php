@@ -25,14 +25,16 @@ class Participant extends Model
 
     public function enquetes(): BelongsToMany
     {
-        return $this->belongsToMany(Enquete::class, 'participer');
+        return $this->belongsToMany(Enquete::class, 'participer')
+            ->withPivot('jeton')
+            ->withTimestamps();
     }
+
 
     public function contrats(): HasMany
     {
         return $this->HasMany(Contrat::class);
     }
-
 
 
     public function utilisateurs(): BelongsToMany
