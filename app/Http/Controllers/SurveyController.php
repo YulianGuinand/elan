@@ -9,6 +9,7 @@ use App\Models\Question;
 use App\Models\Type_Reponse;
 use App\Models\Participant;
 use App\Models\Theme;
+use ErrorException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -393,6 +394,37 @@ class SurveyController extends Controller
 
             return back()->with('success', 'Vos réponses ont été enregistrées avec succès.');
         });
+    }
+
+    /**
+     * Permet à un participant de remplir un formulaire
+     */
+
+    public function participantFill($jeton)
+    {
+        $data = Enquete::with([
+            'participants' => function ($query) use ($jeton) {
+                $query->where('participer.jeton', $jeton);
+            },
+            'questions.type_reponse',
+            'questions.choix',
+            'questions.theme'
+        ])
+            ->whereHas('participants', function ($query) use ($jeton) {
+                $query->where('participer.jeton', $jeton);
+            })
+            ->firstOrFail();
+
+        $participant = $data->participants()->first();
+
+        return Inertia::render('Surveys/Participants/Fill', [
+            "nom" => $participant->nom,
+            "prenom" => $participant->prenom,
+            "telephone" => $participant->telephone,
+            "mail" => $participant->mail,
+            'enquete' => $this->formatEnquete($data->load(['questions.type_reponse', 'questions.choix', 'questions.theme'])),
+
+        ]);
     }
 
     // ─────────────────────────────────────────────────
