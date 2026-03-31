@@ -58,14 +58,27 @@
 </head>
 
 <body>
-    <h1>Rapport analytique</h1>
+    <h1>
+        Rapport analytique
+        @if (($scope ?? 'summary') === 'answers')
+            - Réponses détaillées
+        @else
+            - Synthèse
+        @endif
+    </h1>
     <div class="meta">Généré le {{ $generatedAt }}</div>
 
     <div class="filters">
         <strong>Période:</strong> {{ $startDate }} - {{ $endDate }}<br>
         <strong>Enquête:</strong> {{ $filters['survey'] }}<br>
         <strong>Public cible:</strong> {{ $filters['audience'] }}<br>
-        <strong>Indicateur:</strong> {{ $filters['indicator'] }}
+        <strong>Indicateur:</strong> {{ $filters['indicator'] }}<br>
+        <strong>Type export:</strong>
+        @if (($scope ?? 'summary') === 'answers')
+            Réponses détaillées
+        @else
+            Synthèse
+        @endif
     </div>
 
     @if ($rows->isEmpty())

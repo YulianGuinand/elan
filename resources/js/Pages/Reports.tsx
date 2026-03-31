@@ -50,6 +50,9 @@ export default function Reports({
         return `/rapports/export?${params.toString()}`;
     }, [filters]);
 
+    const summaryExportUrl = `${exportUrl}&scope=summary`;
+    const answersExportUrl = `${exportUrl}&scope=answers`;
+
     return (
         <>
             <Head title="Rapports Analytiques" />
@@ -72,27 +75,48 @@ export default function Reports({
                                     retour et l'engagement des apprenants.
                                 </p>
                             </div>
-                            <div className="flex gap-3">
+                            <div className="flex flex-wrap gap-3">
                                 <a
-                                    href={`${exportUrl}&format=csv`}
+                                    href={`${summaryExportUrl}&format=csv`}
                                     className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                                 >
                                     <Download className="w-4 h-4" />
-                                    CSV
+                                    Synthèse CSV
                                 </a>
                                 <a
-                                    href={`${exportUrl}&format=xlsx`}
+                                    href={`${summaryExportUrl}&format=xlsx`}
                                     className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                                 >
                                     <Download className="w-4 h-4" />
-                                    Excel
+                                    Synthèse Excel
                                 </a>
                                 <a
-                                    href={`${exportUrl}&format=pdf`}
+                                    href={`${summaryExportUrl}&format=pdf`}
                                     className="inline-flex items-center gap-2 px-4 py-2 bg-elan-orange rounded-lg text-sm font-medium text-white hover:bg-elan-orange/90 transition-colors"
                                 >
                                     <FileText className="w-4 h-4" />
-                                    Exporter PDF
+                                    Synthèse PDF
+                                </a>
+                                <a
+                                    href={`${answersExportUrl}&format=csv`}
+                                    className="inline-flex items-center gap-2 px-4 py-2 border border-elan-orange rounded-lg text-sm font-medium text-elan-orange bg-white hover:bg-orange-50 transition-colors"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Réponses CSV
+                                </a>
+                                <a
+                                    href={`${answersExportUrl}&format=xlsx`}
+                                    className="inline-flex items-center gap-2 px-4 py-2 border border-elan-orange rounded-lg text-sm font-medium text-elan-orange bg-white hover:bg-orange-50 transition-colors"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Réponses Excel
+                                </a>
+                                <a
+                                    href={`${answersExportUrl}&format=pdf`}
+                                    className="inline-flex items-center gap-2 px-4 py-2 border border-elan-orange rounded-lg text-sm font-medium text-elan-orange bg-white hover:bg-orange-50 transition-colors"
+                                >
+                                    <FileText className="w-4 h-4" />
+                                    Réponses PDF
                                 </a>
                             </div>
                         </div>

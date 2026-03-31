@@ -56,21 +56,29 @@ class ReportsController extends Controller
     {
         $filters = $this->sanitizeFilters($request);
         [$startDate, $endDate] = $this->resolvePeriodBounds($filters['period']);
+        $scope = $request->string('scope')->toString();
+        if (!in_array($scope, ['summary', 'answers'], true)) {
+            $scope = 'summary';
+        }
 
         $format = $request->string('format')->toString();
         if (!in_array($format, ['csv', 'xlsx', 'pdf'], true)) {
             abort(422, 'Format d export invalide.');
         }
 
-        $rows = $this->buildExportRows($filters, $startDate, $endDate);
+        $rows = $scope === 'answers'
+            ? $this->buildAnswerExportRows($filters, $startDate, $endDate)
+            : $this->buildExportRows($filters, $startDate, $endDate);
+
         $timestamp = now()->format('Ymd_His');
+        $suffix = $scope === 'answers' ? 'reponses' : 'synthese';
 
         if ($format === 'csv') {
-            return (new FastExcel($rows))->download("rapports_{$timestamp}.csv");
+            return (new FastExcel($rows))->download("rapports_{$suffix}_{$timestamp}.csv");
         }
 
         if ($format === 'xlsx') {
-            return (new FastExcel($rows))->download("rapports_{$timestamp}.xlsx");
+            return (new FastExcel($rows))->download("rapports_{$suffix}_{$timestamp}.xlsx");
         }
 
         $pdf = app('dompdf.wrapper');
@@ -80,9 +88,10 @@ class ReportsController extends Controller
             'startDate' => $startDate->format('d/m/Y'),
             'endDate' => $endDate->format('d/m/Y'),
             'rows' => $rows,
+            'scope' => $scope,
         ]);
 
-        return $pdf->download("rapports_{$timestamp}.pdf");
+        return $pdf->download("rapports_{$suffix}_{$timestamp}.pdf");
     }
 
     /**
@@ -393,6 +402,73 @@ class ReportsController extends Controller
                 'Satisfaction moyenne' => number_format($metrics['satisfaction'], 2, '.', ''),
             ];
         });
+    }
+
+    /**
+     * Construit les lignes exportables détaillées (une réponse par ligne).
+     */
+    private function buildAnswerExportRows(array $filters, Carbon $startDate, Carbon $endDate): Collection
+    {
+        $query = DB::table('repondre as r')
+            ->join('questions as q', 'q.id', '=', 'r.question_id')
+            ->join('enquetes as e', 'e.id', '=', 'q.enquete_id')
+            ->join('participants as p', 'p.id', '=', 'r.participant_id')
+            ->leftJoin('type__reponses as tr', 'tr.id', '=', 'q.type_reponse_id');
+
+        $this->applyCommonFilters($query, $filters, $startDate, $endDate, 'q.enquete_id', 'p.role', 'r.created_at');
+
+        $rows = $query
+            ->select([
+                'e.titre as enquete_titre',
+                'p.id as participant_id',
+                'p.nom as participant_nom',
+                'p.prenom as participant_prenom',
+                'p.mail as participant_mail',
+                'p.role as participant_role',
+                'q.numero as question_numero',
+                'q.libelle as question_libelle',
+                'tr.libelle as question_type',
+                'r.valeur as reponse_valeur',
+                'r.created_at as reponse_date',
+            ])
+            ->orderBy('e.titre')
+            ->orderBy('p.nom')
+            ->orderBy('p.prenom')
+            ->orderBy('q.numero')
+            ->get()
+            ->map(function ($row) {
+                return [
+                    'Enquête' => $row->enquete_titre,
+                    'Participant ID' => $row->participant_id,
+                    'Nom participant' => trim(($row->participant_prenom ?? '') . ' ' . ($row->participant_nom ?? '')),
+                    'Email participant' => $row->participant_mail,
+                    'Rôle participant' => $row->participant_role,
+                    'Question #'=> $row->question_numero,
+                    'Question' => $row->question_libelle,
+                    'Type question' => $row->question_type ?? 'inconnu',
+                    'Réponse' => $row->reponse_valeur,
+                    'Date réponse' => $row->reponse_date ? Carbon::parse($row->reponse_date)->format('d/m/Y H:i') : null,
+                ];
+            });
+
+        if ($rows->isNotEmpty()) {
+            return $rows;
+        }
+
+        return collect([
+            [
+                'Enquête' => 'Aucune donnée',
+                'Participant ID' => '-',
+                'Nom participant' => '-',
+                'Email participant' => '-',
+                'Rôle participant' => '-',
+                'Question #' => '-',
+                'Question' => '-',
+                'Type question' => '-',
+                'Réponse' => '-',
+                'Date réponse' => $startDate->format('d/m/Y') . ' - ' . $endDate->format('d/m/Y'),
+            ],
+        ]);
     }
 
     /**
