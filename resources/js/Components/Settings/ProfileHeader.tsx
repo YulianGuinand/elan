@@ -1,16 +1,10 @@
 import { UserSettings } from "@/types/settings";
-import { Camera } from "lucide-react";
 
 interface ProfileHeaderProps {
     user: UserSettings;
-    onPhotoChange?: () => void;
 }
 
-export default function ProfileHeader({
-    user,
-    onPhotoChange,
-}: ProfileHeaderProps) {
-    // Générer les initiales si pas d'avatar
+export default function ProfileHeader({ user }: ProfileHeaderProps) {
     const initials = user.name
         .split(" ")
         .map((n) => n[0])
@@ -27,17 +21,9 @@ export default function ProfileHeader({
                 <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
                     {/* Avatar */}
                     <div className="relative flex-shrink-0">
-                        {user.avatar ? (
-                            <img
-                                src={user.avatar}
-                                alt={user.name}
-                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover"
-                            />
-                        ) : (
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-elan-orange to-elan-blue flex items-center justify-center text-white text-xl sm:text-2xl font-bold">
-                                {initials}
-                            </div>
-                        )}
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-elan-orange to-elan-blue flex items-center justify-center text-white text-xl sm:text-2xl font-bold">
+                            {initials}
+                        </div>
                     </div>
 
                     {/* Informations utilisateur */}
@@ -53,17 +39,6 @@ export default function ProfileHeader({
                         </p>
                     </div>
                 </div>
-
-                {/* Bouton changer la photo */}
-                {onPhotoChange && (
-                    <button
-                        onClick={onPhotoChange}
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                    >
-                        <Camera className="w-4 h-4" />
-                        Changer la photo
-                    </button>
-                )}
             </div>
         </div>
     );

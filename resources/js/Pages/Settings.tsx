@@ -29,11 +29,6 @@ export default function Settings({
 }: SettingsProps) {
     const [activeTab, setActiveTab] = useState<SettingsTab>("account");
 
-    const handlePhotoChange = () => {
-        // Upload de photo - à implémenter
-        console.log("Upload photo");
-    };
-
     return (
         <>
             <Head title="Paramètres" />
@@ -66,10 +61,7 @@ export default function Settings({
                     {activeTab === "account" && (
                         <div className="space-y-6">
                             <FadeIn delay={150}>
-                                <ProfileHeader
-                                    user={user}
-                                    onPhotoChange={handlePhotoChange}
-                                />
+                                <ProfileHeader user={user} />
                             </FadeIn>
                             <FadeIn delay={200}>
                                 <AccountSettings user={user} />

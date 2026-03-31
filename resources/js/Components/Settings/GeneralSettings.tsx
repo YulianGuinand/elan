@@ -41,33 +41,13 @@ export default function GeneralSettings({
                             {user.role}
                         </p>
                     </div>
-
-                    <div className="p-4 bg-gray-50 rounded-lg">
-                        <p className="text-sm text-gray-600">
-                            Statut du compte
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                            <span
-                                className={`inline-block w-2 h-2 rounded-full ${
-                                    user.email_verified_at
-                                        ? "bg-green-500"
-                                        : "bg-orange-500"
-                                }`}
-                            ></span>
-                            <p className="text-base font-semibold text-gray-900">
-                                {user.email_verified_at
-                                    ? "Vérifié"
-                                    : "En attente de vérification"}
-                            </p>
-                        </div>
-                    </div>
                 </div>
             </div>
 
-            {/* Paramètres de l'application */}
+            {/* Parametres de application */}
             <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">
-                    Paramètres de l'application
+                    Paramètres de l&apos;application
                 </h3>
 
                 <form onSubmit={submit} className="space-y-4 sm:space-y-6">
@@ -178,7 +158,7 @@ export default function GeneralSettings({
                                 onChange={(e) =>
                                     setData(
                                         "items_per_page",
-                                        parseInt(e.target.value)
+                                        parseInt(e.target.value),
                                     )
                                 }
                                 className="block w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none transition-all bg-white"
