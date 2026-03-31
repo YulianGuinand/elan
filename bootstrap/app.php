@@ -19,6 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'is_admin' => \App\Http\Middleware\IsAdmin::class,
             'is_superadmin' => \App\Http\Middleware\IsSuperAdmin::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'login',
+            'logout',
+            'register',
+        ]);
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
