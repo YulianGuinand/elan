@@ -105,4 +105,20 @@ class Utilisateur extends Authenticatable
           ->withPivot('utilisateur_id','date_contact','moyen','commentaire')
           ->withTimestamps();
   }
+
+  /**
+   * Relation : Un utilisateur a plusieurs notifications
+   */
+  public function notifications()
+  {
+      return $this->hasMany(Notification::class);
+  }
+
+  /**
+   * Relation : Un utilisateur a des préférences de notifications
+   */
+  public function notificationPreference()
+  {
+      return $this->hasOne(NotificationPreference::class, 'user_id');
+  }
 }

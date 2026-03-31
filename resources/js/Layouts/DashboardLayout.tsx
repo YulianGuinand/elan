@@ -1,6 +1,7 @@
 import { ToastContainer, useToastManager } from "@/Components/Common/Toast";
 import Header from "@/Components/Dashboard/Header";
 import Sidebar from "@/Components/Dashboard/Sidebar";
+import { useUnreadNotificationCount } from "@/Hooks/useUnreadNotificationCount";
 import { PageProps } from "@/types";
 import { usePage } from "@inertiajs/react";
 import { PropsWithChildren, useEffect, useState } from "react";
@@ -33,6 +34,7 @@ export default function DashboardLayout({
     const user = auth?.user;
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const { toasts, add, remove } = useToastManager();
+    const { unreadCount } = useUnreadNotificationCount();
 
     // FLASH
     useEffect(() => {
@@ -57,6 +59,7 @@ export default function DashboardLayout({
                 userRole="Admin"
                 isOpen={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}
+                unreadNotificationCount={unreadCount}
             />
 
             {/* Main Content */}
