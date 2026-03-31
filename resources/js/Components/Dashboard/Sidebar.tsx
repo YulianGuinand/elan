@@ -4,6 +4,7 @@ import DropdownMenu, {
 } from "@/Components/Common/DropdownMenu";
 import { Link, router } from "@inertiajs/react";
 import {
+    Bell,
     BookOpen,
     ChevronUp,
     FileText,
@@ -76,6 +77,12 @@ const navigationItems: NavItem[] = [
         routeName: "reports.index",
     },
     {
+        name: "Notifications",
+        href: "/notifications",
+        icon: Bell,
+        routeName: "notifications.index",
+    },
+    {
         name: "Paramètres",
         href: "/parametres",
         icon: SettingsIcon,
@@ -88,6 +95,7 @@ interface SidebarProps {
     userRole?: string;
     isOpen: boolean;
     onClose: () => void;
+    unreadNotificationCount?: number;
 }
 
 export default function Sidebar({
@@ -95,6 +103,7 @@ export default function Sidebar({
     userRole = "Admin",
     isOpen,
     onClose,
+    unreadNotificationCount = 0,
 }: SidebarProps) {
     const currentPath =
         typeof window !== "undefined" ? window.location.pathname : "/dashboard";
@@ -151,6 +160,8 @@ export default function Sidebar({
                     {navigationItems.map((item, index) => {
                         const Icon = item.icon;
                         const isActive = currentPath === item.href;
+                        const isNotificationsItem = item.routeName === "notifications.index";
+                        const hasUnread = isNotificationsItem && unreadNotificationCount > 0;
 
                         return (
                             <Link
@@ -170,9 +181,14 @@ export default function Sidebar({
                                             : "text-gray-500"
                                     }`}
                                 />
-                                <span className="text-sm font-medium">
+                                <span className="text-sm font-medium flex-1">
                                     {item.name}
                                 </span>
+                                {hasUnread && (
+                                    <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full px-2 py-1 min-w-[24px] text-center">
+                                        {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+                                    </span>
+                                )}
                             </Link>
                         );
                     })}

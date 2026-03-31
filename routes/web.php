@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EntrepriseController;
 use App\Http\Controllers\InlineCreateController;
+use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\EcoleController;
 use App\Http\Controllers\ProfileController;
@@ -226,8 +227,38 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ============================================
     // PARAMETRES
     // ============================================
-    Route::get('/parametres', [SettingsController::class, 'index'])->middleware(["is_superadmin"])
+    Route::get('/parametres', [SettingsController::class, 'index'])->middleware(["auth"])
         ->name('settings.index');
+
+    Route::patch('/parametres/account', [SettingsController::class, 'updateAccount'])->middleware(["auth"])
+        ->name('settings.account.update');
+
+    Route::patch('/parametres/password', [SettingsController::class, 'updatePassword'])->middleware(["auth"])
+        ->name('settings.password.update');
+
+    Route::patch('/parametres/general', [SettingsController::class, 'updateGeneral'])->middleware(["auth"])
+        ->name('settings.general.update');
+
+    Route::patch('/parametres/notifications', [SettingsController::class, 'updateNotifications'])->middleware(["auth"])
+        ->name('settings.notifications.update');
+
+    // ============================================
+    // NOTIFICATIONS
+    // ============================================
+    Route::get('/notifications', [NotificationsController::class, 'index'])->middleware(["auth"])
+        ->name('notifications.index');
+
+    Route::get('/notifications/unread-count', [NotificationsController::class, 'getUnreadCount'])->middleware(["auth"])
+        ->name('notifications.unread-count');
+
+    Route::patch('/notifications/{notification}/mark-as-read', [NotificationsController::class, 'markAsRead'])->middleware(["auth"])
+        ->name('notifications.mark-as-read');
+
+    Route::patch('/notifications/mark-all-as-read', [NotificationsController::class, 'markAllAsRead'])->middleware(["auth"])
+        ->name('notifications.mark-all-as-read');
+
+    Route::delete('/notifications/{notification}', [NotificationsController::class, 'destroy'])->middleware(["auth"])
+        ->name('notifications.destroy');
 
     // ============================================
     // PROFIL

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\SurveyCreated;
+use App\Events\ResponseReceived;
 use App\Models\Enquete;
 use App\Models\Question;
 use App\Models\Type_Reponse;
@@ -140,6 +142,9 @@ class SurveyController extends Controller
             if (!empty($choicesData)) {
                 \App\Models\Choix::insert($choicesData);
             }
+
+            // Dispatcher l'événement de création d'enquête
+            event(new SurveyCreated($enquete));
 
             return redirect()->route('surveys.index')
                 ->with('success', 'Enquête créée avec succes.');
@@ -361,14 +366,28 @@ class SurveyController extends Controller
         }
         $validated = $request->validate($rules);
 
-        dd([
-            'action'         => 'Soumettre réponses enquête',
-            'enquete_id'     => $id,
-            'enquete_titre'  => $enquete->titre,
-            'utilisateur_id' => $user?->id,
-            'participant_id' => $validated['participant_id'],
-            'reponses'       => $validated['reponses'] ?? [],
-        ]);
+        // Sauvegarder les réponses dans la table reponses
+        return DB::transaction(function () use ($validated, $enquete, $user) {
+            $responseCount = 0;
+
+            foreach ($validated['reponses'] ?? [] as $questionId => $reponse) {
+                if ($reponse !== null && $reponse !== '') {
+                    \App\Models\Reponse::create([
+                        'question_id' => $questionId,
+                        'participant_id' => $validated['participant_id'],
+                        'valeur' => $reponse,
+                    ]);
+                    $responseCount++;
+                }
+            }
+
+            // Dispatcher l'événement de réception de réponse
+            if ($responseCount > 0) {
+                event(new ResponseReceived($enquete, $responseCount));
+            }
+
+            return back()->with('success', 'Vos réponses ont été enregistrées avec succès.');
+        });
     }
 
     // ─────────────────────────────────────────────────

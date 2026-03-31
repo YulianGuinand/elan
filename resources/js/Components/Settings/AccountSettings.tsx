@@ -91,18 +91,6 @@ export default function AccountSettings({ user }: AccountSettingsProps) {
                         />
                     </div>
                     <InputError message={errors.email} className="mt-2" />
-
-                    {user.email_verified_at === null && (
-                        <p className="mt-2 text-sm text-orange-600">
-                            Votre adresse email n'est pas vérifiée.{" "}
-                            <a
-                                href={route("verification.send")}
-                                className="underline hover:text-orange-800"
-                            >
-                                Renvoyer le lien de vérification
-                            </a>
-                        </p>
-                    )}
                 </div>
 
                 {/* Bouton de sauvegarde */}

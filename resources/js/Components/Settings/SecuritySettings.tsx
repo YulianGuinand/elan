@@ -4,7 +4,7 @@ import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import { UserSettings } from "@/types/settings";
 import { useForm } from "@inertiajs/react";
-import { Lock, Shield } from "lucide-react";
+import { Lock } from "lucide-react";
 import { FormEventHandler } from "react";
 
 interface SecuritySettingsProps {
@@ -15,7 +15,7 @@ export default function SecuritySettings({ user }: SecuritySettingsProps) {
     const {
         data,
         setData,
-        put,
+        patch,
         errors,
         processing,
         recentlySuccessful,
@@ -28,14 +28,9 @@ export default function SecuritySettings({ user }: SecuritySettingsProps) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(route("settings.password.update"), {
+        patch(route("settings.password.update"), {
             onSuccess: () => reset(),
         });
-    };
-
-    const toggle2FA = () => {
-        // Logique pour activer/désactiver 2FA
-        console.log("Toggle 2FA");
     };
 
     return (
@@ -45,39 +40,6 @@ export default function SecuritySettings({ user }: SecuritySettingsProps) {
             </h3>
 
             <form onSubmit={submit} className="space-y-4 sm:space-y-6">
-                {/* Authentification à deux facteurs */}
-                <div className="border border-gray-200 rounded-lg p-3 sm:p-4">
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
-                        <div className="flex items-start gap-3 flex-1">
-                            <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
-                                <Shield className="w-5 h-5 text-blue-600" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h4 className="text-sm font-semibold text-gray-900">
-                                    Authentification à deux facteurs (2FA)
-                                </h4>
-                                <p className="text-sm text-gray-600 mt-1">
-                                    {user.two_factor_enabled
-                                        ? "La 2FA est activée pour votre compte. Votre compte est mieux protégé."
-                                        : "Ajoutez une couche de sécurité supplémentaire à votre compte."}
-                                </p>
-                            </div>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={toggle2FA}
-                            className={`w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors flex-shrink-0 ${
-                                user.two_factor_enabled
-                                    ? "bg-red-100 text-red-700 hover:bg-red-200"
-                                    : "bg-green-100 text-green-700 hover:bg-green-200"
-                            }`}
-                        >
-                            {user.two_factor_enabled ? "Désactiver" : "Activer"}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Changer le mot de passe */}
                 <div className="space-y-4">
                     <div>
                         <InputLabel

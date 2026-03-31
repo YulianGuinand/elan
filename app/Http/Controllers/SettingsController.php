@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\NotificationPreference;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -21,12 +22,12 @@ class SettingsController extends Controller
         return Inertia::render('Settings', [
             'user' => [
                 'id' => $user->id,
-                'name' => $user->name,
+                'name' => trim($user->prenom . ' ' . $user->nom),
                 'email' => $user->email,
                 'email_verified_at' => $user->email_verified_at,
-                'role' => 'Administrateur CFA', // TODO: A adapter
+                'role' => $user->role === 'superadmin' ? 'Super Administrateur' : 'Utilisateur',
                 'avatar' => null,
-                'two_factor_enabled' => false, // TODO: A adapter
+                'two_factor_enabled' => false,
             ],
             'notifications' => $this->getNotificationPreferences(),
             'general' => $this->getGeneralSettings(),
@@ -43,18 +44,12 @@ class SettingsController extends Controller
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:utilisateurs,email,'.$user->id],
         ]);
 
-        // Combiner prenom et nom
-        $user->name = $validated['first_name'].' '.$validated['last_name'];
+        $user->prenom = $validated['first_name'];
+        $user->nom = $validated['last_name'];
         $user->email = $validated['email'];
-
-        // Si email a change, reinitialiser la verification
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-            $user->sendEmailVerificationNotification();
-        }
 
         $user->save();
 
@@ -69,13 +64,17 @@ class SettingsController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'current_password' => ['required', 'current_password'],
+            'current_password' => ['required', 'string'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user->update([
-            'password' => Hash::make($validated['password']),
-        ]);
+        // Verifier le mot de passe actuel
+        if (!Hash::check($validated['current_password'], $user->mdp)) {
+            return back()->withErrors(['current_password' => 'Le mot de passe actuel est incorrect.']);
+        }
+
+        $user->mdp = Hash::make($validated['password']);
+        $user->save();
 
         return back()->with('success', 'Mot de passe mis a jour avec succes.');
     }
@@ -85,6 +84,8 @@ class SettingsController extends Controller
      */
     public function updateNotifications(Request $request)
     {
+        $user = Auth::user();
+
         $validated = $request->validate([
             'email_notifications' => ['boolean'],
             'survey_reminders' => ['boolean'],
@@ -93,8 +94,10 @@ class SettingsController extends Controller
             'system_updates' => ['boolean'],
         ]);
 
-        // Exemple: Stocker dans la table users ou une table de preferences
-        // $user->preferences()->update($validated);
+        // Créer ou mettre à jour les préférences
+        $user->notificationPreference()
+            ->firstOrCreate(['user_id' => $user->id])
+            ->update($validated);
 
         return back()->with('success', 'Preferences de notifications mises a jour.');
     }
@@ -118,10 +121,24 @@ class SettingsController extends Controller
     }
 
     /**
-     * Recupere les preferences de notifications (placeholder)
+     * Recupere les preferences de notifications depuis la BD
      */
     private function getNotificationPreferences(): array
     {
+        $user = Auth::user();
+        $preferences = $user->notificationPreference;
+
+        if ($preferences) {
+            return [
+                'email_notifications' => (bool) $preferences->email_notifications,
+                'survey_reminders' => (bool) $preferences->survey_reminders,
+                'response_alerts' => (bool) $preferences->response_alerts,
+                'weekly_reports' => (bool) $preferences->weekly_reports,
+                'system_updates' => (bool) $preferences->system_updates,
+            ];
+        }
+
+        // Valeurs par défaut si pas de préférences créées
         return [
             'email_notifications' => true,
             'survey_reminders' => true,
