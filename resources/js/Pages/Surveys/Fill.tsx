@@ -140,7 +140,11 @@ export default function SurveyFill({
         [],
     );
 
-    const nextTheme = () => {
+    const nextTheme = (e?: React.MouseEvent) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation(); // BLOQUE la remontée vers le form
+        }
         if (!isLastTheme) {
             setCurrentThemeIndex((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -224,38 +228,39 @@ export default function SurveyFill({
                         {/* Zone Centrale de Questionnement */}
                         <div className="lg:col-span-9 w-full min-w-0 flex flex-col gap-6">
                             <FadeIn delay={300}>
-                                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-                                    <div className="p-6 md:p-8 space-y-6">
-                                        <div className="flex items-center justify-between gap-4">
-                                            <h2 className="text-xl font-black text-gray-900 tracking-tight">
-                                                {currentTheme.libelle}
-                                            </h2>
-                                            <span className="text-xs font-black text-gray-400 uppercase tracking-widest bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-                                                Question{" "}
-                                                <span className="text-orange-500 font-black">
-                                                    {answeredCount}
-                                                </span>{" "}
-                                                sur {totalQuestions}
-                                            </span>
-                                        </div>
+                                <form
+                                    onSubmit={handleSubmit}
+                                    className="space-y-6"
+                                >
+                                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+                                        <div className="p-6 md:p-8 space-y-6">
+                                            <div className="flex items-center justify-between gap-4">
+                                                <h2 className="text-xl font-black text-gray-900 tracking-tight">
+                                                    {currentTheme.libelle}
+                                                </h2>
+                                                <span className="text-xs font-black text-gray-400 uppercase tracking-widest bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                                                    Question{" "}
+                                                    <span className="text-orange-500 font-black">
+                                                        {answeredCount}
+                                                    </span>{" "}
+                                                    sur {totalQuestions}
+                                                </span>
+                                            </div>
 
-                                        <div className="relative pt-1">
-                                            <div className="overflow-hidden h-2.5 flex rounded-full bg-gray-100">
-                                                <div
-                                                    style={{
-                                                        width: `${progress}%`,
-                                                    }}
-                                                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-[#F58232] transition-all duration-700 ease-out rounded-full"
-                                                />
+                                            <div className="relative pt-1">
+                                                <div className="overflow-hidden h-2.5 flex rounded-full bg-gray-100">
+                                                    <div
+                                                        style={{
+                                                            width: `${progress}%`,
+                                                        }}
+                                                        className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-[#F58232] transition-all duration-700 ease-out rounded-full"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div className="p-6 md:p-8 border-t border-gray-50 bg-gray-50/20">
-                                        <form
-                                            onSubmit={handleSubmit}
-                                            className="space-y-6"
-                                        >
+                                        <div className="p-6 md:p-8 border-t border-gray-50 bg-gray-50/20">
+
                                             <div className="space-y-6">
                                                 {(currentTheme?.questions || []).map(
                                                     (q: any) => (
@@ -297,11 +302,11 @@ export default function SurveyFill({
                                                 {!isLastTheme ? (
                                                     <button
                                                         type="button"
-                                                        onClick={nextTheme}
+                                                        onClick={(e) => nextTheme(e)}
                                                         className="group flex items-center gap-3 px-8 py-3.5 bg-[#F58232] text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-orange-500/20 hover:bg-orange-600 active:scale-95 transition-all"
                                                     >
                                                         <span>
-                                                            Theme Suivante
+                                                            Theme Suivant
                                                         </span>
                                                         <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                                     </button>
@@ -315,9 +320,9 @@ export default function SurveyFill({
                                                     </button>
                                                 )}
                                             </div>
-                                        </form>
+                                        </div>
                                     </div>
-                                </div>
+                                </form>
                             </FadeIn>
                         </div>
                     </div>

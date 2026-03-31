@@ -33,12 +33,17 @@ class Participant extends Model
         return $this->HasMany(Contrat::class);
     }
 
-
-
     public function utilisateurs(): BelongsToMany
     {
         return $this->belongsToMany(Utilisateur::class, 'contacter')
             ->withPivot('enquete_id', 'date_contact', 'moyen', 'commentaire')
+            ->withTimestamps();
+    }
+
+    public function questions(): BelongsToMany
+    {
+        return $this->belongsToMany(Question::class, 'repondre')
+            ->withPivot('valeur')
             ->withTimestamps();
     }
 }

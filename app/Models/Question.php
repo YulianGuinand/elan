@@ -33,4 +33,10 @@ class Question extends Model
     {
         return $this->hasMany(Choix::class);
     }
+
+    public function participants(){
+        return $this->belongsToMany(Participant::class,'repondre')
+            ->withPivot('valeur')
+            ->withTimestamps();
+    }
 }
