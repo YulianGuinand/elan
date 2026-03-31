@@ -20,7 +20,7 @@ export default function Fill(data: Props) {
             <div>{data.enquete.date_debut}</div>
             <div>{data.enquete.date_fin}</div>
             <div>{data.enquete.type_campagne}</div>
-          
+            <pre>{JSON.stringify(data, null, 2)}</pre>
         </>
     );
 }
