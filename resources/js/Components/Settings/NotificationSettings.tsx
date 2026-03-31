@@ -73,6 +73,60 @@ export default function NotificationSettings({
             <form onSubmit={submit} className="space-y-3 sm:space-y-4">
                 {notificationOptions.map((option) => {
                     const Icon = option.icon;
+                    if (option.id === "email_notifications") {
+                        return (
+                            <div
+                                key={option.id}
+                                className="flex items-start justify-between p-3 sm:p-4 border border-gray-200 rounded-lg bg-gray-50 transition-colors gap-3"
+                            >
+                                <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+                                    <div className="p-2 bg-gray-100 rounded-lg flex-shrink-0">
+                                        <Icon className="w-5 h-5 text-gray-600" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="text-sm font-medium text-gray-900">
+                                            {option.label}
+                                            <span className="text-gray-600 mx-4 bg-gray-200 rounded-md py-1 px-2 text-xs border border-gray-300">
+                                                Pas implémenté
+                                            </span>
+                                        </h4>
+                                        <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                                            {option.description}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Toggle Switch */}
+                                <button
+                                    type="button"
+                                    onClick={() => handleToggle(option.id)}
+                                    disabled
+                                    className={`
+                                    relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent
+                                    transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-elan-orange focus:ring-offset-2
+                                    ${
+                                        data[option.id]
+                                            ? "bg-elan-orange"
+                                            : "bg-gray-200"
+                                    }
+                                `}
+                                >
+                                    <span
+                                        className={`
+                                        pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0
+                                        transition duration-200 ease-in-out
+                                        ${
+                                            data[option.id]
+                                                ? "translate-x-5"
+                                                : "translate-x-0"
+                                        }
+                                    `}
+                                    />
+                                </button>
+                            </div>
+                        );
+                    }
+
                     return (
                         <div
                             key={option.id}
@@ -97,7 +151,7 @@ export default function NotificationSettings({
                                 type="button"
                                 onClick={() => handleToggle(option.id)}
                                 className={`
-                                    relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent 
+                                    relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent
                                     transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-elan-orange focus:ring-offset-2
                                     ${
                                         data[option.id]
@@ -108,7 +162,7 @@ export default function NotificationSettings({
                             >
                                 <span
                                     className={`
-                                        pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 
+                                        pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0
                                         transition duration-200 ease-in-out
                                         ${
                                             data[option.id]
