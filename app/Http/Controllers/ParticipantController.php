@@ -77,7 +77,7 @@ class ParticipantController extends Controller
             'prenom' => 'required|string|max:255',
             'mail' => 'required|email|max:255',
             'telephone' => 'required|string|max:20',
-            'role' => 'required|in:Apprenti,Alumni,Formateur,Employeur',
+            'role' => 'required|in:Apprentis,Alumnis,Formateurs,Employeurs',
 
             // Champs additionnels pour creation inline
             'ecole_id' => 'nullable|string',

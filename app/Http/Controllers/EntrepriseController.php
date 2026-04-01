@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\ExcelService;
 use App\Models\Entreprise;
+use App\Models\Participant;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -27,7 +28,8 @@ class EntrepriseController extends Controller
                 $q->where('raison_sociale', 'like', "%{$search}%")
                     ->orWhere('mail', 'like', "%{$search}%")
                     ->orWhere('telephone', 'like', "%{$search}%")
-                    ->orWhere('interlocuteur', 'like', "%{$search}%")
+                    ->orWhere('nom', 'like', "%{$search}%")
+                    ->orWhere('prenom', 'like', "%{$search}%")
                     ->orWhere('ville', 'like', "%{$search}%");
             });
         }
@@ -37,10 +39,10 @@ class EntrepriseController extends Controller
         }
 
         if ($contact === 'with_contact') {
-            $query->whereNotNull('interlocuteur')->where('interlocuteur', '!=', '');
+            $query->whereNotNull('nom')->where('nom', '!=', '');
         } elseif ($contact === 'without_contact') {
             $query->where(function ($q) {
-                $q->whereNull('interlocuteur')->orWhere('interlocuteur', '');
+                $q->whereNull('nom')->orWhere('nom', '');
             });
         }
 
@@ -61,8 +63,8 @@ class EntrepriseController extends Controller
         $stats = [
             'total' => Entreprise::count(),
             'with_contact' => Entreprise::query()
-                ->whereNotNull('interlocuteur')
-                ->where('interlocuteur', '!=', '')
+                ->whereNotNull('nom')
+                ->where('nom', '!=', '')
                 ->count(),
         ];
 
@@ -88,10 +90,22 @@ class EntrepriseController extends Controller
             'mail'           => 'required|email|max:100',
             'telephone'      => 'nullable|string|max:15',
             'ville'          => 'nullable|string|max:50',
-            'interlocuteur'  => 'nullable|string|max:100',
+            'code_postal'    => 'nullable|string|max:8|min:5',
+            'nom'  => 'required|string|max:100',
+            'prenom'  => 'required|string|max:100',
         ]);
 
         Entreprise::create($validated);
+
+        $participant = new Participant();
+        $participant->prenom = $validated["prenom"];
+        $participant->nom = $validated["nom"];
+        $participant->mail = $validated["mail"];
+        $participant->telephone = $validated["telephone"];
+        $participant->role = "Entreprises";
+
+        $participant->save();
+
 
         return redirect()->back()->with('success', 'Entreprise ajoutée avec succès.');
     }
@@ -133,8 +147,8 @@ class EntrepriseController extends Controller
             'Content-Disposition' => 'attachment; filename="exemple_entreprises.csv"',
         ];
 
-        $colonnes = ['raison_sociale', 'siret', 'secteur', 'taille', 'mail', 'telephone', 'interlocuteur', 'fonction', 'ville', 'adresse', 'code_postal'];
-        $exemple  = ['Tech Solutions SAS', '12345678901234', 'Informatique & Tech', 'pme', 'contact@techsolutions.fr', '06 12 34 56 78', 'Marie Dupont', 'Responsable RH', 'Paris', '12 rue de la Paix', '75001'];
+        $colonnes = ['raison_sociale', 'mail', 'telephone', 'prenom', 'nom', 'ville', 'adresse', 'code_postal'];
+        $exemple  = ['Tech Solutions SAS', 'contact@techsolutions.fr', '06 12 34 56 78', 'Marie', 'Dupont', 'Paris', '12 rue de la Paix', '75001'];
 
         $callback = function () use ($colonnes, $exemple) {
             $handle = fopen('php://output', 'w');
@@ -177,7 +191,7 @@ class EntrepriseController extends Controller
             'mail'           => 'required|email|max:100',
             'telephone'      => 'nullable|string|max:15',
             'ville'          => 'nullable|string|max:50',
-            'interlocuteur'  => 'nullable|string|max:100',
+            'nom'  => 'nullable|string|max:100',
         ]);
 
         $entreprise->update($validated);

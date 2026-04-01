@@ -4,6 +4,7 @@ export type StatutEnquete = "active" | "terminee" | "a_venir" | "brouillon";
 export interface Choix {
     id: number;
     libelle: string;
+    emoji?: string;
 }
 
 export interface ThemeEnquete {
@@ -19,6 +20,7 @@ export interface QuestionEnquete {
     numero: number;
     type_reponse: string | null;
     type_reponse_id: number;
+    likert_style?: 'emoji' | 'custom';
     theme?: {
         id: number;
         libelle: string;

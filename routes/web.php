@@ -260,6 +260,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/notifications/{notification}', [NotificationsController::class, 'destroy'])->middleware(["auth"])
         ->name('notifications.destroy');
 
+
+
+
     // ============================================
     // PROFIL
     // ============================================
@@ -274,5 +277,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //         ->name('profile.destroy');
     // });
 });
+
+// REMPLIR
+Route::get('/enquetes/remplir/{jeton}', [SurveyController::class, 'participantFill'])->name('survey.fill.participants');
+Route::post('/enquetes/remplir/{jeton}', [SurveyController::class, 'submitFillPublic'])->name('surveys.fill.submit.public');
 
 require __DIR__ . '/auth.php';

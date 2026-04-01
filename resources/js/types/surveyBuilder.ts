@@ -39,6 +39,7 @@ export interface Question {
     placeholder?: string;
     options?: QuestionOption[]; // Pour radio, checkbox, select
     scale?: LikertScale; // Pour Likert
+    likertStyle?: 'emoji' | 'custom'; // Style d'affichage du Likert
     validation?: QuestionValidation;
     order: number;
 }

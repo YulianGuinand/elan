@@ -210,14 +210,14 @@ export default function Create({ ecoles, formations, entreprises }: Props) {
                                         }
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none bg-white"
                                     >
-                                        <option value="Apprenti">
+                                        <option value="Apprentis">
                                             Apprenti
                                         </option>
-                                        <option value="Alumni">Alumni</option>
-                                        <option value="Formateur">
+                                        <option value="Alumnis">Alumni</option>
+                                        <option value="Formateurs">
                                             Formateur
                                         </option>
-                                        <option value="Employeur">
+                                        <option value="Employeurs">
                                             Employeur
                                         </option>
                                     </select>
