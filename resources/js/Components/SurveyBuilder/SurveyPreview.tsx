@@ -15,6 +15,15 @@ interface Props {
     typesReponse: TypeReponse[];
 }
 
+
+const getEmojiForLikert = (index: number, total: number) => {
+    const emojis = ['😡', '😐', '😶', '🙂', '🤩'];
+    const mockupEmojis = ['😫', '☹️', '😐', '🙂', '🤩']; // More like mockup
+    if (total === 5) return mockupEmojis[index];
+    const ratio = index / (total - 1);
+    return mockupEmojis[Math.round(ratio * 4)];
+};
+
 export default function SurveyPreview({ typesReponse }: Props) {
     const { state, setStep, clearDraft } = useSurveyBuilder();
 
@@ -331,38 +340,69 @@ function renderQuestionInput(question: Question) {
 
         case "likert":
             return (
-                <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                        {Array.from({
-                            length:
-                                (question.scale?.max || 5) -
-                                (question.scale?.min || 1) +
-                                1,
-                        }).map((_, i) => {
-                            const value = (question.scale?.min || 1) + i;
-                            return (
-                                <label
-                                    key={value}
-                                    className="flex flex-col items-center gap-1 cursor-not-allowed"
-                                >
-                                    <input
-                                        type="radio"
-                                        name={question.id}
-                                        className="text-elan-orange focus:ring-elan-orange"
-                                        disabled
-                                    />
-                                    <span className="text-xs text-gray-600">
-                                        {value}
-                                    </span>
-                                </label>
-                            );
-                        })}
-                    </div>
-                    <div className="flex justify-between text-xs text-gray-500">
-                        <span>{question.scale?.minLabel}</span>
-                        <span>{question.scale?.maxLabel}</span>
-                    </div>
-                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                            {Array.from({
+                                length: (question.options) ? question.options.length : 0
+                            }).map((_, idx) => {
+                                const isSelected =  false;
+                                return (
+                                    <label key={idx} className="cursor-pointer group">
+                                        <input
+                                            type="radio"
+                                            name={`q_${question.id}`}
+                                            value={String(idx)}
+                                            checked={isSelected}
+                                            className="sr-only"
+                                        />
+                                        <div className={`
+                                            flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all duration-300 h-full
+                                            ${isSelected
+                                                ? "border-orange-500 bg-white shadow-md shadow-orange-500/5 ring-4 ring-orange-500/5"
+                                                : "border-gray-100 bg-white hover:border-gray-200"}
+                                        `}>
+                                            <span className={`text-2xl transition-all duration-300 ${isSelected ? "scale-110" : "filter grayscale opacity-40 group-hover:opacity-100 group-hover:grayscale-0"}`}>
+                                                {getEmojiForLikert(idx, question.options?.length || 0)}
+                                            </span>
+                                            <span className={`text-[10px] font-black text-center uppercase tracking-tighter leading-tight ${isSelected ? "text-gray-900" : "text-gray-400"}`}>
+                                                {question.options ? question.options[idx].label : idx + 1}
+                                            </span>
+                                        </div>
+                                    </label>
+                                );
+                            })}
+                        </div>
+                // <div className="space-y-2">
+                //     <div className="flex items-center justify-between gap-2">
+                //         {Array.from({
+                //             length:
+                //                 (question.scale?.max || 5) -
+                //                 (question.scale?.min || 1) +
+                //                 1,
+                //         }).map((_, i) => {
+                //             const value = (question.scale?.min || 1) + i;
+                //             return (
+                //                 <label
+                //                     key={value}
+                //                     className="flex flex-col items-center gap-1 cursor-not-allowed"
+                //                 >
+                //                     <input
+                //                         type="radio"
+                //                         name={question.id}
+                //                         className="text-elan-orange focus:ring-elan-orange"
+                //                         disabled
+                //                     />
+                //                     <span className="text-xs text-gray-600">
+                //                         {value}
+                //                     </span>
+                //                 </label>
+                //             );
+                //         })}
+                //     </div>
+                //     <div className="flex justify-between text-xs text-gray-500">
+                //         <span>{question.scale?.minLabel}</span>
+                //         <span>{question.scale?.maxLabel}</span>
+                //     </div>
+                // </div>
             );
 
         case "date":
