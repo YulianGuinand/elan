@@ -280,5 +280,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // REMPLIR
 Route::get('/enquetes/remplir/{jeton}', [SurveyController::class, 'participantFill'])->name('survey.fill.participants');
+Route::post('/enquetes/remplir/{jeton}', [SurveyController::class, 'submitFillPublic'])->name('surveys.fill.submit.public');
 
 require __DIR__ . '/auth.php';

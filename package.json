@@ -32,6 +32,7 @@
         "@dnd-kit/utilities": "^3.2.2",
         "@inertiajs/progress": "^0.2.7",
         "@types/papaparse": "^5.5.2",
+        "framer-motion": "^12.38.0",
         "lucide-react": "^0.562.0",
         "nanoid": "^5.1.6",
         "papaparse": "^5.5.3",

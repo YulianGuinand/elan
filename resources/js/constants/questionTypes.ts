@@ -105,12 +105,11 @@ export const QUESTION_TYPES: QuestionTypeConfig[] = [
             type: "likert",
             label: "Nouvelle question",
             required: false,
-            scale: {
-                min: 1,
-                max: 5,
-                minLabel: "Pas du tout d'accord",
-                maxLabel: "Tout à fait d'accord",
-            },
+            options: [
+                { id: "1", label: "Pas du tout d'accord", value: "1" },
+                { id: "2", label: "D'accord", value: "4" },
+                { id: "3", label: "Tout à fait d'accord", value: "5" },
+            ],
             order: 0,
         },
     },
