@@ -31,7 +31,7 @@ export default function ParticipantSelection({
     availableRoles,
     enquete,
 }: Props) {
-    const roles = ["Tous", ...availableRoles];
+    const roles = availableRoles;
     const paginatedParticipants = participants.data;
 
     const getInitials = (firstName: string, lastName: string) => {

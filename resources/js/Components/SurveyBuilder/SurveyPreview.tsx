@@ -33,6 +33,7 @@ export default function SurveyPreview({ typesReponse }: Props) {
                     choix: q.options
                         ? q.options.map((o) => o.label || o.value)
                         : [],
+                    likert_style: q.likertStyle || "emoji",
                     themeId: theme.id,
                 };
             }),

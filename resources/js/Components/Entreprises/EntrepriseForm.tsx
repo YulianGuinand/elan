@@ -30,16 +30,13 @@ interface EntrepriseFormProps {
 export default function EntrepriseForm({ onCancel }: EntrepriseFormProps) {
     const { data, setData, post, processing, errors, reset } = useForm({
         raison_sociale: "",
-        siret: "",
-        secteur: "",
-        taille: "",
         adresse: "",
         code_postal: "",
         ville: "",
-        interlocuteur: "",
+        nom: "",
+        prenom: "",
         mail: "",
         telephone: "",
-        fonction: "",
     });
 
     const submit: FormEventHandler = (e) => {
@@ -85,57 +82,6 @@ export default function EntrepriseForm({ onCancel }: EntrepriseFormProps) {
                             {errors.raison_sociale}
                         </p>
                     )}
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Numéro SIRET
-                    </label>
-                    <input
-                        type="text"
-                        value={data.siret}
-                        onChange={(e) => setData("siret", e.target.value)}
-                        placeholder="14 chiffres"
-                        maxLength={14}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
-                    />
-                </div>
-            </div>
-
-            {/* Ligne 2 : Secteur + Taille */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Secteur d'activité
-                    </label>
-                    <select
-                        value={data.secteur}
-                        onChange={(e) => setData("secteur", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
-                    >
-                        <option value="">— Sélectionner —</option>
-                        {SECTEURS.map((s) => (
-                            <option key={s} value={s}>
-                                {s}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Taille de l'entreprise
-                    </label>
-                    <select
-                        value={data.taille}
-                        onChange={(e) => setData("taille", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
-                    >
-                        <option value="">— Sélectionner —</option>
-                        {TAILLES.map((t) => (
-                            <option key={t.value} value={t.value}>
-                                {t.label}
-                            </option>
-                        ))}
-                    </select>
                 </div>
             </div>
 
@@ -189,21 +135,37 @@ export default function EntrepriseForm({ onCancel }: EntrepriseFormProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Nom complet <span className="text-red-500">*</span>
+                            Nom <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
                             required
-                            value={data.interlocuteur}
-                            onChange={(e) =>
-                                setData("interlocuteur", e.target.value)
-                            }
-                            placeholder="Prénom Nom"
+                            value={data.nom}
+                            onChange={(e) => setData("nom", e.target.value)}
+                            placeholder="Nom"
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                         />
-                        {errors.interlocuteur && (
+                        {errors.nom && (
                             <p className="mt-1 text-xs text-red-600">
-                                {errors.interlocuteur}
+                                {errors.nom}
+                            </p>
+                        )}
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Prénom <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            required
+                            value={data.prenom}
+                            onChange={(e) => setData("prenom", e.target.value)}
+                            placeholder="Prénom"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                        />
+                        {errors.prenom && (
+                            <p className="mt-1 text-xs text-red-600">
+                                {errors.prenom}
                             </p>
                         )}
                     </div>
@@ -245,20 +207,6 @@ export default function EntrepriseForm({ onCancel }: EntrepriseFormProps) {
                                 {errors.telephone}
                             </p>
                         )}
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Fonction / Poste
-                        </label>
-                        <input
-                            type="text"
-                            value={data.fonction}
-                            onChange={(e) =>
-                                setData("fonction", e.target.value)
-                            }
-                            placeholder="Ex: Responsable RH"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
-                        />
                     </div>
                 </div>
             </div>

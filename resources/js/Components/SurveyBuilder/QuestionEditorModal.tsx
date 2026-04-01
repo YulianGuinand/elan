@@ -5,7 +5,7 @@ import TextInput from "@/Components/TextInput";
 import { getQuestionTypeLabel } from "@/constants/questionTypes";
 import { useSurveyBuilder } from "@/contexts/SurveyBuilderContext";
 import { Question } from "@/types/surveyBuilder";
-import { Plus, Trash2, X } from "lucide-react";
+import { BarChart3, Plus, Trash2, X } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useState } from "react";
 import { createPortal } from "react-dom";
@@ -51,22 +51,33 @@ export default function QuestionEditorModal({
                       label,
                       value: label.toLowerCase().replace(/\s+/g, "_"),
                   }
-                : opt
+                : opt,
         );
         setEditedQuestion({ ...editedQuestion, options: newOptions });
     };
 
     const handleDeleteOption = (optionId: string) => {
         const newOptions = editedQuestion.options?.filter(
-            (opt) => opt.id !== optionId
+            (opt) => opt.id !== optionId,
         );
         setEditedQuestion({ ...editedQuestion, options: newOptions });
     };
 
-    const needsOptions = ["radio", "checkbox", "select"].includes(
-        editedQuestion.type
+    const needsOptions = ["radio", "checkbox", "select", "likert"].includes(
+        editedQuestion.type,
     );
-    const needsScale = editedQuestion.type === "likert";
+    const usesLikertHelper = editedQuestion.type === "likert";
+
+    const handleApplyLikertTemplate = () => {
+        const template = [
+            { id: nanoid(), label: "Pas du tout d'accord", value: "1" },
+            { id: nanoid(), label: "Pas d'accord", value: "2" },
+            { id: nanoid(), label: "Neutre", value: "3" },
+            { id: nanoid(), label: "D'accord", value: "4" },
+            { id: nanoid(), label: "Tout à fait d'accord", value: "5" },
+        ];
+        setEditedQuestion({ ...editedQuestion, options: template });
+    };
 
     const handleOverlayClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget) {
@@ -154,7 +165,7 @@ export default function QuestionEditorModal({
 
                         {/* Placeholder */}
                         {["text", "textarea", "select"].includes(
-                            editedQuestion.type
+                            editedQuestion.type,
                         ) && (
                             <div>
                                 <InputLabel
@@ -199,11 +210,23 @@ export default function QuestionEditorModal({
                             </label>
                         </div>
 
-                        {/* Options for radio, checkbox, select */}
+                        {/* Options for radio, checkbox, select, likert */}
                         {needsOptions && (
                             <div>
                                 <div className="flex items-center justify-between mb-2">
-                                    <InputLabel value="Options" />
+                                    <div className="flex items-center gap-2">
+                                        <InputLabel value="Choix / Options" />
+                                        {usesLikertHelper && (
+                                            <button
+                                                onClick={
+                                                    handleApplyLikertTemplate
+                                                }
+                                                className="text-xs px-2 py-1 bg-elan-orange/10 text-elan-orange rounded hover:bg-elan-orange/20 transition-colors"
+                                            >
+                                                Appliquer le modèle 1-5
+                                            </button>
+                                        )}
+                                    </div>
                                     <button
                                         onClick={handleAddOption}
                                         className="text-sm text-elan-orange hover:text-elan-orange/80 font-medium inline-flex items-center gap-1"
@@ -228,7 +251,7 @@ export default function QuestionEditorModal({
                                                     onChange={(e) =>
                                                         handleUpdateOption(
                                                             option.id,
-                                                            e.target.value
+                                                            e.target.value,
                                                         )
                                                     }
                                                     className="flex-1"
@@ -241,7 +264,7 @@ export default function QuestionEditorModal({
                                                     <button
                                                         onClick={() =>
                                                             handleDeleteOption(
-                                                                option.id
+                                                                option.id,
                                                             )
                                                         }
                                                         className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
@@ -250,114 +273,77 @@ export default function QuestionEditorModal({
                                                     </button>
                                                 )}
                                             </div>
-                                        )
+                                        ),
                                     )}
                                 </div>
                             </div>
                         )}
 
                         {/* Scale for Likert */}
-                        {needsScale && (
-                            <div className="space-y-3">
-                                <InputLabel value="Échelle de Likert" />
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-xs text-gray-600">
-                                            Minimum
-                                        </label>
-                                        <TextInput
-                                            type="number"
-                                            value={
-                                                editedQuestion.scale?.min || 1
-                                            }
-                                            onChange={(e) =>
-                                                setEditedQuestion({
-                                                    ...editedQuestion,
-                                                    scale: {
-                                                        ...editedQuestion.scale!,
-                                                        min: parseInt(
-                                                            e.target.value
-                                                        ),
-                                                    },
-                                                })
-                                            }
-                                            className="mt-1 block w-full"
-                                            min="1"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-gray-600">
-                                            Maximum
-                                        </label>
-                                        <TextInput
-                                            type="number"
-                                            value={
-                                                editedQuestion.scale?.max || 5
-                                            }
-                                            onChange={(e) =>
-                                                setEditedQuestion({
-                                                    ...editedQuestion,
-                                                    scale: {
-                                                        ...editedQuestion.scale!,
-                                                        max: parseInt(
-                                                            e.target.value
-                                                        ),
-                                                    },
-                                                })
-                                            }
-                                            className="mt-1 block w-full"
-                                            min="2"
-                                        />
-                                    </div>
+                        {usesLikertHelper && (
+                            <div className="space-y-4">
+                                <div className="bg-elan-blue/5 p-4 rounded-lg border border-elan-blue/10">
+                                    <p className="text-xs text-elan-blue font-medium flex items-center gap-1">
+                                        <BarChart3 className="w-4 h-4" />
+                                        L'échelle Likert utilise les options
+                                        définies ci-dessus (modèle 1-5
+                                        recommandé).
+                                    </p>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-xs text-gray-600">
-                                            Label minimum
-                                        </label>
-                                        <TextInput
-                                            type="text"
-                                            value={
-                                                editedQuestion.scale
-                                                    ?.minLabel || ""
-                                            }
-                                            onChange={(e) =>
+
+                                {/* Likert Style Selector */}
+                                <div>
+                                    <InputLabel value="Style d'affichage" />
+                                    <div className="grid grid-cols-2 gap-4 mt-2">
+                                        <button
+                                            onClick={() =>
                                                 setEditedQuestion({
                                                     ...editedQuestion,
-                                                    scale: {
-                                                        ...editedQuestion.scale!,
-                                                        minLabel:
-                                                            e.target.value,
-                                                    },
+                                                    likertStyle: "emoji",
                                                 })
                                             }
-                                            className="mt-1 block w-full"
-                                            placeholder="Ex: Pas du tout d'accord"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-gray-600">
-                                            Label maximum
-                                        </label>
-                                        <TextInput
-                                            type="text"
-                                            value={
-                                                editedQuestion.scale
-                                                    ?.maxLabel || ""
-                                            }
-                                            onChange={(e) =>
+                                            className={`p-4 rounded-lg border-2 transition-all text-center ${
+                                                editedQuestion.likertStyle ===
+                                                    "emoji" ||
+                                                !editedQuestion.likertStyle
+                                                    ? "border-elan-orange bg-elan-orange/5"
+                                                    : "border-gray-200 hover:border-gray-300 bg-white"
+                                            }`}
+                                        >
+                                            <div className="text-2xl mb-2">
+                                                😠😕😐🙂😍
+                                            </div>
+                                            <span className="text-sm font-medium text-gray-900">
+                                                Avec emojis
+                                            </span>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                Emojis prédéfinis
+                                            </p>
+                                        </button>
+                                        <button
+                                            onClick={() =>
                                                 setEditedQuestion({
                                                     ...editedQuestion,
-                                                    scale: {
-                                                        ...editedQuestion.scale!,
-                                                        maxLabel:
-                                                            e.target.value,
-                                                    },
+                                                    likertStyle: "custom",
                                                 })
                                             }
-                                            className="mt-1 block w-full"
-                                            placeholder="Ex: Tout à fait d'accord"
-                                        />
+                                            className={`p-4 rounded-lg border-2 transition-all text-center ${
+                                                editedQuestion.likertStyle ===
+                                                "custom"
+                                                    ? "border-elan-orange bg-elan-orange/5"
+                                                    : "border-gray-200 hover:border-gray-300 bg-white"
+                                            }`}
+                                        >
+                                            <div className="text-2xl mb-2">
+                                                1️⃣2️⃣3️⃣4️⃣5️⃣
+                                            </div>
+                                            <span className="text-sm font-medium text-gray-900">
+                                                Personnalisé
+                                            </span>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                Vos textes uniquement
+                                            </p>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -380,7 +366,7 @@ export default function QuestionEditorModal({
                                                     ...editedQuestion.validation,
                                                     min: e.target.value
                                                         ? parseInt(
-                                                              e.target.value
+                                                              e.target.value,
                                                           )
                                                         : undefined,
                                                 },
@@ -403,7 +389,7 @@ export default function QuestionEditorModal({
                                                     ...editedQuestion.validation,
                                                     max: e.target.value
                                                         ? parseInt(
-                                                              e.target.value
+                                                              e.target.value,
                                                           )
                                                         : undefined,
                                                 },
@@ -431,6 +417,6 @@ export default function QuestionEditorModal({
                 </Card>
             </div>
         </div>,
-        document.body
+        document.body,
     );
 }

@@ -8,7 +8,7 @@ import {
     SurveyBuilderProvider,
     useSurveyBuilder,
 } from "@/contexts/SurveyBuilderContext";
-import { Question, SurveyBuilderState, Theme } from "@/types/surveyBuilder";
+import { SurveyBuilderState, Theme } from "@/types/surveyBuilder";
 import { Survey, TypeReponse } from "@/types/surveys";
 import { Head } from "@inertiajs/react";
 import { nanoid } from "nanoid";
@@ -61,30 +61,32 @@ export default function SurveyEdit({ enquete, typesReponse }: Props) {
         return dateStr.split("/").reverse().join("-");
     };
 
-    const initialThemes: Theme[] = enquete.themes?.map((t: any) => ({
-        id: nanoid(),
-        title: t.libelle,
-        description: "",
-        order: t.ordre || 0,
-        questions: t.questions.map((q: any, idx: number) => {
-            let builderType = q.type_reponse || "text";
+    const initialThemes: Theme[] =
+        enquete.themes?.map((t: any) => ({
+            id: nanoid(),
+            title: t.libelle,
+            description: "",
+            order: t.ordre || 0,
+            questions: t.questions.map((q: any, idx: number) => {
+                let builderType = q.type_reponse || "text";
 
-            return {
-                id: nanoid(),
-                type: builderType as any,
-                label: q.libelle,
-                required: q.required || false,
-                order: q.numero || idx,
-                options: q.choix
-                    ? q.choix.map((c: any) => ({
-                          id: nanoid(),
-                          label: c.libelle,
-                          value: c.libelle,
-                      }))
-                    : undefined,
-            };
-        })
-    })) || [];
+                return {
+                    id: nanoid(),
+                    type: builderType as any,
+                    label: q.libelle,
+                    required: q.required || false,
+                    order: q.numero || idx,
+                    likertStyle: q.likert_style || "emoji",
+                    options: q.choix
+                        ? q.choix.map((c: any) => ({
+                              id: nanoid(),
+                              label: c.libelle,
+                              value: c.libelle,
+                          }))
+                        : undefined,
+                };
+            }),
+        })) || [];
 
     const initialStateOverride: Partial<SurveyBuilderState> = {
         surveyId: enquete.id,
@@ -97,15 +99,18 @@ export default function SurveyEdit({ enquete, typesReponse }: Props) {
             startDate: parseDate(enquete.date_debut),
             endDate: parseDate(enquete.date_fin),
         },
-        themes: initialThemes.length > 0 ? initialThemes : [
-            {
-                id: nanoid(),
-                title: "Questions de l'enquête",
-                description: "",
-                order: 0,
-                questions: [],
-            }
-        ],
+        themes:
+            initialThemes.length > 0
+                ? initialThemes
+                : [
+                      {
+                          id: nanoid(),
+                          title: "Questions de l'enquête",
+                          description: "",
+                          order: 0,
+                          questions: [],
+                      },
+                  ],
     };
 
     return (

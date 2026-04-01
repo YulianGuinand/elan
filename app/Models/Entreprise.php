@@ -13,7 +13,9 @@ class Entreprise extends Model
         "mail",
         "telephone",
         "ville",
-        "interlocuteur"
+        "nom",
+        "prenom",
+        "code_postal"
     ];
 
     public function participants(): BelongsToMany

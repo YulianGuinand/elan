@@ -31,7 +31,7 @@ function CreateSurveyContent({
                 ]}
                 noPadding={true}
             >
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
                     {/* Stepper */}
                     <FadeIn delay={50}>
                         <div className="bg-white shadow-sm p-4 sm:p-6">

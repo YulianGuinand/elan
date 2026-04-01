@@ -11,7 +11,8 @@ class Question extends Model
         'numero',
         'enquete_id',
         'type_reponse_id',
-        'theme_id'
+        'theme_id',
+        'likert_style'
     ];
 
     public function enquete()

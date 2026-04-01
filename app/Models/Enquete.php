@@ -48,7 +48,9 @@ class Enquete extends Model
 
     public function participants(): BelongsToMany
     {
-        return $this->belongsToMany(Participant::class, 'participer');
+        return $this->belongsToMany(Participant::class, 'participer')
+            ->withPivot('jeton')
+            ->withTimestamps();
     }
 
     public function contacts()
