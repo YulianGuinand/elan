@@ -61,7 +61,7 @@ export default function EntrepriseEdit({
                     onClick: () => window.history.back(),
                 }}
             >
-                <div className="max-w-2xl">
+                <div className="w-full flex items-center justify-center">
                     <FadeIn delay={0}>
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                             <form onSubmit={submit} className="space-y-5">

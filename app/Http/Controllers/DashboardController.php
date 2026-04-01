@@ -16,10 +16,22 @@ class DashboardController extends Controller
     {
         // Recuperer l'utilisateur connecte
         $user = Auth::user();
+
         // Calcul du taux de reponse/participation moyen
-        $totalEnquetes = \App\Models\Enquete::count();
-        $totalParticipations = DB::table('participer')->count();
-        $tauxParticipation = $totalEnquetes > 0 ? round($totalParticipations / $totalEnquetes, 2) : 0;
+        // Contacts = nombre d'invitations dans la table participer
+        $contactsCount = DB::table('participer')->count();
+
+        // Participations = nombre de participants DISTINCTS ayant répondu
+        $participationsCount = DB::table('repondre as r')
+            ->join('participants as p', 'p.id', '=', 'r.participant_id')
+            ->pluck('r.participant_id')
+            ->unique()
+            ->count();
+
+        // Taux de participation en pourcentage
+        $tauxParticipation = $contactsCount > 0
+            ? round(($participationsCount / $contactsCount) * 100, 1)
+            : 0;
 
         return Inertia::render('Dashboard', [
             'stats' => $this->getStatsData(),
@@ -205,15 +217,64 @@ class DashboardController extends Controller
      */
     private function getSatisfactionData(): array
     {
+        $now = now();
+        $monthStart = $now->copy()->startOfMonth();
+        $monthEnd = $now->copy()->endOfMonth();
+
+        // Récupérer toutes les réponses Likert du mois
+        $satisfactionValues = DB::table('repondre as r')
+            ->join('questions as q', 'q.id', '=', 'r.question_id')
+            ->join('type__reponses as tr', 'tr.id', '=', 'q.type_reponse_id')
+            ->whereBetween('r.created_at', [$monthStart, $monthEnd])
+            ->where('tr.libelle', '=', 'likert')
+            ->select('r.valeur', 'q.id as question_id')
+            ->get();
+
+        // Calculer les positions
+        $positions = $satisfactionValues->map(function ($row) {
+            return DB::table('choixes')
+                ->where('question_id', $row->question_id)
+                ->where('id', '<=', $row->valeur)
+                ->count();
+        })->filter(fn ($value) => $value !== null);
+
+        if ($positions->isEmpty()) {
+            return [
+                'score' => 0,
+                'maxScore' => 5,
+                'levels' => [
+                    ['label' => 'Tres Satisfait', 'percentage' => 0, 'color' => '#F18628'],
+                    ['label' => 'Satisfait', 'percentage' => 0, 'color' => '#F18628'],
+                    ['label' => 'Neutre', 'percentage' => 0, 'color' => '#FFA85C'],
+                    ['label' => 'Insatisfait', 'percentage' => 0, 'color' => '#FFD4B3'],
+                    ['label' => 'Tres Mauvais', 'percentage' => 0, 'color' => '#FFE8D9'],
+                ],
+            ];
+        }
+
+        $avgScore = round($positions->avg(), 2);
+
+        // Compter la distribution par niveau
+        $level5 = $positions->filter(fn ($v) => $v == 5)->count();
+        $level4 = $positions->filter(fn ($v) => $v == 4)->count();
+        $level3 = $positions->filter(fn ($v) => $v == 3)->count();
+        $level2 = $positions->filter(fn ($v) => $v == 2)->count();
+        $level1 = $positions->filter(fn ($v) => $v == 1)->count();
+        $total = $positions->count();
+
+        $calculatePercentage = function ($count) use ($total) {
+            return $total > 0 ? round(($count / $total) * 100, 1) : 0;
+        };
+
         return [
-            'score' => 4.2,
+            'score' => $avgScore,
             'maxScore' => 5,
             'levels' => [
-                ['label' => 'Tres Satisfait', 'percentage' => 40, 'color' => '#F18628'],
-                ['label' => 'Satisfait', 'percentage' => 30, 'color' => '#F18628'],
-                ['label' => 'Neutre', 'percentage' => 20, 'color' => '#FFA85C'],
-                ['label' => 'Insatisfait', 'percentage' => 7, 'color' => '#FFD4B3'],
-                ['label' => 'Tres Mauvais', 'percentage' => 3, 'color' => '#FFE8D9'],
+                ['label' => 'Tres Satisfait', 'percentage' => $calculatePercentage($level5), 'color' => '#F18628'],
+                ['label' => 'Satisfait', 'percentage' => $calculatePercentage($level4), 'color' => '#F18628'],
+                ['label' => 'Neutre', 'percentage' => $calculatePercentage($level3), 'color' => '#FFA85C'],
+                ['label' => 'Insatisfait', 'percentage' => $calculatePercentage($level2), 'color' => '#FFD4B3'],
+                ['label' => 'Tres Mauvais', 'percentage' => $calculatePercentage($level1), 'color' => '#FFE8D9'],
             ],
         ];
     }

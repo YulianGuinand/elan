@@ -20,15 +20,15 @@ export default function ThemeNavigation({
         );
     };
     return (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden">
             <div className="p-5 pb-4 border-b border-gray-50 bg-gray-50/30">
-                 <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">
-                     Plan de l&apos;enquête
-                 </h3>
-             </div>
-             <div className="p-2">
-                 <div className="space-y-1">
-                     {themes.map((theme, index) => {
+                <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">
+                    Plan de l&apos;enquête
+                </h3>
+            </div>
+            <div className="p-2">
+                <div className="space-y-1">
+                    {themes.map((theme, index) => {
                         const isActive = currentThemeIndex === index;
                         const complete = isThemeComplete(theme);
 

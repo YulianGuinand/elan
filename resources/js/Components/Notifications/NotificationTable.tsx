@@ -1,4 +1,5 @@
-import { CheckCircle, FileText, Trash2 } from "lucide-react";
+import { CheckCircle, FileText, MoreVertical, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface Notification {
     id: number;
@@ -18,28 +19,29 @@ interface NotificationTableProps {
     onDelete: (id: number) => void;
 }
 
-const notificationTypeLabels: Record<string, { label: string; color: string }> = {
-    email_notifications: {
-        label: "Notification Email",
-        color: "bg-blue-100 text-blue-800",
-    },
-    survey_reminders: {
-        label: "Rappel Enquête",
-        color: "bg-green-100 text-green-800",
-    },
-    response_alerts: {
-        label: "Alerte Réponse",
-        color: "bg-orange-100 text-orange-800",
-    },
-    weekly_reports: {
-        label: "Rapport Hebdomadaire",
-        color: "bg-purple-100 text-purple-800",
-    },
-    system_updates: {
-        label: "Mise à Jour Système",
-        color: "bg-gray-100 text-gray-800",
-    },
-};
+const notificationTypeLabels: Record<string, { label: string; color: string }> =
+    {
+        email_notifications: {
+            label: "Notification Email",
+            color: "bg-blue-100 text-blue-800",
+        },
+        survey_reminders: {
+            label: "Rappel Enquête",
+            color: "bg-green-100 text-green-800",
+        },
+        response_alerts: {
+            label: "Alerte Réponse",
+            color: "bg-orange-100 text-orange-800",
+        },
+        weekly_reports: {
+            label: "Rapport Hebdomadaire",
+            color: "bg-purple-100 text-purple-800",
+        },
+        system_updates: {
+            label: "Mise à Jour Système",
+            color: "bg-gray-100 text-gray-800",
+        },
+    };
 
 export default function NotificationTable({
     notifications,
@@ -49,6 +51,25 @@ export default function NotificationTable({
     onMarkAsRead,
     onDelete,
 }: NotificationTableProps) {
+    const [openDropdown, setOpenDropdown] = useState<number | null>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+            if (
+                !target.closest("[data-dropdown-id]") &&
+                !target.closest("button")
+            ) {
+                setOpenDropdown(null);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     if (notifications.length === 0) {
         return (
             <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
@@ -110,13 +131,15 @@ export default function NotificationTable({
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {notifications.map((notification) => {
-                            const typeInfo =
-                                notificationTypeLabels[notification.type] || {
-                                    label: notification.type,
-                                    color: "bg-gray-100 text-gray-800",
-                                };
-                            const isSelected =
-                                selectedNotifications.has(notification.id);
+                            const typeInfo = notificationTypeLabels[
+                                notification.type
+                            ] || {
+                                label: notification.type,
+                                color: "bg-gray-100 text-gray-800",
+                            };
+                            const isSelected = selectedNotifications.has(
+                                notification.id,
+                            );
                             const isRead = notification.read_at !== null;
 
                             return (
@@ -164,7 +187,7 @@ export default function NotificationTable({
                                     <td className="px-5 py-4">
                                         <p className="text-sm text-gray-600 whitespace-nowrap">
                                             {formatDate(
-                                                notification.created_at
+                                                notification.created_at,
                                             )}
                                         </p>
                                     </td>
@@ -190,30 +213,61 @@ export default function NotificationTable({
                                     </td>
 
                                     {/* Actions */}
-                                    <td className="px-5 py-4">
-                                        <div className="flex items-center gap-2">
-                                            {!isRead && (
-                                                <button
-                                                    onClick={() =>
-                                                        onMarkAsRead(
-                                                            notification.id
-                                                        )
-                                                    }
-                                                    className="p-2 hover:bg-green-50 rounded-lg transition-colors"
-                                                    title="Marquer comme lu"
-                                                >
-                                                    <CheckCircle className="w-4 h-4 text-gray-400 hover:text-green-600" />
-                                                </button>
-                                            )}
+                                    <td className="px-5 py-4 flex justify-center">
+                                        <div
+                                            className="relative inline-block"
+                                            data-dropdown-id={notification.id}
+                                        >
                                             <button
                                                 onClick={() =>
-                                                    onDelete(notification.id)
+                                                    setOpenDropdown(
+                                                        openDropdown ===
+                                                            notification.id
+                                                            ? null
+                                                            : notification.id,
+                                                    )
                                                 }
-                                                className="p-2 hover:bg-red-50 rounded-lg transition-colors"
-                                                title="Supprimer"
+                                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                                title="Actions"
                                             >
-                                                <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-600" />
+                                                <MoreVertical className="w-4 h-4 text-gray-600 hover:text-gray-900" />
                                             </button>
+
+                                            {openDropdown ===
+                                                notification.id && (
+                                                <div className="absolute right-0 mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                                                    {!isRead && (
+                                                        <button
+                                                            onClick={() => {
+                                                                onMarkAsRead(
+                                                                    notification.id,
+                                                                );
+                                                                setOpenDropdown(
+                                                                    null,
+                                                                );
+                                                            }}
+                                                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors flex items-center gap-2 border-b border-gray-100"
+                                                        >
+                                                            <CheckCircle className="w-4 h-4" />
+                                                            Marquer comme lue
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        onClick={() => {
+                                                            onDelete(
+                                                                notification.id,
+                                                            );
+                                                            setOpenDropdown(
+                                                                null,
+                                                            );
+                                                        }}
+                                                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                        Supprimer
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

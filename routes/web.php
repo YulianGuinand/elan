@@ -66,6 +66,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{id}/remplir', [SurveyController::class, 'submitFill'])
             ->name('surveys.fill.submit');
 
+        // Voir les réponses
+        Route::get('/{id}/reponses', [SurveyController::class, 'responses'])
+            ->name('surveys.responses')->middleware(["is_admin"]);
+
+        // Dupliquer une enquête (protégé par is_admin)
+        Route::post('/{id}/dupliquer', [SurveyController::class, 'duplicate'])
+            ->name('surveys.duplicate')->middleware(["is_admin"]);
+
         // Modifier une enquête (protégé par is_admin, puis check admin/superadmin dans le controller)
         Route::get('/{id}/modifier', [SurveyController::class, 'edit'])
             ->name('surveys.edit')->middleware(["is_admin"]);

@@ -60,7 +60,7 @@ class NotificationsController extends Controller
         $total = $query->count();
 
         // Pagination
-        $perPage = $request->get('per_page', 15);
+        $perPage = $request->get('per_page', config('pagination.per_page'));
         $page = $request->get('page', 1);
         $paginated = $query
             ->orderBy('created_at', 'desc')

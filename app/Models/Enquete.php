@@ -8,13 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @property int                             $id
- * @property string                          $titre
- * @property string                          $description
+ * @property int $id
+ * @property string $titre
+ * @property string $description
  * @property \Illuminate\Support\Carbon|null $date_debut
  * @property \Illuminate\Support\Carbon|null $date_fin
- * @property string                          $type_campagne
- * @property int                             $utilisateur_id
+ * @property string $type_campagne
+ * @property int $utilisateur_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  */
@@ -33,7 +33,7 @@ class Enquete extends Model
 
     protected $casts = [
         'date_debut' => 'date',
-        'date_fin'   => 'date',
+        'date_fin' => 'date',
     ];
 
     public function utilisateur(): BelongsTo
@@ -63,6 +63,7 @@ class Enquete extends Model
     public function isActive(): bool
     {
         $now = now()->toDateString();
+
         return $this->date_debut?->toDateString() <= $now
             && $this->date_fin?->toDateString() >= $now;
     }
@@ -79,9 +80,16 @@ class Enquete extends Model
 
     public function getStatutAttribute(): string
     {
-        if ($this->isTerminee()) return 'terminee';
-        if ($this->isActive())   return 'active';
-        if ($this->isAVenir())   return 'a_venir';
+        if ($this->isTerminee()) {
+            return 'terminee';
+        }
+        if ($this->isActive()) {
+            return 'active';
+        }
+        if ($this->isAVenir()) {
+            return 'a_venir';
+        }
+
         return 'brouillon';
     }
 }

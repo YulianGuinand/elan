@@ -55,7 +55,7 @@ class Ecole extends Model
 
     public function formations(): BelongsToMany
     {
-        return $this->belongsToMany(Contrat::class,'etreenseigner');
+        return $this->belongsToMany(Formations::class, 'etreenseigner', 'ecole_id', 'forma_id');
     }
     /**
      * Accesseur pour l'adresse complète.

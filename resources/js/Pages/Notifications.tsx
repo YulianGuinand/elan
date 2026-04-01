@@ -81,14 +81,11 @@ export default function Notifications({
 
     const handleSelectAll = () => {
         if (!notifications?.data) return;
-        if (
-            selectedNotifications.size ===
-            notifications.data.length
-        ) {
+        if (selectedNotifications.size === notifications.data.length) {
             setSelectedNotifications(new Set());
         } else {
             setSelectedNotifications(
-                new Set(notifications.data.map((n) => n.id))
+                new Set(notifications.data.map((n) => n.id)),
             );
         }
     };
@@ -113,45 +110,51 @@ export default function Notifications({
         router.get(
             route("notifications.index"),
             { ...filters, page },
-            { preserveState: true }
+            { preserveState: true },
         );
     };
 
     const handleMarkAsRead = (notificationId: number) => {
         router.patch(
-            route("notifications.mark-as-read", { notification: notificationId }),
+            route("notifications.mark-as-read", {
+                notification: notificationId,
+            }),
             {},
             {
                 onSuccess: () => {
                     setSelectedNotifications(new Set());
                 },
-            }
+            },
         );
     };
 
     const handleDelete = (notificationId: number) => {
         if (
-            confirm(
-                "Êtes-vous sûr de vouloir supprimer cette notification ?"
-            )
+            confirm("Êtes-vous sûr de vouloir supprimer cette notification ?")
         ) {
             router.delete(
-                route("notifications.destroy", { notification: notificationId }),
+                route("notifications.destroy", {
+                    notification: notificationId,
+                }),
                 {
                     onSuccess: () => {
                         setSelectedNotifications(new Set());
                     },
-                }
+                },
             );
         }
     };
 
     const handleMarkAllAsRead = () => {
-        router.patch(route("notifications.mark-all-as-read"), {}, {
-            onSuccess: () => {
-                setSelectedNotifications(new Set());
+        router.patch(
+            route("notifications.mark-all-as-read"),
+            {},
+            {
+                onSuccess: () => {
+                    setSelectedNotifications(new Set());
+                },
             },
-        });
+        );
     };
 
     return (
@@ -165,7 +168,7 @@ export default function Notifications({
                     { label: "Notifications" },
                 ]}
             >
-                <div className="space-y-6 w-full">
+                <div className="space-y-6 mb-24 w-full">
                     {/* Header */}
                     <FadeIn delay={0}>
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -241,7 +244,10 @@ export default function Notifications({
                                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
                                     >
                                         {notificationTypes.map((t) => (
-                                            <option key={t.value} value={t.value}>
+                                            <option
+                                                key={t.value}
+                                                value={t.value}
+                                            >
                                                 {t.label}
                                             </option>
                                         ))}
@@ -264,7 +270,10 @@ export default function Notifications({
                                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
                                     >
                                         {statusOptions.map((s) => (
-                                            <option key={s.value} value={s.value}>
+                                            <option
+                                                key={s.value}
+                                                value={s.value}
+                                            >
                                                 {s.label}
                                             </option>
                                         ))}
@@ -312,19 +321,20 @@ export default function Notifications({
                     </FadeIn>
 
                     {/* Pagination */}
-                    {notifications?.meta && notifications.meta.last_page > 1 && (
-                        <FadeIn delay={300}>
-                            <Pagination
-                                currentPage={
-                                    notifications.meta.current_page
-                                }
-                                totalPages={notifications.meta.last_page}
-                                totalItems={notifications.meta.total}
-                                itemsPerPage={notifications.meta.per_page}
-                                onPageChange={handlePageChange}
-                            />
-                        </FadeIn>
-                    )}
+                    {notifications?.meta &&
+                        notifications.meta.last_page > 1 && (
+                            <FadeIn delay={300}>
+                                <Pagination
+                                    currentPage={
+                                        notifications.meta.current_page
+                                    }
+                                    totalPages={notifications.meta.last_page}
+                                    totalItems={notifications.meta.total}
+                                    itemsPerPage={notifications.meta.per_page}
+                                    onPageChange={handlePageChange}
+                                />
+                            </FadeIn>
+                        )}
                 </div>
             </DashboardLayout>
         </>

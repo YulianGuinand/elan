@@ -6,6 +6,8 @@ export interface UserSettings {
     role: string;
     avatar?: string;
     two_factor_enabled: boolean;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface AccountFormData {

@@ -1,7 +1,19 @@
+import ContractsTable from "@/Components/Ecoles/ContractsTable";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { PageProps } from "@/types";
 import { Head, router, usePage } from "@inertiajs/react";
 import { Edit, MapPin } from "lucide-react";
+
+interface Contract {
+    id: number;
+    participant_nom: string;
+    participant_prenom: string;
+    participant_role: string;
+    formation_libelle: string;
+    entreprise_libelle: string;
+    date_entree: string;
+    date_sortiee: string | null;
+}
 
 interface Ecole {
     id: number;
@@ -12,7 +24,13 @@ interface Ecole {
     created_at: string;
 }
 
-export default function Show({ ecole }: { ecole: Ecole }) {
+export default function Show({
+    ecole,
+    contrats,
+}: {
+    ecole: Ecole;
+    contrats: Contract[];
+}) {
     const { auth } = usePage<PageProps>().props;
 
     return (
@@ -31,9 +49,9 @@ export default function Show({ ecole }: { ecole: Ecole }) {
                     onClick: () => window.history.back(),
                 }}
             >
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
                     {/* En-tête de l'école */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-6 relative">
+                    <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-6 relative">
                         {auth.user.role_id !== 3 && (
                             <div className="absolute top-6 right-6 flex gap-2">
                                 <button
@@ -68,8 +86,8 @@ export default function Show({ ecole }: { ecole: Ecole }) {
                     </div>
 
                     {/* Informations */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="w-full flex flex-col gap-6">
+                        <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-100 pb-3">
                                 Informations de localisation
                             </h2>
@@ -103,17 +121,11 @@ export default function Show({ ecole }: { ecole: Ecole }) {
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-100 pb-3">
                                 Contrats (Apprentis / Formateurs)
                             </h2>
-                            <div className="flex items-center justify-center h-40 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                                <p className="text-sm text-gray-500 text-center px-4">
-                                    Cet encart affichera la liste des apprentis
-                                    ou formateurs rattachés à cette école à
-                                    l'avenir.
-                                </p>
-                            </div>
+                            <ContractsTable contracts={contrats} />
                         </div>
                     </div>
                 </div>

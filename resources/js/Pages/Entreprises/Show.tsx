@@ -35,7 +35,7 @@ export default function EntrepriseShow({
                         router.get(route("entreprises.edit", entreprise.id)),
                 }}
             >
-                <div className="max-w-2xl space-y-6">
+                <div className="w-full space-y-6">
                     <FadeIn delay={0}>
                         {/* En-tête */}
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-center gap-4">

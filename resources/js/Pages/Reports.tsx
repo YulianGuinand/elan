@@ -12,7 +12,7 @@ import {
     ReportSurveyOption,
 } from "@/types/reports";
 import { Head, router } from "@inertiajs/react";
-import { Download, FileText } from "lucide-react";
+import { Download } from "lucide-react";
 import { useMemo } from "react";
 
 interface ReportsProps {
@@ -91,13 +91,6 @@ export default function Reports({
                                     Synthèse Excel
                                 </a>
                                 <a
-                                    href={`${summaryExportUrl}&format=pdf`}
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-elan-orange rounded-lg text-sm font-medium text-white hover:bg-elan-orange/90 transition-colors"
-                                >
-                                    <FileText className="w-4 h-4" />
-                                    Synthèse PDF
-                                </a>
-                                <a
                                     href={`${answersExportUrl}&format=csv`}
                                     className="inline-flex items-center gap-2 px-4 py-2 border border-elan-orange rounded-lg text-sm font-medium text-elan-orange bg-white hover:bg-orange-50 transition-colors"
                                 >
@@ -110,13 +103,6 @@ export default function Reports({
                                 >
                                     <Download className="w-4 h-4" />
                                     Réponses Excel
-                                </a>
-                                <a
-                                    href={`${answersExportUrl}&format=pdf`}
-                                    className="inline-flex items-center gap-2 px-4 py-2 border border-elan-orange rounded-lg text-sm font-medium text-elan-orange bg-white hover:bg-orange-50 transition-colors"
-                                >
-                                    <FileText className="w-4 h-4" />
-                                    Réponses PDF
                                 </a>
                             </div>
                         </div>
@@ -134,7 +120,9 @@ export default function Reports({
                     {!hasData && (
                         <FadeIn delay={120}>
                             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-900 text-sm">
-                                Aucune donnée disponible pour ces filtres. Les indicateurs sont affichés à 0 et les exports restent disponibles.
+                                Aucune donnée disponible pour ces filtres. Les
+                                indicateurs sont affichés à 0 et les exports
+                                restent disponibles.
                             </div>
                         </FadeIn>
                     )}

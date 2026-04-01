@@ -14,10 +14,10 @@ class Formations extends Model
     ];
     public function contrats() : HasMany
     {
-        return $this->hasMany(Contrat::class);
+        return $this->hasMany(Contrat::class, 'formation_id');
     }
     public function ecoles() : BelongsToMany
     {
-        return $this->belongsToMany(Ecole::class,'etreenseigner');
+        return $this->belongsToMany(Ecole::class, 'etreenseigner', 'forma_id', 'ecole_id');
     }
 }

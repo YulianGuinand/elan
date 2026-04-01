@@ -50,35 +50,25 @@ export default function Dashboard({
                     <FadeIn delay={0}>
                         <WelcomeBanner
                             userName={userName}
-                            message={`Vos enquêtes sont performantes. Le taux de réponse moyen est de ${tauxParticipation}.`}
+                            message={`Vos enquêtes sont performantes. Le taux de réponse moyen est de ${tauxParticipation}%.`}
                         />
                     </FadeIn>
 
                     {/* Stats Cards Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {stats.map((stat, index) => (
-                            <FadeIn key={stat.id} delay={100 + index * 50} className="h-full">
+                            <FadeIn
+                                key={stat.id}
+                                delay={100 + index * 50}
+                                className="h-full"
+                            >
                                 <StatsCard stat={stat} />
                             </FadeIn>
                         ))}
                     </div>
 
                     {/* Charts Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
-                        {/* Participation Card */}
-                        <FadeIn delay={250}>
-                            <div className="bg-white rounded-lg shadow-sm p-6 h-full">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-6">
-                                    Participation en Temps Réel
-                                </h3>
-                                <CircularProgress
-                                    percentage={participationData.percentage}
-                                    title={participationData.channelName}
-                                    subtitle={participationData.channelSubtitle}
-                                />
-                            </div>
-                        </FadeIn>
-
+                    <div className="gap-6">
                         {/* Satisfaction Card */}
                         <FadeIn delay={300}>
                             <div className="bg-white rounded-lg shadow-sm p-6">
@@ -115,7 +105,7 @@ export default function Dashboard({
                                                 percentage={level.percentage}
                                                 color={level.color}
                                             />
-                                        )
+                                        ),
                                     )}
                                 </div>
                             </div>

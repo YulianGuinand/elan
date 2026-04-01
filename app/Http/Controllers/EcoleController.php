@@ -59,8 +59,26 @@ class EcoleController extends Controller
    */
   public function show(Ecole $ecole)
   {
+    $contrats = $ecole->contrats()
+      ->with(['participant', 'formation', 'entreprise'])
+      ->orderBy('date_entree', 'desc')
+      ->get()
+      ->map(function ($contrat) {
+        return [
+          'id' => $contrat->id,
+          'participant_nom' => $contrat->participant->nom ?? '-',
+          'participant_prenom' => $contrat->participant->prenom ?? '-',
+          'participant_role' => $contrat->participant->role ?? '-',
+          'formation_libelle' => $contrat->formation->libelle ?? '-',
+          'entreprise_libelle' => $contrat->entreprise->libelle ?? '-',
+          'date_entree' => $contrat->date_entree,
+          'date_sortiee' => $contrat->date_sortiee,
+        ];
+      });
+
     return Inertia::render('Ecoles/Show', [
-      'ecole' => $ecole
+      'ecole' => $ecole,
+      'contrats' => $contrats
     ]);
   }
 

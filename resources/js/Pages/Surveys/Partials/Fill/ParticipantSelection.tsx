@@ -63,7 +63,7 @@ export default function ParticipantSelection({
                 {/* Colonne Gauche: Détails et Aide */}
                 <div className="lg:col-span-4 space-y-8">
                     <FadeIn delay={100}>
-                        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
                             <div className="flex items-center gap-2 mb-4">
                                 <Info className="w-5 h-5 text-orange-500" />
                                 <h3 className="font-black text-base text-gray-900 tracking-tight">
@@ -102,7 +102,7 @@ export default function ParticipantSelection({
                     </FadeIn>
 
                     <FadeIn delay={200}>
-                        <div className="bg-[#F58232] rounded-2xl p-6 text-white relative overflow-hidden group">
+                        <div className="bg-[#F58232] rounded-lg p-6 text-white relative overflow-hidden group">
                             <div className="absolute top-[-20px] right-[-20px] w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-700" />
                             <div className="relative z-10">
                                 <div className="flex items-center gap-2 mb-4">
@@ -133,7 +133,7 @@ export default function ParticipantSelection({
                 {/* Colonne Droite: Filtres et Liste */}
                 <div className="lg:col-span-8">
                     <FadeIn delay={150}>
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+                        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden flex flex-col">
                             {/* Header Filtres */}
                             <div className="p-4 border-b border-gray-200 flex flex-col md:flex-row gap-2 items-center justify-between">
                                 <div className="flex bg-gray-100 p-1 rounded-lg w-full md:w-auto overflow-x-auto border border-gray-200">

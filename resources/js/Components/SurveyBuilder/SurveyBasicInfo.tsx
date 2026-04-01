@@ -52,7 +52,7 @@ export default function SurveyBasicInfo() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 px-6 pb-12">
             <FadeIn delay={0}>
                 <Card>
                     <CardHeader

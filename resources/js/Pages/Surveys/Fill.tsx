@@ -1,10 +1,9 @@
 import FadeIn from "@/Components/Animations/FadeIn";
+import PrimaryButton from "@/Components/PrimaryButton";
+import SecondaryButton from "@/Components/SecondaryButton";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, router } from "@inertiajs/react";
-import {
-    ChevronRight,
-    Send
-} from "lucide-react";
+import { ChevronRight, Send } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Survey, ThemeEnquete } from "../../types/surveys";
 import FillSidebar from "./Partials/Fill/FillSidebar";
@@ -59,7 +58,6 @@ export default function SurveyFill({
 
     const totalQuestions = (enquete.questions || []).length;
 
-    // Calcul de la progression sur le theme actuel pour le compteur "X sur Y"
     const themes = useMemo((): ThemeEnquete[] => {
         const surveyWithThemes = enquete as Survey & {
             themes?: ThemeEnquete[];
@@ -80,7 +78,6 @@ export default function SurveyFill({
 
     const currentTheme = themes[currentThemeIndex] || themes[0];
 
-    // Nombre de questions repondues globalement pour la barre de progression
     const answeredCount = Object.keys(answers).filter(
         (k) => answers[Number(k)] !== undefined && answers[Number(k)] !== "",
     ).length;
@@ -143,7 +140,7 @@ export default function SurveyFill({
     const nextTheme = (e?: React.MouseEvent) => {
         if (e) {
             e.preventDefault();
-            e.stopPropagation(); // BLOQUE la remontée vers le form
+            e.stopPropagation();
         }
         if (!isLastTheme) {
             setCurrentThemeIndex((prev) => prev + 1);
@@ -173,15 +170,6 @@ export default function SurveyFill({
             participant_id: selectedParticipant?.id,
             reponses: formattedAnswers,
         });
-    };
-
-    const handleSelectParticipant = (participant: Participant) => {
-        setSelectedParticipant(participant);
-        setIsParticipantConfirmed(true);
-    };
-
-    const getInitials = (firstName: string, lastName: string) => {
-        return `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase();
     };
 
     return (
@@ -232,7 +220,7 @@ export default function SurveyFill({
                                     onSubmit={handleSubmit}
                                     className="space-y-6"
                                 >
-                                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+                                    <div className="bg-white rounded-lg border border-gray-100 overflow-hidden flex flex-col">
                                         <div className="p-6 md:p-8 space-y-6">
                                             <div className="flex items-center justify-between gap-4">
                                                 <h2 className="text-xl font-black text-gray-900 tracking-tight">
@@ -260,64 +248,62 @@ export default function SurveyFill({
                                         </div>
 
                                         <div className="p-6 md:p-8 border-t border-gray-50 bg-gray-50/20">
-
                                             <div className="space-y-6">
-                                                {(currentTheme?.questions || []).map(
-                                                    (q: any) => (
-                                                        <QuestionRenderer
-                                                            key={q.id}
-                                                            question={q}
-                                                            value={answers[q.id]}
-                                                            onChange={(val) =>
-                                                                handleChange(
-                                                                    q.id,
-                                                                    val,
-                                                                )
-                                                            }
-                                                            onCheckboxChange={(
+                                                {(
+                                                    currentTheme?.questions ||
+                                                    []
+                                                ).map((q: any) => (
+                                                    <QuestionRenderer
+                                                        key={q.id}
+                                                        question={q}
+                                                        value={answers[q.id]}
+                                                        onChange={(val) =>
+                                                            handleChange(
+                                                                q.id,
+                                                                val,
+                                                            )
+                                                        }
+                                                        onCheckboxChange={(
+                                                            val,
+                                                            checked,
+                                                        ) =>
+                                                            handleCheckboxChange(
+                                                                q.id,
                                                                 val,
                                                                 checked,
-                                                            ) =>
-                                                                handleCheckboxChange(
-                                                                    q.id,
-                                                                    val,
-                                                                    checked,
-                                                                )
-                                                            }
-                                                        />
-                                                    ),
-                                                )}
+                                                            )
+                                                        }
+                                                    />
+                                                ))}
                                             </div>
 
                                             <div className="flex items-center justify-between pt-8 border-t border-gray-100/50 mt-10">
-                                                <button
+                                                <SecondaryButton
                                                     type="button"
                                                     onClick={prevTheme}
                                                     disabled={isFirstTheme}
-                                                    className="px-6 py-3.5 bg-white border border-gray-200 rounded-xl text-xs font-black text-gray-500 uppercase tracking-widest hover:border-gray-300 hover:text-gray-900 transition-all disabled:opacity-20 shadow-sm disabled:cursor-not-allowed active:scale-95"
                                                 >
                                                     Retour
-                                                </button>
+                                                </SecondaryButton>
 
                                                 {!isLastTheme ? (
-                                                    <button
+                                                    <PrimaryButton
                                                         type="button"
-                                                        onClick={(e) => nextTheme(e)}
-                                                        className="group flex items-center gap-3 px-8 py-3.5 bg-[#F58232] text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-orange-500/20 hover:bg-orange-600 active:scale-95 transition-all"
+                                                        onClick={(e) =>
+                                                            nextTheme(e)
+                                                        }
                                                     >
-                                                        <span>
-                                                            Theme Suivant
-                                                        </span>
+                                                        Theme Suivant
                                                         <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                                    </button>
+                                                    </PrimaryButton>
                                                 ) : (
-                                                    <button
+                                                    <PrimaryButton
                                                         type="submit"
-                                                        className="group flex items-center gap-3 px-8 py-3.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-slate-900/10 hover:bg-black active:scale-95 transition-all"
+                                                        className="flex flex-row"
                                                     >
-                                                        <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                                        <Send className="w-4 h-4 mr-3.5" />
                                                         Soumettre l&apos;enquête
-                                                    </button>
+                                                    </PrimaryButton>
                                                 )}
                                             </div>
                                         </div>

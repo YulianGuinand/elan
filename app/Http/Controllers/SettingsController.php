@@ -28,6 +28,8 @@ class SettingsController extends Controller
                 'role' => $user->role === 'superadmin' ? 'Super Administrateur' : 'Utilisateur',
                 'avatar' => null,
                 'two_factor_enabled' => false,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
             ],
             'notifications' => $this->getNotificationPreferences(),
             'general' => $this->getGeneralSettings(),

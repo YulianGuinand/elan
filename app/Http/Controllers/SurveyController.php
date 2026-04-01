@@ -377,7 +377,7 @@ class SurveyController extends Controller
         $validated = $request->validate($rules);
 
         // Sauvegarder les réponses dans la table reponses
-        return DB::transaction(function () use ($validated, $enquete, $user) {
+        return DB::transaction(function () use ($validated, $enquete) {
             $participant = Participant::findOrFail($validated['participant_id']);
             $responseCount = 0;
 
@@ -385,7 +385,7 @@ class SurveyController extends Controller
                 if ($reponse !== null && $reponse !== '') {
                     $question = $enquete->questions->find($questionId);
 
-                    $question->participants()->attach($participant->id,['valeur' => $reponse]);
+                    $question->participants()->attach($participant->id, ['valeur' => $reponse]);
 
                     $responseCount++;
                 }
@@ -600,5 +600,70 @@ class SurveyController extends Controller
                 })->values()
                 : [],
         ];
+    }
+
+    /**
+     * Duplique une enquête (ses propres uniquement).
+     */
+    public function duplicate(string $id)
+    {
+        $user = Auth::user();
+        $enqueteQuery = Enquete::with(['questions.choix', 'questions.theme'])
+            ->where('id', $id);
+
+        if (! $user->isSuperAdmin()) {
+            $enqueteQuery->where('utilisateur_id', $user->id);
+        }
+
+        $enquete = $enqueteQuery->firstOrFail();
+
+        // Créer une copie de l'enquête
+        $newEnquete = $enquete->replicate();
+        $newEnquete->titre = $enquete->titre.' (copie)';
+        $newEnquete->save();
+
+        // Dupliquer les thèmes et questions
+        foreach ($enquete->questions as $question) {
+            $newQuestion = $question->replicate();
+            $newQuestion->enquete_id = $newEnquete->id;
+            $newQuestion->save();
+
+            // Dupliquer les choix
+            foreach ($question->choix as $choix) {
+                $newChoix = $choix->replicate();
+                $newChoix->question_id = $newQuestion->id;
+                $newChoix->save();
+            }
+        }
+
+        return redirect()->route('surveys.index')
+            ->with('success', 'Enquête dupliquée avec succès.');
+    }
+
+    /**
+     * Affiche les réponses d'une enquête.
+     */
+    public function responses(string $id): Response
+    {
+        $user = Auth::user();
+        $enqueteQuery = Enquete::with(['questions.choix', 'questions.type_reponse'])
+            ->where('id', $id);
+
+        if (! $user->isSuperAdmin()) {
+            $enqueteQuery->where('utilisateur_id', $user->id);
+        }
+
+        $enquete = $enqueteQuery->firstOrFail();
+
+        // Récupérer les réponses avec les participants
+        $reponses = \App\Models\Reponse::where('enquete_id', $enquete->id)
+            ->with(['participant', 'question'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(config('pagination.per_page'));
+
+        return Inertia::render('Surveys/Responses', [
+            'enquete' => $this->formatEnquete($enquete),
+            'reponses' => $reponses,
+        ]);
     }
 }

@@ -56,9 +56,9 @@ export default function Show({ formation }: Props) {
                         : undefined
                 }
             >
-                <div className="max-w-5xl mx-auto space-y-6">
+                <div className="w-full mx-auto space-y-6">
                     {/* En-tête de la formation */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+                    <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 md:p-8">
                         <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center shrink-0">
@@ -116,7 +116,7 @@ export default function Show({ formation }: Props) {
                     </div>
 
                     {/* Section Participants */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="bg-white rounded-md shadow-sm border border-gray-200 overflow-hidden">
                         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Users className="w-5 h-5 text-gray-400" />
