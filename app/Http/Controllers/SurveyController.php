@@ -79,6 +79,7 @@ class SurveyController extends Controller
             'questions.*.numero' => 'required|integer',
             'questions.*.type_reponse_id' => 'required|exists:type__reponses,id',
             'questions.*.theme_id' => 'nullable|exists:themes,id',
+            'questions.*.likert_style' => 'nullable|in:emoji,custom',
             'questions.*.choix' => 'nullable|array',
             'questions.*.choix.*' => 'string',
             'questions.*.themeId' => 'string',
@@ -121,6 +122,7 @@ class SurveyController extends Controller
                     'numero' => $question['numero'],
                     'type_reponse_id' => $question['type_reponse_id'],
                     'theme_id' => $themesMapping[$question['themeId']] ?? null,
+                    'likert_style' => $question['likert_style'] ?? 'emoji',
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
@@ -208,6 +210,7 @@ class SurveyController extends Controller
             'questions.*.numero' => 'required|integer',
             'questions.*.type_reponse_id' => 'required|exists:type__reponses,id',
             'questions.*.theme_id' => 'nullable|exists:themes,id',
+            'questions.*.likert_style' => 'nullable|in:emoji,custom',
             'questions.*.choix' => 'nullable|array',
             'questions.*.choix.*' => 'string',
             'questions.*.themeId' => 'nullable|string',
@@ -248,6 +251,7 @@ class SurveyController extends Controller
                     'numero' => $q['numero'],
                     'type_reponse_id' => $q['type_reponse_id'],
                     'theme_id' => $themesMapping[$q['themeId']] ?? null,
+                    'likert_style' => $q['likert_style'] ?? 'emoji',
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
@@ -387,7 +391,6 @@ class SurveyController extends Controller
                 }
             }
 
-            // Dispatcher l'événement de réception de réponse
             if ($responseCount > 0) {
                 event(new ResponseReceived($enquete, $responseCount));
             }
@@ -431,6 +434,8 @@ class SurveyController extends Controller
      */
     public function submitFillPublic(Request $request, $jeton)
     {
+        dd($request->all(), $jeton);
+
         $participant = Participant::whereHas('enquetes', function ($query) use ($jeton) {
             $query->where('participer.jeton', $jeton);
         })->firstOrFail();
@@ -460,9 +465,29 @@ class SurveyController extends Controller
     // Helpers
     // ─────────────────────────────────────────────────
 
+    private function formatChoixWithEmojis($choixCollection, $typeReponseLibelle, $likertStyle)
+    {
+        $choix = $choixCollection->map(fn ($c) => ['id' => $c->id, 'libelle' => $c->libelle])->toArray();
+
+        $typeReponseLibelle = strtolower($typeReponseLibelle ?? '');
+
+        if (strpos($typeReponseLibelle, 'likert') !== false && $likertStyle === 'emoji') {
+            $emojiSequence = ['😠', '😕', '😐', '🙂', '😍'];
+
+            $choix = array_map(function ($c, $index) use ($emojiSequence) {
+                return [
+                    'id' => $c['id'],
+                    'libelle' => $c['libelle'],
+                    'emoji' => $emojiSequence[$index] ?? '😐',
+                ];
+            }, $choix, array_keys($choix));
+        }
+
+        return $choix;
+    }
+
     private function formatEnquete(Enquete $e): array
     {
-        // S'assurer que les relations sont toujours chargées
         if (! $e->relationLoaded('questions')) {
             $e->load(['questions.type_reponse', 'questions.choix', 'questions.theme']);
         }
@@ -476,7 +501,8 @@ class SurveyController extends Controller
                 'numero' => $q->numero,
                 'type_reponse' => $q->type_reponse?->libelle,
                 'type_reponse_id' => $q->type_reponse_id,
-                'choix' => $q->choix ? $q->choix->map(fn ($c) => ['id' => $c->id, 'libelle' => $c->libelle])->toArray() : [],
+                'choix' => $this->formatChoixWithEmojis($q->choix ?: new \Illuminate\Database\Eloquent\Collection, $q->type_reponse?->libelle, $q->likert_style),
+                'likert_style' => $q->likert_style ?? 'emoji',
                 'theme' => $theme ? [
                     'id' => $theme->id,
                     'libelle' => $theme->libelle,
@@ -485,7 +511,6 @@ class SurveyController extends Controller
             ];
         })->values()->toArray();
 
-        // Grouper les questions par thèmes pour la navigation par étapes
         $themesMap = [];
         $noThemeQuestions = [];
 
@@ -509,7 +534,6 @@ class SurveyController extends Controller
         $formattedThemes = array_values($themesMap);
         usort($formattedThemes, fn ($a, $b) => $a['ordre'] <=> $b['ordre']);
 
-        // Si des questions n'ont pas de thème, on les met dans un thème par défaut à la fin
         if (! empty($noThemeQuestions)) {
             $formattedThemes[] = [
                 'id' => 0,
@@ -538,18 +562,21 @@ class SurveyController extends Controller
                     'numero' => $q->numero,
                     'type_reponse' => $q->type_reponse?->libelle,
                     'type_reponse_id' => $q->type_reponse_id,
+                    'likert_style' => $q->likert_style ?? 'emoji',
                     'theme' => $q->theme ? [
                         'id' => $q->theme->id,
                         'libelle' => $q->theme->libelle,
                         'ordre' => $q->theme->ordre,
                     ] : null,
-                    'choix' => $q->relationLoaded('choix')
-                        ? $q->choix->map(fn ($c) => ['id' => $c->id, 'libelle' => $c->libelle])
-                        : [],
+                    'choix' => $this->formatChoixWithEmojis(
+                        $q->relationLoaded('choix') ? $q->choix : collect([]),
+                        $q->type_reponse?->libelle,
+                        $q->likert_style
+                    ),
                 ])->values()
                 : [],
             'themes' => $e->relationLoaded('questions')
-                ? $e->questions->groupBy('theme_id')->map(function ($questions, $themeId) {
+                ? $e->questions->groupBy('theme_id')->map(function ($questions) {
                     $theme = $questions->first()->theme;
 
                     return [
@@ -562,7 +589,12 @@ class SurveyController extends Controller
                             'numero' => $q->numero,
                             'type_reponse' => $q->type_reponse?->libelle,
                             'type_reponse_id' => $q->type_reponse_id,
-                            'choix' => $q->choix->map(fn ($c) => ['id' => $c->id, 'libelle' => $c->libelle]),
+                            'likert_style' => $q->likert_style ?? 'emoji',
+                            'choix' => $this->formatChoixWithEmojis(
+                                $q->choix,
+                                $q->type_reponse?->libelle,
+                                $q->likert_style
+                            ),
                         ])->values(),
                     ];
                 })->values()

@@ -281,12 +281,71 @@ export default function QuestionEditorModal({
 
                         {/* Scale for Likert */}
                         {usesLikertHelper && (
-                            <div className="bg-elan-blue/5 p-4 rounded-lg border border-elan-blue/10">
-                                <p className="text-xs text-elan-blue font-medium flex items-center gap-1">
-                                    <BarChart3 className="w-4 h-4" />
-                                    L'échelle Likert utilise les options
-                                    définies ci-dessus (modèle 1-5 recommandé).
-                                </p>
+                            <div className="space-y-4">
+                                <div className="bg-elan-blue/5 p-4 rounded-lg border border-elan-blue/10">
+                                    <p className="text-xs text-elan-blue font-medium flex items-center gap-1">
+                                        <BarChart3 className="w-4 h-4" />
+                                        L'échelle Likert utilise les options
+                                        définies ci-dessus (modèle 1-5
+                                        recommandé).
+                                    </p>
+                                </div>
+
+                                {/* Likert Style Selector */}
+                                <div>
+                                    <InputLabel value="Style d'affichage" />
+                                    <div className="grid grid-cols-2 gap-4 mt-2">
+                                        <button
+                                            onClick={() =>
+                                                setEditedQuestion({
+                                                    ...editedQuestion,
+                                                    likertStyle: "emoji",
+                                                })
+                                            }
+                                            className={`p-4 rounded-lg border-2 transition-all text-center ${
+                                                editedQuestion.likertStyle ===
+                                                    "emoji" ||
+                                                !editedQuestion.likertStyle
+                                                    ? "border-elan-orange bg-elan-orange/5"
+                                                    : "border-gray-200 hover:border-gray-300 bg-white"
+                                            }`}
+                                        >
+                                            <div className="text-2xl mb-2">
+                                                😠😕😐🙂😍
+                                            </div>
+                                            <span className="text-sm font-medium text-gray-900">
+                                                Avec emojis
+                                            </span>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                Emojis prédéfinis
+                                            </p>
+                                        </button>
+                                        <button
+                                            onClick={() =>
+                                                setEditedQuestion({
+                                                    ...editedQuestion,
+                                                    likertStyle: "custom",
+                                                })
+                                            }
+                                            className={`p-4 rounded-lg border-2 transition-all text-center ${
+                                                editedQuestion.likertStyle ===
+                                                "custom"
+                                                    ? "border-elan-orange bg-elan-orange/5"
+                                                    : "border-gray-200 hover:border-gray-300 bg-white"
+                                            }`}
+                                        >
+                                            <div className="text-2xl mb-2">
+                                                1️⃣2️⃣3️⃣4️⃣5️⃣
+                                            </div>
+                                            <span className="text-sm font-medium text-gray-900">
+                                                Personnalisé
+                                            </span>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                Vos textes uniquement
+                                            </p>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
