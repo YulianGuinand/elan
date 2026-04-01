@@ -377,16 +377,16 @@ class SurveyController extends Controller
         $validated = $request->validate($rules);
 
         // Sauvegarder les réponses dans la table reponses
-        return DB::transaction(function () use ($validated, $enquete) {
+        return DB::transaction(function () use ($validated, $enquete, $user) {
+            $participant = Participant::findOrFail($validated['participant_id']);
             $responseCount = 0;
 
             foreach ($validated['reponses'] ?? [] as $questionId => $reponse) {
                 if ($reponse !== null && $reponse !== '') {
-                    \App\Models\Reponse::create([
-                        'question_id' => $questionId,
-                        'participant_id' => $validated['participant_id'],
-                        'valeur' => $reponse,
-                    ]);
+                    $question = $enquete->questions->find($questionId);
+
+                    $question->participants()->attach($participant->id,['valeur' => $reponse]);
+
                     $responseCount++;
                 }
             }
