@@ -168,14 +168,15 @@ class SurveyController extends Controller
     public function edit(string $id): Response
     {
         $user = Auth::user();
-        $enqueteQuery = Enquete::with(['questions.type_reponse', 'questions.choix', 'questions.theme'])
-            ->where('id', $id);
 
-        if (! $user->isSuperAdmin()) {
-            $enqueteQuery->where('utilisateur_id', $user->id);
+        // Trouver l'enquête
+        $enquete = Enquete::with(['questions.type_reponse', 'questions.choix', 'questions.theme'])
+            ->findOrFail($id);
+
+        // Vérifier les permissions
+        if (! $user->isSuperAdmin() && $enquete->utilisateur_id !== $user->id) {
+            abort(403);
         }
-
-        $enquete = $enqueteQuery->firstOrFail();
 
         $typesReponse = Type_Reponse::all(['id', 'libelle']);
 
@@ -304,8 +305,7 @@ class SurveyController extends Controller
 
         $enquete->delete();
 
-        // Nettoyage des thèmes orphelins après suppression de l'enquête
-        \App\Models\Theme::doesntHave('questions')->delete();
+        Theme::doesntHave('questions')->delete();
 
         return redirect()->route('surveys.index')
             ->with('success', 'Enquête supprimée.');
@@ -329,6 +329,11 @@ class SurveyController extends Controller
     {
         $enquete = Enquete::with(['questions.type_reponse', 'questions.choix', 'questions.theme'])
             ->findOrFail($id);
+
+        // Vérifier que l'enquête est active
+        if (! $enquete->isActive()) {
+            abort(404);
+        }
 
         $search = $request->input('search');
         $roleFilter = $request->input('role', 'Tous');
@@ -655,8 +660,11 @@ class SurveyController extends Controller
 
         $enquete = $enqueteQuery->firstOrFail();
 
-        // Récupérer les réponses avec les participants
-        $reponses = \App\Models\Reponse::where('enquete_id', $enquete->id)
+        // Récupérer les IDs des questions de cette enquête
+        $questionIds = $enquete->questions()->pluck('id');
+
+        // Récupérer les réponses pour ces questions
+        $reponses = \App\Models\Reponse::whereIn('question_id', $questionIds)
             ->with(['participant', 'question'])
             ->orderBy('created_at', 'desc')
             ->paginate(config('pagination.per_page'));

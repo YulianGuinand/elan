@@ -16,7 +16,7 @@ class SeoController extends Controller
 
         // Home page
         $urls[] = [
-            'loc' => route('welcome'),
+            'loc' => url('/'),
             'lastmod' => now()->toAtomString(),
             'changefreq' => 'daily',
             'priority' => 1.0,
@@ -45,7 +45,10 @@ class SeoController extends Controller
         ];
 
         // Active surveys (publicly accessible for filling)
-        $surveys = Enquete::where('statut', 'active')
+        // Active = date_debut <= now && date_fin >= now
+        $now = now()->toDateString();
+        $surveys = Enquete::where('date_debut', '<=', $now)
+            ->where('date_fin', '>=', $now)
             ->select('id', 'updated_at')
             ->get();
 
