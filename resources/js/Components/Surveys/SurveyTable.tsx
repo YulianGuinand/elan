@@ -1,3 +1,4 @@
+import DropdownMenu, { DropdownItem } from "@/Components/Common/DropdownMenu";
 import { StatutEnquete, Survey } from "@/types/surveys";
 import { router } from "@inertiajs/react";
 import {
@@ -11,8 +12,7 @@ import {
     Send,
     Trash2,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
 
 interface SurveyTableProps {
     surveys: Survey[];
@@ -52,26 +52,6 @@ export default function SurveyTable({
     userId,
 }: SurveyTableProps) {
     const [selected, setSelected] = useState<Set<number>>(new Set());
-    const [openDropdown, setOpenDropdown] = useState<number | null>(null);
-    const [dropdownPos, setDropdownPos] = useState({ x: 0, y: 0 });
-    const buttonRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            const target = event.target as HTMLElement;
-            if (
-                !target.closest("[data-dropdown-id]") &&
-                !target.closest("[role='menu']")
-            ) {
-                setOpenDropdown(null);
-            }
-        };
-
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
 
     const toggleSelect = (id: number) => {
         const newSelected = new Set(selected);
@@ -170,7 +150,7 @@ export default function SurveyTable({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {surveys.map((survey) => {
+                            {surveys.map((survey, index) => {
                                 const cfg =
                                     statutConfig[survey.statut] ??
                                     statutConfig.brouillon;
@@ -251,38 +231,102 @@ export default function SurveyTable({
 
                                         {/* Actions Dropdown */}
                                         <td className="px-5 py-4">
-                                            <div data-dropdown-id={survey.id}>
-                                                <button
-                                                    ref={(el) => {
-                                                        if (el) {
-                                                            buttonRefs.current.set(
-                                                                survey.id,
-                                                                el,
-                                                            );
-                                                        }
-                                                    }}
-                                                    onClick={(e) => {
-                                                        const button =
-                                                            e.currentTarget;
-                                                        const rect =
-                                                            button.getBoundingClientRect();
-                                                        setDropdownPos({
-                                                            x: rect.left,
-                                                            y: rect.bottom + 5,
-                                                        });
-                                                        setOpenDropdown(
-                                                            openDropdown ===
-                                                                survey.id
-                                                                ? null
-                                                                : survey.id,
+                                            <DropdownMenu
+                                                trigger={
+                                                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                                                        <MoreVertical className="w-4 h-4 text-gray-600 hover:text-gray-900" />
+                                                    </button>
+                                                }
+                                                align="right"
+                                                index={index}
+                                            >
+                                                <DropdownItem
+                                                    icon={
+                                                        <Send className="w-4 h-4" />
+                                                    }
+                                                    onClick={() => {
+                                                        router.visit(
+                                                            route(
+                                                                "surveys.fill",
+                                                                {
+                                                                    id: survey.id,
+                                                                },
+                                                            ),
                                                         );
                                                     }}
-                                                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                                                    title="Actions"
                                                 >
-                                                    <MoreVertical className="w-4 h-4 text-gray-600 hover:text-gray-900" />
-                                                </button>
-                                            </div>
+                                                    Répondre
+                                                </DropdownItem>
+
+                                                {canEdit && (
+                                                    <DropdownItem
+                                                        icon={
+                                                            <Edit className="w-4 h-4" />
+                                                        }
+                                                        onClick={() => {
+                                                            router.visit(
+                                                                route(
+                                                                    "surveys.edit",
+                                                                    {
+                                                                        id: survey.id,
+                                                                    },
+                                                                ),
+                                                            );
+                                                        }}
+                                                    >
+                                                        Modifier
+                                                    </DropdownItem>
+                                                )}
+
+                                                <DropdownItem
+                                                    icon={
+                                                        <Eye className="w-4 h-4" />
+                                                    }
+                                                    onClick={() => {
+                                                        router.visit(
+                                                            route(
+                                                                "surveys.responses",
+                                                                {
+                                                                    id: survey.id,
+                                                                },
+                                                            ),
+                                                        );
+                                                    }}
+                                                >
+                                                    Voir les réponses
+                                                </DropdownItem>
+
+                                                {canEdit && (
+                                                    <DropdownItem
+                                                        icon={
+                                                            <Copy className="w-4 h-4" />
+                                                        }
+                                                        onClick={() => {
+                                                            handleDuplicate(
+                                                                survey,
+                                                            );
+                                                        }}
+                                                    >
+                                                        Dupliquer
+                                                    </DropdownItem>
+                                                )}
+
+                                                {canEdit && (
+                                                    <DropdownItem
+                                                        icon={
+                                                            <Trash2 className="w-4 h-4" />
+                                                        }
+                                                        onClick={() => {
+                                                            handleDelete(
+                                                                survey,
+                                                            );
+                                                        }}
+                                                        danger
+                                                    >
+                                                        Supprimer
+                                                    </DropdownItem>
+                                                )}
+                                            </DropdownMenu>
                                         </td>
                                     </tr>
                                 );
@@ -291,109 +335,6 @@ export default function SurveyTable({
                     </table>
                 </div>
             </div>
-
-            {/* Portal for Dropdown Menu */}
-            {openDropdown !== null &&
-                createPortal(
-                    <div
-                        className="fixed w-40 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden"
-                        style={{
-                            left: `${dropdownPos.x - 20}px`,
-                            top: `${dropdownPos.y}px`,
-                        }}
-                        role="menu"
-                    >
-                        <button
-                            onClick={() => {
-                                router.visit(
-                                    route("surveys.fill", {
-                                        id: openDropdown,
-                                    }),
-                                );
-                                setOpenDropdown(null);
-                            }}
-                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition-colors flex items-center gap-2 border-b border-gray-100"
-                        >
-                            <Send className="w-4 h-4" />
-                            Répondre
-                        </button>
-
-                        {surveys.find((s) => s.id === openDropdown)
-                            ?.utilisateur_id === userId &&
-                            userRole !== undefined && (
-                                <button
-                                    onClick={() => {
-                                        router.visit(
-                                            route("surveys.edit", {
-                                                id: openDropdown,
-                                            }),
-                                        );
-                                        setOpenDropdown(null);
-                                    }}
-                                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 border-b border-gray-100"
-                                >
-                                    <Edit className="w-4 h-4" />
-                                    Modifier
-                                </button>
-                            )}
-
-                        <button
-                            onClick={() => {
-                                router.visit(
-                                    route("surveys.responses", {
-                                        id: openDropdown,
-                                    }),
-                                );
-                                setOpenDropdown(null);
-                            }}
-                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors flex items-center gap-2 border-b border-gray-100"
-                        >
-                            <Eye className="w-4 h-4" />
-                            Voir les réponses
-                        </button>
-
-                        {surveys.find((s) => s.id === openDropdown)
-                            ?.utilisateur_id === userId &&
-                            userRole !== undefined && (
-                                <button
-                                    onClick={() => {
-                                        const survey = surveys.find(
-                                            (s) => s.id === openDropdown,
-                                        );
-                                        if (survey) {
-                                            handleDuplicate(survey);
-                                            setOpenDropdown(null);
-                                        }
-                                    }}
-                                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50 transition-colors flex items-center gap-2 border-b border-gray-100"
-                                >
-                                    <Copy className="w-4 h-4" />
-                                    Dupliquer
-                                </button>
-                            )}
-
-                        {surveys.find((s) => s.id === openDropdown)
-                            ?.utilisateur_id === userId &&
-                            userRole !== undefined && (
-                                <button
-                                    onClick={() => {
-                                        const survey = surveys.find(
-                                            (s) => s.id === openDropdown,
-                                        );
-                                        if (survey) {
-                                            handleDelete(survey);
-                                            setOpenDropdown(null);
-                                        }
-                                    }}
-                                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                    Supprimer
-                                </button>
-                            )}
-                    </div>,
-                    document.body,
-                )}
         </>
     );
 }

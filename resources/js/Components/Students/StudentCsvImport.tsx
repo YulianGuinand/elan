@@ -11,8 +11,8 @@ import {
     GraduationCap,
     Landmark,
     Loader2,
+    PlusCircle,
     Upload,
-    X,
 } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -131,7 +131,11 @@ export default function StudentCsvImport() {
                 method: "POST",
                 body: fd,
             });
+
             const data = await res.json();
+
+            console.log(data);
+
             if (!res.ok)
                 throw new Error(data.error ?? "Erreur lors du preview");
             setPreview(data as PreviewData);
@@ -176,7 +180,6 @@ export default function StudentCsvImport() {
             if (res.ok || res.redirected) {
                 window.location.href = res.url || window.location.href;
             } else {
-                const text = await res.text();
                 setError("Erreur lors de l'import (" + res.status + ")");
                 setImporting(false);
             }
@@ -328,8 +331,8 @@ export default function StudentCsvImport() {
                     <div className="space-y-3">
                         <p className="text-sm font-semibold text-amber-700 flex items-center gap-2">
                             <AlertCircle className="w-4 h-4" />
-                            Entites inconnues detectees — creez-les avant
-                            d&apos;&importer
+                            Entités inconnues détectées — créez-les avant
+                            d&apos;importer
                         </p>
 
                         {/* ecoles */}
@@ -357,7 +360,7 @@ export default function StudentCsvImport() {
                                             {resolvedEcoles[name] ? (
                                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                             ) : (
-                                                <X className="w-3 h-3" />
+                                                <PlusCircle className="w-3 h-3" />
                                             )}
                                             {name}
                                         </button>
@@ -391,7 +394,7 @@ export default function StudentCsvImport() {
                                             {resolvedFormations[name] ? (
                                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                             ) : (
-                                                <X className="w-3 h-3" />
+                                                <PlusCircle className="w-3 h-3" />
                                             )}
                                             {name}
                                         </button>
@@ -425,7 +428,7 @@ export default function StudentCsvImport() {
                                             {resolvedEntreprises[name] ? (
                                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                             ) : (
-                                                <X className="w-3 h-3" />
+                                                <PlusCircle className="w-3 h-3" />
                                             )}
                                             {name}
                                         </button>
@@ -445,7 +448,7 @@ export default function StudentCsvImport() {
                         </p>
                         {hasUnresolved && (
                             <span className="text-xs text-amber-600 font-medium">
-                                ⚠ Creez d'abord les entites manquantes ci-dessus
+                                Creez d'abord les entites manquantes ci-dessus
                             </span>
                         )}
                     </div>
