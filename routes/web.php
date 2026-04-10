@@ -1,9 +1,17 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EcoleController;
+use App\Http\Controllers\EntrepriseController;
+use App\Http\Controllers\InlineCreateController;
+use App\Http\Controllers\NotificationsController;
+use App\Http\Controllers\ParticipantController;
+use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\SeoController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SurveyController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\IsAdmin;
 use Inertia\Inertia;
 
 // SEO Routes (public)
@@ -25,11 +33,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // CREATION INLINE (modals)
     // ============================================
     Route::prefix('inline')->name('inline.')->group(function () {
-        Route::post('/ecole',      [InlineCreateController::class, 'storeEcole'])->name('ecole');
-        Route::post('/formation',  [InlineCreateController::class, 'storeFormation'])->name('formation');
+        Route::post('/ecole', [InlineCreateController::class, 'storeEcole'])->name('ecole');
+        Route::post('/formation', [InlineCreateController::class, 'storeFormation'])->name('formation');
         Route::post('/entreprise', [InlineCreateController::class, 'storeEntreprise'])->name('entreprise');
     });
-
 
     // ============================================
     // TABLEAU DE BORD
@@ -49,10 +56,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Créer une enquête (admin & superadmin)
         Route::get('/creer', [SurveyController::class, 'create'])
-            ->name('surveys.create')->middleware(["is_admin", "is_superadmin"]);
+            ->name('surveys.create')->middleware(['is_admin', 'is_superadmin']);
 
         Route::post('/constructeur', [SurveyController::class, 'storeFromBuilder'])
-            ->name('surveys.builder.store')->middleware(["is_admin", "is_superadmin"]);
+            ->name('surveys.builder.store')->middleware(['is_admin', 'is_superadmin']);
 
         // Remplir une enquête
         Route::get('/{id}/remplir', [SurveyController::class, 'fill'])
@@ -62,25 +69,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Voir les réponses
         Route::get('/{id}/reponses', [SurveyController::class, 'responses'])
-            ->name('surveys.responses')->middleware(["is_admin"]);
+            ->name('surveys.responses')->middleware(['is_admin']);
 
         // Dupliquer une enquête (protégé par is_admin)
         Route::post('/{id}/dupliquer', [SurveyController::class, 'duplicate'])
-            ->name('surveys.duplicate')->middleware(["is_admin"]);
+            ->name('surveys.duplicate')->middleware(['is_admin']);
 
         // Modifier une enquête (protégé par is_admin, puis check admin/superadmin dans le controller)
         Route::get('/{id}/modifier', [SurveyController::class, 'edit'])
-            ->name('surveys.edit')->middleware(["is_admin"]);
+            ->name('surveys.edit')->middleware(['is_admin']);
         Route::put('/{id}/modifier', [SurveyController::class, 'update'])
-            ->name('surveys.update')->middleware(["is_admin"]);
+            ->name('surveys.update')->middleware(['is_admin']);
 
         // Supprimer toutes les enquêtes (superadmin uniquement)
         Route::delete('/tout', [SurveyController::class, 'destroyAll'])
-            ->name('surveys.destroy-all')->middleware(["is_superadmin"]);
+            ->name('surveys.destroy-all')->middleware(['is_superadmin']);
 
         // Supprimer une enquête (protégé par is_admin, admin supprime les siennes, superadmin toutes)
         Route::delete('/{id}', [SurveyController::class, 'destroy'])
-            ->name('surveys.destroy')->middleware(["is_admin"]);
+            ->name('surveys.destroy')->middleware(['is_admin']);
     });
 
     // ============================================
@@ -229,41 +236,38 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ============================================
     // PARAMETRES
     // ============================================
-    Route::get('/parametres', [SettingsController::class, 'index'])->middleware(["auth"])
+    Route::get('/parametres', [SettingsController::class, 'index'])->middleware(['auth'])
         ->name('settings.index');
 
-    Route::patch('/parametres/account', [SettingsController::class, 'updateAccount'])->middleware(["auth"])
+    Route::patch('/parametres/account', [SettingsController::class, 'updateAccount'])->middleware(['auth'])
         ->name('settings.account.update');
 
-    Route::patch('/parametres/password', [SettingsController::class, 'updatePassword'])->middleware(["auth"])
+    Route::patch('/parametres/password', [SettingsController::class, 'updatePassword'])->middleware(['auth'])
         ->name('settings.password.update');
 
-    Route::patch('/parametres/general', [SettingsController::class, 'updateGeneral'])->middleware(["auth"])
+    Route::patch('/parametres/general', [SettingsController::class, 'updateGeneral'])->middleware(['auth'])
         ->name('settings.general.update');
 
-    Route::patch('/parametres/notifications', [SettingsController::class, 'updateNotifications'])->middleware(["auth"])
+    Route::patch('/parametres/notifications', [SettingsController::class, 'updateNotifications'])->middleware(['auth'])
         ->name('settings.notifications.update');
 
     // ============================================
     // NOTIFICATIONS
     // ============================================
-    Route::get('/notifications', [NotificationsController::class, 'index'])->middleware(["auth"])
+    Route::get('/notifications', [NotificationsController::class, 'index'])->middleware(['auth'])
         ->name('notifications.index');
 
-    Route::get('/notifications/unread-count', [NotificationsController::class, 'getUnreadCount'])->middleware(["auth"])
+    Route::get('/notifications/unread-count', [NotificationsController::class, 'getUnreadCount'])->middleware(['auth'])
         ->name('notifications.unread-count');
 
-    Route::patch('/notifications/{notification}/mark-as-read', [NotificationsController::class, 'markAsRead'])->middleware(["auth"])
+    Route::patch('/notifications/{notification}/mark-as-read', [NotificationsController::class, 'markAsRead'])->middleware(['auth'])
         ->name('notifications.mark-as-read');
 
-    Route::patch('/notifications/mark-all-as-read', [NotificationsController::class, 'markAllAsRead'])->middleware(["auth"])
+    Route::patch('/notifications/mark-all-as-read', [NotificationsController::class, 'markAllAsRead'])->middleware(['auth'])
         ->name('notifications.mark-all-as-read');
 
-    Route::delete('/notifications/{notification}', [NotificationsController::class, 'destroy'])->middleware(["auth"])
+    Route::delete('/notifications/{notification}', [NotificationsController::class, 'destroy'])->middleware(['auth'])
         ->name('notifications.destroy');
-
-
-
 
     // ============================================
     // PROFIL
@@ -284,4 +288,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::get('/enquetes/remplir/{jeton}', [SurveyController::class, 'participantFill'])->name('survey.fill.participants');
 Route::post('/enquetes/remplir/{jeton}', [SurveyController::class, 'submitFillPublic'])->name('surveys.fill.submit.public');
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
