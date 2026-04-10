@@ -1,5 +1,6 @@
 import FadeIn from "@/Components/Animations/FadeIn";
 import Stepper from "@/Components/Common/Stepper";
+import PageHead from "@/Components/Seo/PageHead";
 import SurveyBasicInfo from "@/Components/SurveyBuilder/SurveyBasicInfo";
 import SurveyBuilder from "@/Components/SurveyBuilder/SurveyBuilder";
 import SurveyPreview from "@/Components/SurveyBuilder/SurveyPreview";
@@ -9,7 +10,6 @@ import {
     useSurveyBuilder,
 } from "@/contexts/SurveyBuilderContext";
 import { TypeReponse } from "@/types/surveys";
-import { Head } from "@inertiajs/react";
 
 function CreateSurveyContent({
     typesReponse,
@@ -20,7 +20,11 @@ function CreateSurveyContent({
 
     return (
         <>
-            <Head title="Créer une enquête" />
+            <PageHead
+                title="Créer une Enquête"
+                description="Construisez votre enquête CFA avec notre interface intuitive. Multiples types de questions, conditions logiques et conformité Qualiopi."
+                keywords="créer enquête, constructeur enquête, questions, Qualiopi"
+            />
 
             <DashboardLayout
                 title="Créer une enquête"

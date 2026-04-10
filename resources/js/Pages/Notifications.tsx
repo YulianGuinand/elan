@@ -1,8 +1,9 @@
 import FadeIn from "@/Components/Animations/FadeIn";
 import NotificationTable from "@/Components/Notifications/NotificationTable";
+import PageHead from "@/Components/Seo/PageHead";
 import Pagination from "@/Components/Surveys/Pagination";
 import DashboardLayout from "@/Layouts/DashboardLayout";
-import { Head, router } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import { Bell, Search } from "lucide-react";
 import { useState } from "react";
 
@@ -159,7 +160,11 @@ export default function Notifications({
 
     return (
         <>
-            <Head title="Notifications" />
+            <PageHead
+                title="Notifications"
+                description="Gérez vos notifications. Suivez les mises à jour de vos enquêtes, réponses et événements importants."
+                keywords="notifications, alertes enquête, suivi"
+            />
 
             <DashboardLayout
                 title="Notifications"

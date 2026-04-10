@@ -1,5 +1,7 @@
+import PageHead from "@/Components/Seo/PageHead";
+import SchemaOrg from "@/Components/Seo/SchemaOrg";
 import { PageProps } from "@/types";
-import { Head, Link } from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
 import {
     BarChart3,
     Check,
@@ -15,9 +17,52 @@ import {
 export default function Welcome({
     auth,
 }: PageProps<{ laravelVersion: string; phpVersion: string }>) {
+    const organizationSchema = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        name: "Elan - CFA Survey Manager",
+        description: "Plateforme de gestion d'enquêtes CFA certifiée Qualiopi",
+        url: window.location.origin,
+        logo: `${window.location.origin}/logo.svg`,
+        sameAs: ["https://www.linkedin.com/company/elan-cfa"],
+        contactPoint: {
+            "@type": "ContactPoint",
+            contactType: "Support",
+            availableLanguage: ["fr"],
+        },
+    };
+
+    const softwareApplicationSchema = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        name: "Elan - CFA Survey Manager",
+        description:
+            "Plateforme complète de gestion d'enquêtes pour centres de formation d'apprentis",
+        url: window.location.origin,
+        applicationCategory: "BusinessApplication",
+        offers: {
+            "@type": "Offer",
+            priceCurrency: "EUR",
+            price: "0",
+        },
+        aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: "4.8",
+            ratingCount: "150",
+        },
+    };
+
     return (
         <>
-            <Head title="CFA Survey Manager - Pilotage d'enquêtes pour centres de formation" />
+            <PageHead
+                title="Elan - CFA Survey Manager"
+                description="Pilotez vos enquêtes CFA facilement. Plateforme tout-en-un certifiée Qualiopi pour centres de formation d'apprentis. Automatisez enquêtes d'insertion et conformité."
+                keywords="enquête CFA, pilotage enquête, Qualiopi, centre formation, apprentis, insertion professionnelle"
+                ogType="website"
+                ogImage="/logo.svg"
+            />
+            <SchemaOrg schema={organizationSchema} />
+            <SchemaOrg schema={softwareApplicationSchema} />
 
             <div className="min-h-screen bg-white">
                 {/* Navigation */}

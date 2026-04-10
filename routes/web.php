@@ -1,19 +1,13 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\EntrepriseController;
-use App\Http\Controllers\InlineCreateController;
-use App\Http\Controllers\NotificationsController;
-use App\Http\Controllers\ParticipantController;
-use App\Http\Controllers\EcoleController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ReportsController;
-use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\SurveyController;
+use App\Http\Controllers\SeoController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\IsAdmin;
 use Inertia\Inertia;
+
+// SEO Routes (public)
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [

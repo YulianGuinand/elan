@@ -1,4 +1,5 @@
 import FadeIn from "@/Components/Animations/FadeIn";
+import PageHead from "@/Components/Seo/PageHead";
 import AccountSettings from "@/Components/Settings/AccountSettings";
 import GeneralSettings from "@/Components/Settings/GeneralSettings";
 import IntegrationSettings from "@/Components/Settings/IntegrationSettings";
@@ -13,7 +14,6 @@ import {
     SettingsTab,
     UserSettings,
 } from "@/types/settings";
-import { Head } from "@inertiajs/react";
 import { useState } from "react";
 
 interface SettingsProps {
@@ -31,7 +31,11 @@ export default function Settings({
 
     return (
         <>
-            <Head title="Paramètres" />
+            <PageHead
+                title="Paramètres"
+                description="Configurez votre compte et les préférences de votre organisation. Sécurité, intégrations et notifications."
+                keywords="paramètres, configuration, préférences"
+            />
 
             <DashboardLayout
                 title="Paramètres"
