@@ -134,8 +134,6 @@ export default function StudentCsvImport() {
 
             const data = await res.json();
 
-            console.log(data);
-
             if (!res.ok)
                 throw new Error(data.error ?? "Erreur lors du preview");
             setPreview(data as PreviewData);

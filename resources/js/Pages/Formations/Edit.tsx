@@ -1,7 +1,7 @@
 import FadeIn from "@/Components/Animations/FadeIn";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, useForm } from "@inertiajs/react";
-import { AlertCircle, BookOpen } from "lucide-react";
+import { AlertCircle, BookOpen, ChevronLeft } from "lucide-react";
 
 interface Props {
     formation: {
@@ -36,6 +36,7 @@ export default function Edit({ formation }: Props) {
                     { label: "Modifier" },
                 ]}
                 actionButton={{
+                    icon: <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />,
                     label: "Retour",
                     onClick: () => window.history.back(),
                 }}

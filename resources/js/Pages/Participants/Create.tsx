@@ -7,7 +7,7 @@ import SearchableSelect, {
 } from "@/Components/Common/SearchableSelect";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, useForm } from "@inertiajs/react";
-import { AlertCircle, Save } from "lucide-react";
+import { AlertCircle, ChevronLeft, Save } from "lucide-react";
 import { FormEventHandler, useEffect, useState } from "react";
 
 interface Props {
@@ -106,6 +106,7 @@ export default function Create({ ecoles, formations, entreprises }: Props) {
                     { label: "Ajouter" },
                 ]}
                 actionButton={{
+                    icon: <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />,
                     label: "Retour à la liste",
                     onClick: () => window.history.back(),
                 }}

@@ -2,7 +2,7 @@ import FadeIn from "@/Components/Animations/FadeIn";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Participant } from "@/types/participants";
 import { Head, useForm } from "@inertiajs/react";
-import { Save } from "lucide-react";
+import { ChevronLeft, Save } from "lucide-react";
 import { FormEventHandler } from "react";
 
 export default function Edit({ participant }: { participant: Participant }) {
@@ -34,6 +34,7 @@ export default function Edit({ participant }: { participant: Participant }) {
                     { label: `${participant.prenom} ${participant.nom}` },
                 ]}
                 actionButton={{
+                    icon: <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />,
                     label: "Retour à la liste",
                     onClick: () => window.history.back(),
                 }}

@@ -4,7 +4,7 @@ import Sidebar from "@/Components/Dashboard/Sidebar";
 import { useUnreadNotificationCount } from "@/Hooks/useUnreadNotificationCount";
 import { PageProps } from "@/types";
 import { usePage } from "@inertiajs/react";
-import { PropsWithChildren, useEffect, useState } from "react";
+import { PropsWithChildren, ReactElement, useEffect, useState } from "react";
 
 interface BreadcrumbItem {
     label: string;
@@ -16,6 +16,7 @@ interface DashboardLayoutProps extends PropsWithChildren {
     title: string;
     breadcrumbs?: BreadcrumbItem[];
     actionButton?: {
+        icon?: ReactElement;
         label: string;
         href?: string;
         onClick?: () => void;
