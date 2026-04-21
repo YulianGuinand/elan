@@ -698,8 +698,19 @@ class SurveyController extends Controller
             ->pluck('libelle', 'id')
             ->toArray();
 
-        $participants = Participant::whereHas('questions', function ($query) use ($enquete) {
+        $search = $request->input('search');
+
+        $participants = Participant::whereHas('questions', function ($query) use ($enquete, $search) {
             $query->where('enquete_id', $enquete->id);
+
+            if($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nom', 'like', "%{$search}%")
+                        ->orWhere('prenom', 'like', "%{$search}%")
+                        ->orWhere('mail', 'like', "%{$search}%");
+                });
+            }
+
         })
             ->with(['questions' => function ($query) use ($enquete) {
                 $query->where('enquete_id', $enquete->id)
