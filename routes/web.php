@@ -71,6 +71,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{id}/reponses', [SurveyController::class, 'responses'])
             ->name('surveys.responses')->middleware(['is_admin']);
 
+        // Voir les informations
+        Route::get('/{id}/information', [SurveyController::class, 'informations'])
+            ->name('surveys.informations')->middleware(['is_admin']);
+
+        // Envoyer les mails aux participants
+        Route::post('/{id}/send-invitations', [SurveyController::class, 'sendInvitations'])
+            ->name('surveys.send-invitations')->middleware(['is_admin']);
+
         // Dupliquer une enquête (protégé par is_admin)
         Route::post('/{id}/dupliquer', [SurveyController::class, 'duplicate'])
             ->name('surveys.duplicate')->middleware(['is_admin']);
@@ -227,6 +235,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::delete('/{formation}', [\App\Http\Controllers\FormationController::class, 'destroy'])
             ->name('formations.destroy')->middleware(['is_admin', 'is_superadmin']);
+    });
+
+    // ============================================
+    // UTILISATEURS
+    // ============================================
+    Route::prefix('utilisateurs')->middleware(['is_admin_or_superadmin'])->group(function () {
+        Route::get('/', [\App\Http\Controllers\UserController::class, 'index'])
+            ->name('users.index');
+
+        Route::get('/ajouter', [\App\Http\Controllers\UserController::class, 'create'])
+            ->name('users.create');
+
+        Route::post('/', [\App\Http\Controllers\UserController::class, 'store'])
+            ->name('users.store');
+
+        Route::get('/{user}/modifier', [\App\Http\Controllers\UserController::class, 'edit'])
+            ->name('users.edit');
+
+        Route::put('/{user}', [\App\Http\Controllers\UserController::class, 'update'])
+            ->name('users.update');
+
+        Route::delete('/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])
+            ->name('users.destroy');
     });
 
     // ============================================

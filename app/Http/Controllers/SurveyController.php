@@ -10,6 +10,7 @@ use App\Models\Participant;
 use App\Models\Question;
 use App\Models\Theme;
 use App\Models\Type_Reponse;
+use App\Models\Utilisateur;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -201,6 +202,11 @@ class SurveyController extends Controller
 
         $enquete = $enqueteQuery->firstOrFail();
 
+        // Vérifier que l'enquête n'est pas en cours
+        if ($enquete->isActive()) {
+            return back()->with('error', 'Cette enquête est actuellement en cours. Elle ne peut pas être modifiée.');
+        }
+
         $validated = $request->validate([
             'titre' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -332,13 +338,13 @@ class SurveyController extends Controller
 
         $request->validate([
             'ids' => 'required|array',
-            'ids.*' => 'integer|exists:enquetes,id'
+            'ids.*' => 'integer|exists:enquetes,id',
         ]);
 
         $query = Enquete::whereIn('id', $request->ids);
 
         // Si pas superadmin, l'admin ne peut supprimer que ses propres enquêtes
-        if (!$user->isSuperAdmin()) {
+        if (! $user->isSuperAdmin()) {
             $query->where('utilisateur_id', $user->id);
         }
 
@@ -353,7 +359,7 @@ class SurveyController extends Controller
         Theme::doesntHave('questions')->delete();
 
         return back()
-            ->with('success', count($enquetes) . ' enquête' . (count($enquetes) > 1 ? 's' : '') . ' supprimée' . (count($enquetes) > 1 ? 's' : '') . '.');
+            ->with('success', count($enquetes).' enquête'.(count($enquetes) > 1 ? 's' : '').' supprimée'.(count($enquetes) > 1 ? 's' : '').'.');
     }
 
     /**
@@ -363,11 +369,6 @@ class SurveyController extends Controller
     {
         $enquete = Enquete::with(['questions.type_reponse', 'questions.choix', 'questions.theme'])
             ->findOrFail($id);
-
-        // Vérifier que l'enquête est active
-        if (! $enquete->isActive()) {
-            abort(404);
-        }
 
         $search = $request->input('search');
         $roleFilter = $request->input('role', 'Tous');
@@ -473,8 +474,6 @@ class SurveyController extends Controller
      */
     public function submitFillPublic(Request $request, $jeton)
     {
-        dd($request->all(), $jeton);
-
         $participant = Participant::whereHas('enquetes', function ($query) use ($jeton) {
             $query->where('participer.jeton', $jeton);
         })->firstOrFail();
@@ -497,7 +496,7 @@ class SurveyController extends Controller
             }
         });
 
-        return redirect()->route('welcome')->with('success', 'Merci pour votre participation !');
+        return redirect('/')->with('success', 'Merci pour votre participation !');
     }
 
     // ─────────────────────────────────────────────────
@@ -682,14 +681,14 @@ class SurveyController extends Controller
     /**
      * Affiche les réponses d'une enquête.
      */
-    public function responses(Request $request,string $id): Response
+    public function responses(Request $request, string $id): Response
     {
         $user = Auth::user();
 
         $enqueteQuery = Enquete::with(['questions.choix', 'questions.type_reponse'])
             ->where('id', $id);
 
-        if (!$user->isSuperAdmin()) {
+        if (! $user->isSuperAdmin()) {
             $enqueteQuery->where('utilisateur_id', $user->id);
         }
 
@@ -730,15 +729,16 @@ class SurveyController extends Controller
 
                 $question->pivot->display_value = implode(', ', $libelles);
             }
+
             return $participant;
         });
 
-        $formatedEnquete =$this->formatEnquete($enquete);
+        $formatedEnquete = $this->formatEnquete($enquete);
 
         $selectedParticipantData = null;
         if ($request->has('participant_id')) {
             $selectedParticipantData = Participant::with(['questions' => function ($query) use ($id) {
-                $query->where('enquete_id', $id)->with(['theme','type_reponse'])->withPivot('valeur', 'created_at');
+                $query->where('enquete_id', $id)->with(['theme', 'type_reponse'])->withPivot('valeur', 'created_at');
             }])
                 ->find($request->participant_id);
 
@@ -785,5 +785,110 @@ class SurveyController extends Controller
             ],
             'availableRoles' => $availableRoles,
         ]);
+    }
+
+    public function informations(Request $request, string $id): Response
+    {
+        $user = Auth::user();
+        $enqueteQuery = Enquete::with(['questions.choix', 'questions.type_reponse'])
+            ->where('id', $id);
+
+        if (! $user->isSuperAdmin()) {
+            $enqueteQuery->where('utilisateur_id', $user->id);
+        }
+        $enquete = $enqueteQuery->firstOrFail();
+        $utilisateurQuery = Utilisateur::where('id', $enquete->utilisateur_id);
+        $utilisateur = $utilisateurQuery->firstOrFail();
+
+        // Récupérer tous les participants avec leur statut de réponse
+        $enqueteId = $enquete->id;
+        $repondants = $enquete->participants()
+            ->whereHas('questions', function ($q) use ($enqueteId) {
+                $q->where('enquete_id', $enqueteId);
+            })
+            ->pluck('participants.id')
+            ->toArray();
+
+        // Compter le nombre total de participants
+        $totalParticipants = $enquete->participants()->count();
+
+        // Construire la requête des participants
+        $participantsQuery = $enquete->participants();
+
+        // Si > 1000 participants, appliquer les filtres côté serveur
+        if ($totalParticipants > 1000) {
+            $search = $request->input('search');
+            $role = $request->input('role');
+            $status = $request->input('status');
+
+            if ($search) {
+                $participantsQuery->where(function ($q) use ($search) {
+                    $q->where('nom', 'like', '%'.$search.'%')
+                        ->orWhere('prenom', 'like', '%'.$search.'%')
+                        ->orWhere('mail', 'like', '%'.$search.'%');
+                });
+            }
+
+            if ($role && $role !== 'Tous') {
+                $participantsQuery->where('role', $role);
+            }
+
+            if ($status && $status !== 'Tous') {
+                if ($status === 'Répondu') {
+                    $participantsQuery->whereIn('participants.id', $repondants);
+                } elseif ($status === 'En attente') {
+                    $participantsQuery->whereNotIn('participants.id', $repondants);
+                }
+            }
+        }
+
+        $participants = $participantsQuery
+            ->paginate(10)
+            ->through(function ($participant) use ($repondants) {
+                return [
+                    'id' => $participant->id,
+                    'nom' => $participant->nom,
+                    'prenom' => $participant->prenom,
+                    'mail' => $participant->mail,
+                    'role' => $participant->role,
+                    'has_responded' => in_array($participant->id, $repondants),
+                    'status_envoi' => $participant->pivot->statut_envoi ?? null,
+                    'date_envoi' => $participant->pivot->date_envoi ?? null,
+                ];
+            });
+
+        return Inertia::render('Surveys/ViewInformations', [
+            'enquete' => $this->formatEnquete($enquete),
+            'participants' => $participants,
+            'utilisateur' => $utilisateur,
+        ]);
+    }
+
+    /**
+     * Envoyer des invitations par mail aux participants
+     */
+    public function sendInvitations(Request $request, string $id)
+    {
+        $user = Auth::user();
+        $enqueteQuery = Enquete::where('id', $id);
+
+        if (! $user->isSuperAdmin()) {
+            $enqueteQuery->where('utilisateur_id', $user->id);
+        }
+        $enquete = $enqueteQuery->firstOrFail();
+
+        // Récupérer les IDs de participants sélectionnés si présents
+        $participantIds = $request->input('participant_ids', []);
+
+        // Utiliser le service
+        $mailService = new \App\Services\SurveyMailService;
+        $results = $mailService->sendSurveyInvitations($enquete, $participantIds);
+
+        $message = "Invitations envoyées avec succès à {$results['sent']} participant(s)";
+        if ($results['failed'] > 0) {
+            $message .= " ({$results['failed']} échec(s)).";
+        }
+
+        return back()->with('success', $message);
     }
 }

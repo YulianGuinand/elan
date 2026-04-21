@@ -158,7 +158,7 @@ export default function SurveyTable({
                                 </th>
                                 {[
                                     "Enquête",
-                                    "Type",
+                                    "Cible",
                                     "Statut",
                                     "Période",
                                     "Questions",
@@ -215,7 +215,7 @@ export default function SurveyTable({
                                             </p>
                                         </td>
 
-                                        {/* Type campagne */}
+                                        {/* Cible */}
                                         <td className="px-5 py-4">
                                             <span className="text-sm text-gray-700">
                                                 {survey.type_campagne}
@@ -305,6 +305,24 @@ export default function SurveyTable({
                                                 <DropdownItem
                                                     icon={
                                                         <Eye className="w-4 h-4" />
+                                                    }
+                                                    onClick={() => {
+                                                        router.visit(
+                                                            route(
+                                                                "surveys.informations",
+                                                                {
+                                                                    id: survey.id,
+                                                                },
+                                                            ),
+                                                        );
+                                                    }}
+                                                >
+                                                    Voir les informations
+                                                </DropdownItem>
+
+                                                <DropdownItem
+                                                    icon={
+                                                        <FileText className="w-4 h-4" />
                                                     }
                                                     onClick={() => {
                                                         router.visit(

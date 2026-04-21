@@ -102,6 +102,27 @@ export default function SurveyFill({
         return () => clearTimeout(timeoutId);
     }, [searchQuery, filters.search, enquete.id, roleFilter]);
 
+    // Keep-alive: rafraîchir la session toutes les 30 minutes
+    useEffect(() => {
+        const keepAliveInterval = setInterval(
+            () => {
+                router.get(
+                    route("surveys.fill", { id: enquete.id }),
+                    {},
+                    {
+                        replace: true,
+                        preserveScroll: true,
+                        preserveState: true,
+                        only: ["enquete"],
+                    },
+                );
+            },
+            30 * 60 * 1000,
+        ); // 30 minutes
+
+        return () => clearInterval(keepAliveInterval);
+    }, [enquete.id]);
+
     // Handlers
     const handleRoleChange = (role: string) => {
         setRoleFilter(role);
@@ -166,10 +187,27 @@ export default function SurveyFill({
             }
         });
 
-        router.post(route("surveys.fill.submit", { id: enquete.id }), {
-            participant_id: selectedParticipant?.id,
-            reponses: formattedAnswers,
-        });
+        router.post(
+            route("surveys.fill.submit", { id: enquete.id }),
+            {
+                participant_id: selectedParticipant?.id,
+                reponses: formattedAnswers,
+            },
+            {
+                onError: (errors: any) => {
+                    // Gestion des erreurs 419
+                    if (
+                        errors[419] ||
+                        window.location.pathname.includes("419")
+                    ) {
+                        alert(
+                            "Votre session a expiré. Veuillez recharger la page et soumettre à nouveau.",
+                        );
+                        window.location.reload();
+                    }
+                },
+            },
+        );
     };
 
     return (
