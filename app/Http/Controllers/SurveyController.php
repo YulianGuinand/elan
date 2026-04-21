@@ -9,6 +9,7 @@ use App\Models\Participant;
 use App\Models\Question;
 use App\Models\Theme;
 use App\Models\Type_Reponse;
+use App\Models\Utilisateur;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -679,12 +680,17 @@ class SurveyController extends Controller
             $enqueteQuery->where('utilisateur_id', $user->id);
         }
         $enquete = $enqueteQuery->firstOrFail();
-        $participantQuery = Participant::where('role', $enquete->type_campagne)->get();
+        $utilisateurQuery = Utilisateur::where('id', $enquete->utilisateur_id);
+        $utilisateur = $utilisateurQuery->firstOrFail();
 
+        $participants = Participant::whereHas('questions', function ($query) use ($enquete) {
+            $query->where('enquete_id', $enquete->id);
+        })->take(3)->get();
 
         return Inertia::render('Surveys/ViewInformations', [
             'enquete' => $this->formatEnquete($enquete),
-            'participants' => $participantQuery,
+            'participants' => $participants,
+            'utilisateur' => $utilisateur,
         ]);
     }
 }
