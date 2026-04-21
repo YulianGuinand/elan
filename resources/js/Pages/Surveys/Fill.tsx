@@ -106,7 +106,16 @@ export default function SurveyFill({
     useEffect(() => {
         const keepAliveInterval = setInterval(
             () => {
-                router.reload({ preserveState: true, only: ["enquete"] });
+                router.get(
+                    route("surveys.fill", { id: enquete.id }),
+                    {},
+                    {
+                        replace: true,
+                        preserveScroll: true,
+                        preserveState: true,
+                        only: ["enquete"],
+                    },
+                );
             },
             30 * 60 * 1000,
         ); // 30 minutes
