@@ -73,7 +73,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Voir les informations
         Route::get('/{id}/information', [SurveyController::class, 'informations'])
-            ->name('surveys.informations')->middleware(["is_admin"]);
+            ->name('surveys.informations')->middleware(['is_admin']);
+
+        // Envoyer les mails aux participants
+        Route::post('/{id}/send-invitations', [SurveyController::class, 'sendInvitations'])
+            ->name('surveys.send-invitations')->middleware(['is_admin']);
 
         // Dupliquer une enquête (protégé par is_admin)
         Route::post('/{id}/dupliquer', [SurveyController::class, 'duplicate'])

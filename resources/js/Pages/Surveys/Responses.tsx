@@ -1,16 +1,14 @@
 import FadeIn from "@/Components/Animations/FadeIn";
-import SecondaryButton from "@/Components/SecondaryButton";
 import PrimaryButton from "@/Components/PrimaryButton";
+import SecondaryButton from "@/Components/SecondaryButton";
+import { QUESTION_TYPES } from "@/constants/questionTypes";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, router } from "@inertiajs/react";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {QuestionEnquete, Survey, ThemeEnquete} from "../../types/surveys";
-import { Question } from "@/types/surveyBuilder";
-import ParticipantSelection from "./Partials/Fill/ParticipantSelection";
+import { QuestionEnquete, Survey, ThemeEnquete } from "../../types/surveys";
 import { Participant } from "./Fill";
-import QuestionTypeSelector from "@/Components/SurveyBuilder/QuestionTypeSelector";
-import {QUESTION_TYPES} from "@/constants/questionTypes";
+import ParticipantSelection from "./Partials/Fill/ParticipantSelection";
 
 interface PivotReponse {
     valeur: string;
@@ -40,21 +38,27 @@ interface PaginationData<T> {
 
 interface Props {
     enquete: Survey;
-    participants: PaginationData<Participant>;     // pour la sélection (sans réponses)
+    participants: PaginationData<Participant>; // pour la sélection (sans réponses)
     selectedParticipantData: ParticipantWithAnswers | null; // chargé après sélection
     filters: { search: string | null; role: string };
     availableRoles: string[];
 }
 
 const getEmojiForLikert = (index: number, total: number) => {
-    const emojis = ['😡', '😐', '😶', '🙂', '🤩'];
-    const mockupEmojis = ['😫', '☹️', '😐', '🙂', '🤩']; // More like mockup
+    const emojis = ["😡", "😐", "😶", "🙂", "🤩"];
+    const mockupEmojis = ["😫", "☹️", "😐", "🙂", "🤩"]; // More like mockup
     if (total === 5) return mockupEmojis[index];
     const ratio = index / (total - 1);
     return mockupEmojis[Math.round(ratio * 4)];
 };
 
-function ResponseValue({ pivot , question }: { pivot: PivotReponse ,question: QuestionEnquete}) {
+function ResponseValue({
+    pivot,
+    question,
+}: {
+    pivot: PivotReponse;
+    question: QuestionEnquete;
+}) {
     if (!pivot?.valeur) {
         return <span className="text-gray-400 italic text-sm">—</span>;
     }
@@ -82,13 +86,13 @@ function ResponseValue({ pivot , question }: { pivot: PivotReponse ,question: Qu
     } catch {}
 
     if (type == "likert") {
-
         return (
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 {Array.from({
-                    length: (question.choix) ? question.choix.length : 0
+                    length: question.choix ? question.choix.length : 0,
                 }).map((_, idx) => {
-                    const isSelected = question.choix[idx].id === parseInt(pivot.valeur); // compare against parsed index
+                    const isSelected =
+                        question.choix[idx].id === parseInt(pivot.valeur); // compare against parsed index
                     return (
                         <label key={idx} className="cursor-pointer group">
                             <input
@@ -99,18 +103,31 @@ function ResponseValue({ pivot , question }: { pivot: PivotReponse ,question: Qu
                                 readOnly // add readOnly since this is display-only
                                 className="sr-only"
                             />
-                            <div className={`
+                            <div
+                                className={`
                             flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all duration-300 h-full
-                            ${isSelected
-                                ? "border-orange-500 bg-white shadow-md shadow-orange-500/5 ring-4 ring-orange-500/5"
-                                : "border-gray-100 bg-white hover:border-gray-200"}
-                        `}>
-                            <span className={`text-2xl transition-all duration-300 ${isSelected ? "scale-110" : "filter grayscale opacity-40 group-hover:opacity-100 group-hover:grayscale-0"}`}>
-                                {getEmojiForLikert(idx, question.choix?.length || 0)}
-                            </span>
-                                <span className={`text-[10px] font-black text-center uppercase tracking-tighter leading-tight ${isSelected ? "text-gray-900" : "text-gray-400"}`}>
-                                {question.choix ? question.choix[idx].libelle : idx + 1}
-                            </span>
+                            ${
+                                isSelected
+                                    ? "border-orange-500 bg-white shadow-md shadow-orange-500/5 ring-4 ring-orange-500/5"
+                                    : "border-gray-100 bg-white hover:border-gray-200"
+                            }
+                        `}
+                            >
+                                <span
+                                    className={`text-2xl transition-all duration-300 ${isSelected ? "scale-110" : "filter grayscale opacity-40 group-hover:opacity-100 group-hover:grayscale-0"}`}
+                                >
+                                    {getEmojiForLikert(
+                                        idx,
+                                        question.choix?.length || 0,
+                                    )}
+                                </span>
+                                <span
+                                    className={`text-[10px] font-black text-center uppercase tracking-tighter leading-tight ${isSelected ? "text-gray-900" : "text-gray-400"}`}
+                                >
+                                    {question.choix
+                                        ? question.choix[idx].libelle
+                                        : idx + 1}
+                                </span>
                             </div>
                         </label>
                     );
@@ -122,7 +139,7 @@ function ResponseValue({ pivot , question }: { pivot: PivotReponse ,question: Qu
     const isNumeric = !isNaN(Number(display)) && display.trim() !== "";
     if (isNumeric) {
         return (
-            <span className="text-2 font-black text-orange-500">
+            <span className="text-2xl font-black text-orange-500">
                 {display}
             </span>
         );
@@ -132,12 +149,12 @@ function ResponseValue({ pivot , question }: { pivot: PivotReponse ,question: Qu
 }
 
 export default function SurveyResponses({
-                                            enquete,
-                                            participants,
-                                            selectedParticipantData,
-                                            filters,
-                                            availableRoles,
-                                        }: Props) {
+    enquete,
+    participants,
+    selectedParticipantData,
+    filters,
+    availableRoles,
+}: Props) {
     const [selectedParticipant, setSelectedParticipant] =
         useState<Participant | null>(null);
     const [isConfirmed, setIsConfirmed] = useState(false);
@@ -147,9 +164,18 @@ export default function SurveyResponses({
 
     // Même logique de thèmes que SurveyFill
     const themes = useMemo((): ThemeEnquete[] => {
-        const surveyWithThemes = enquete as Survey & { themes?: ThemeEnquete[] };
+        const surveyWithThemes = enquete as Survey & {
+            themes?: ThemeEnquete[];
+        };
         if (surveyWithThemes.themes?.length) return surveyWithThemes.themes;
-        return [{ id: 0, libelle: "Général", ordre: 0, questions: enquete.questions || [] }];
+        return [
+            {
+                id: 0,
+                libelle: "Général",
+                ordre: 0,
+                questions: enquete.questions || [],
+            },
+        ];
     }, [enquete]);
 
     const currentTheme = themes[currentThemeIndex] || themes[0];
@@ -160,7 +186,7 @@ export default function SurveyResponses({
     const answersByQuestionId = useMemo(() => {
         if (!selectedParticipantData) return {};
         return Object.fromEntries(
-            selectedParticipantData.questions.map((q) => [q.id, q.pivot])
+            selectedParticipantData.questions.map((q) => [q.id, q.pivot]),
         );
     }, [selectedParticipantData]);
 
@@ -171,7 +197,7 @@ export default function SurveyResponses({
             router.get(
                 route("surveys.responses", { id: enquete.id }),
                 { search: searchQuery, role: roleFilter },
-                { preserveState: true, replace: true, only: ["participants"] }
+                { preserveState: true, replace: true, only: ["participants"] },
             );
         }, 300);
         return () => clearTimeout(t);
@@ -182,21 +208,28 @@ export default function SurveyResponses({
         router.get(
             route("surveys.responses", { id: enquete.id }),
             { search: searchQuery, role },
-            { preserveState: true, replace: true, only: ["participants"] }
+            { preserveState: true, replace: true, only: ["participants"] },
         );
     };
 
-    const handleSelect = useCallback((p: Participant) => {
-        setSelectedParticipant(p);
-        setCurrentThemeIndex(0);
-        // Charge les réponses de ce participant via Inertia (partial reload)
-        router.get(
-            route("surveys.responses", { id: enquete.id }),
-            { search: searchQuery, role: roleFilter, participant_id: p.id },
-            { preserveState: true, replace: true, only: ["selectedParticipantData"] }
-        );
-        setIsConfirmed(true);
-    }, [enquete.id, searchQuery, roleFilter]);
+    const handleSelect = useCallback(
+        (p: Participant) => {
+            setSelectedParticipant(p);
+            setCurrentThemeIndex(0);
+            // Charge les réponses de ce participant via Inertia (partial reload)
+            router.get(
+                route("surveys.responses", { id: enquete.id }),
+                { search: searchQuery, role: roleFilter, participant_id: p.id },
+                {
+                    preserveState: true,
+                    replace: true,
+                    only: ["selectedParticipantData"],
+                },
+            );
+            setIsConfirmed(true);
+        },
+        [enquete.id, searchQuery, roleFilter],
+    );
 
     const getInitials = (p: Participant) =>
         `${p.prenom?.[0] ?? ""}${p.nom?.[0] ?? ""}`.toUpperCase();
@@ -204,11 +237,14 @@ export default function SurveyResponses({
     const formatDate = (dateStr?: string) => {
         if (!dateStr) return "—";
         return new Date(dateStr).toLocaleDateString("fr-FR", {
-            day: "2-digit", month: "short", year: "numeric",
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
         });
     };
 
-    const answeredAt = selectedParticipantData?.questions?.[0]?.pivot?.created_at;
+    const answeredAt =
+        selectedParticipantData?.questions?.[0]?.pivot?.created_at;
 
     return (
         <>
@@ -220,7 +256,10 @@ export default function SurveyResponses({
                     breadcrumbs={[
                         { label: "Accueil", href: "/tableau-de-bord" },
                         { label: "Enquêtes", href: "/enquetes" },
-                        { label: "Sélection", onClick: () => setIsConfirmed(false) },
+                        {
+                            label: "Sélection",
+                            onClick: () => setIsConfirmed(false),
+                        },
                         { label: "Consultation" },
                     ]}
                 >
@@ -236,17 +275,31 @@ export default function SurveyResponses({
                                         </div>
                                         <div>
                                             <p className="font-black text-gray-900 text-sm">
-                                                {selectedParticipant.prenom} {selectedParticipant.nom}
+                                                {selectedParticipant.prenom}{" "}
+                                                {selectedParticipant.nom}
                                             </p>
-                                            <p className="text-xs text-gray-500">{selectedParticipant.role}</p>
+                                            <p className="text-xs text-gray-500">
+                                                {selectedParticipant.role}
+                                            </p>
                                         </div>
                                     </div>
                                     <div className="border-t border-gray-100 pt-3 text-xs text-gray-500 space-y-1">
-                                        {selectedParticipant.entreprises?.[0] && (
-                                            <p>{selectedParticipant.entreprises[0].nom}</p>
+                                        {selectedParticipant
+                                            .entreprises?.[0] && (
+                                            <p>
+                                                {
+                                                    selectedParticipant
+                                                        .entreprises[0].nom
+                                                }
+                                            </p>
                                         )}
                                         {answeredAt && (
-                                            <p>Répondu le <span className="text-gray-700">{formatDate(answeredAt)}</span></p>
+                                            <p>
+                                                Répondu le{" "}
+                                                <span className="text-gray-700">
+                                                    {formatDate(answeredAt)}
+                                                </span>
+                                            </p>
                                         )}
                                     </div>
                                     <SecondaryButton
@@ -270,16 +323,23 @@ export default function SurveyResponses({
                                             <button
                                                 key={theme.id}
                                                 type="button"
-                                                onClick={() => setCurrentThemeIndex(idx)}
+                                                onClick={() =>
+                                                    setCurrentThemeIndex(idx)
+                                                }
                                                 className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-left transition-colors ${
                                                     idx === currentThemeIndex
                                                         ? "bg-orange-50 text-orange-700 font-black"
                                                         : "text-gray-500 hover:bg-gray-50"
                                                 }`}
                                             >
-                                                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                                                    idx === currentThemeIndex ? "bg-orange-500" : "bg-gray-300"
-                                                }`} />
+                                                <span
+                                                    className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                                                        idx ===
+                                                        currentThemeIndex
+                                                            ? "bg-orange-500"
+                                                            : "bg-gray-300"
+                                                    }`}
+                                                />
                                                 {theme.libelle}
                                             </button>
                                         ))}
@@ -310,31 +370,52 @@ export default function SurveyResponses({
 
                                     {/* Liste des réponses */}
                                     <div className="divide-y divide-gray-50">
-                                        {currentTheme.questions.map((question: any) => {
-                                            const pivot = answersByQuestionId[question.id];
-                                            const typeq = answersByQuestionId[question.type];
-                                            return (
-                                                <div key={question.id} className="p-6 md:px-8">
-                                                    <p className="text-xs text-gray-400 uppercase tracking-wide font-black mb-2">
-                                                        {QUESTION_TYPES.map((config) => {
-                                                            if(question.type_reponse === config.type) {
-                                                                return config.label
-                                                            }
-                                                        })}
-                                                    </p>
-                                                    <p className="text-2xl text-gray-600 mb-3 leading-snug font-bold ">
-                                                        {question.libelle}
-                                                    </p>
-                                                    {pivot ? (
-                                                        <ResponseValue pivot={pivot} question={question} />
-                                                    ) : (
-                                                        <span className="text-sm text-gray-300 italic">
-                                                            Sans réponse
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
+                                        {currentTheme.questions.map(
+                                            (question: any) => {
+                                                const pivot =
+                                                    answersByQuestionId[
+                                                        question.id
+                                                    ];
+                                                const typeq =
+                                                    answersByQuestionId[
+                                                        question.type
+                                                    ];
+                                                return (
+                                                    <div
+                                                        key={question.id}
+                                                        className="p-6 md:px-8"
+                                                    >
+                                                        <p className="text-xs text-gray-400 uppercase tracking-wide font-black mb-2">
+                                                            {QUESTION_TYPES.map(
+                                                                (config) => {
+                                                                    if (
+                                                                        question.type_reponse ===
+                                                                        config.type
+                                                                    ) {
+                                                                        return config.label;
+                                                                    }
+                                                                },
+                                                            )}
+                                                        </p>
+                                                        <p className="text-2xl text-gray-600 mb-3 leading-snug font-bold ">
+                                                            {question.libelle}
+                                                        </p>
+                                                        {pivot ? (
+                                                            <ResponseValue
+                                                                pivot={pivot}
+                                                                question={
+                                                                    question
+                                                                }
+                                                            />
+                                                        ) : (
+                                                            <span className="text-sm text-gray-300 italic">
+                                                                Sans réponse
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                );
+                                            },
+                                        )}
                                     </div>
 
                                     {/* Navigation bas */}
@@ -342,8 +423,13 @@ export default function SurveyResponses({
                                         <SecondaryButton
                                             type="button"
                                             onClick={() => {
-                                                setCurrentThemeIndex((p) => p - 1);
-                                                window.scrollTo({ top: 0, behavior: "smooth" });
+                                                setCurrentThemeIndex(
+                                                    (p) => p - 1,
+                                                );
+                                                window.scrollTo({
+                                                    top: 0,
+                                                    behavior: "smooth",
+                                                });
                                             }}
                                             disabled={isFirstTheme}
                                         >
@@ -354,8 +440,13 @@ export default function SurveyResponses({
                                         <PrimaryButton
                                             type="button"
                                             onClick={() => {
-                                                setCurrentThemeIndex((p) => p + 1);
-                                                window.scrollTo({ top: 0, behavior: "smooth" });
+                                                setCurrentThemeIndex(
+                                                    (p) => p + 1,
+                                                );
+                                                window.scrollTo({
+                                                    top: 0,
+                                                    behavior: "smooth",
+                                                });
                                             }}
                                             disabled={isLastTheme}
                                         >

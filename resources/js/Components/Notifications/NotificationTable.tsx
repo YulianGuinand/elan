@@ -1,5 +1,11 @@
 import { CheckCircle, FileText, MoreVertical, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 interface Notification {
     id: number;
@@ -195,14 +201,14 @@ export default function NotificationTable({
                                     {/* Statut */}
                                     <td className="px-5 py-4">
                                         <span
-                                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
                                                 isRead
                                                     ? "bg-gray-100 text-gray-600"
                                                     : "bg-blue-100 text-blue-700"
                                             }`}
                                         >
                                             <span
-                                                className={`w-1.5 h-1.5 rounded-full ${
+                                                className={`w-1.5 h-1.5 rounded-full  ${
                                                     isRead
                                                         ? "bg-gray-400"
                                                         : "bg-blue-500"
@@ -214,30 +220,20 @@ export default function NotificationTable({
 
                                     {/* Actions */}
                                     <td className="px-5 py-4 flex justify-center">
-                                        <div
-                                            className="relative inline-block"
+                                        <DropdownMenu
                                             data-dropdown-id={notification.id}
                                         >
-                                            <button
-                                                onClick={() =>
-                                                    setOpenDropdown(
-                                                        openDropdown ===
-                                                            notification.id
-                                                            ? null
-                                                            : notification.id,
-                                                    )
-                                                }
+                                            <DropdownMenuTrigger
                                                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                                                 title="Actions"
                                             >
                                                 <MoreVertical className="w-4 h-4 text-gray-600 hover:text-gray-900" />
-                                            </button>
+                                            </DropdownMenuTrigger>
 
-                                            {openDropdown ===
-                                                notification.id && (
-                                                <div className="absolute right-0 mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                                            {notification.id && (
+                                                <DropdownMenuContent>
                                                     {!isRead && (
-                                                        <button
+                                                        <DropdownMenuItem
                                                             onClick={() => {
                                                                 onMarkAsRead(
                                                                     notification.id,
@@ -250,9 +246,9 @@ export default function NotificationTable({
                                                         >
                                                             <CheckCircle className="w-4 h-4" />
                                                             Marquer comme lue
-                                                        </button>
+                                                        </DropdownMenuItem>
                                                     )}
-                                                    <button
+                                                    <DropdownMenuItem
                                                         onClick={() => {
                                                             onDelete(
                                                                 notification.id,
@@ -265,10 +261,10 @@ export default function NotificationTable({
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                         Supprimer
-                                                    </button>
-                                                </div>
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
                                             )}
-                                        </div>
+                                        </DropdownMenu>
                                     </td>
                                 </tr>
                             );
