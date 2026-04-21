@@ -11,6 +11,7 @@ import {
     GraduationCap,
     LogOut,
     Settings,
+    UserCog,
     X,
 } from "lucide-react";
 import DashboardIcon from "./icons/DashboardIcon";
@@ -69,6 +70,12 @@ const navigationItems: NavItem[] = [
         href: "/entreprises",
         icon: EntrepriseIcon,
         routeName: "entreprises.index",
+    },
+    {
+        name: "Utilisateurs",
+        href: "/utilisateurs",
+        icon: UserCog,
+        routeName: "users.index",
     },
     {
         name: "Rapports",

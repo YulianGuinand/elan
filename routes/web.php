@@ -234,6 +234,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // ============================================
+    // UTILISATEURS
+    // ============================================
+    Route::prefix('utilisateurs')->middleware(['is_admin_or_superadmin'])->group(function () {
+        Route::get('/', [\App\Http\Controllers\UserController::class, 'index'])
+            ->name('users.index');
+
+        Route::get('/ajouter', [\App\Http\Controllers\UserController::class, 'create'])
+            ->name('users.create');
+
+        Route::post('/', [\App\Http\Controllers\UserController::class, 'store'])
+            ->name('users.store');
+
+        Route::get('/{user}/modifier', [\App\Http\Controllers\UserController::class, 'edit'])
+            ->name('users.edit');
+
+        Route::put('/{user}', [\App\Http\Controllers\UserController::class, 'update'])
+            ->name('users.update');
+
+        Route::delete('/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])
+            ->name('users.destroy');
+    });
+
+    // ============================================
     // RAPPORTS
     // ============================================
     Route::get('/rapports', [ReportsController::class, 'index'])
