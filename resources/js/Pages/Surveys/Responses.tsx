@@ -1,7 +1,6 @@
 import FadeIn from "@/Components/Animations/FadeIn";
 import PrimaryButton from "@/Components/PrimaryButton";
 import SecondaryButton from "@/Components/SecondaryButton";
-import { QUESTION_TYPES } from "@/constants/questionTypes";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, router } from "@inertiajs/react";
 import { ChevronRight, ChevronLeft, Download } from "lucide-react";
