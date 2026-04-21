@@ -284,28 +284,30 @@ class DashboardController extends Controller
      */
     private function getActiveSurveys(): array
     {
-        return [
-            [
-                'id' => '1',
-                'name' => 'Retour Apprentis Q1',
-                'subtitle' => 'Classe 2023-A',
-                'endDate' => '15 Oct 2023',
-                'status' => 'active',
-            ],
-            [
-                'id' => '2',
-                'name' => 'Satisfaction Formateurs',
-                'subtitle' => 'Tous departements',
-                'endDate' => '20 Oct 2023',
-                'status' => 'active',
-            ],
-            [
-                'id' => '3',
-                'name' => 'evaluation Entreprises',
-                'subtitle' => 'Partenaires 2023',
-                'endDate' => '25 Oct 2023',
-                'status' => 'active',
-            ],
-        ];
+        $now = now();
+
+        return \App\Models\Enquete::where(function ($q) use ($now) {
+                $q->whereNull('date_debut')->orWhere('date_debut', '<=', $now);
+            })
+            ->where(function ($q) use ($now) {
+                $q->whereNull('date_fin')->orWhere('date_fin', '>=', $now);
+            })
+            ->orderByRaw('date_fin IS NULL ASC')
+            ->orderBy('date_fin', 'asc')
+            ->take(3)
+            ->get()
+            ->values()
+            ->map(function ($enquete) {
+                return [
+                    'id'       => (string) $enquete->id,
+                    'name'     => $enquete->titre,
+                    'subtitle' => $enquete->type_campagne ?? null,
+                    'endDate'  => $enquete->date_fin
+                        ? $enquete->date_fin->format('d/m/Y')
+                        : 'Sans date de fin',
+                    'status'   => 'active',
+                ];
+            })
+            ->toArray();
     }
 }
