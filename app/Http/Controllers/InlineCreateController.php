@@ -14,61 +14,63 @@ use Illuminate\Http\Request;
  */
 class InlineCreateController extends Controller
 {
-  /**
-   * Cree une ecole et retourne ses donnees en JSON.
-   */
-  public function storeEcole(Request $request): JsonResponse
-  {
-    $validated = $request->validate([
-      'libelle'     => 'required|string|max:100',
-      'adresse'     => 'required|string|max:100',
-      'code_postal' => 'required|string|max:5',
-      'ville'       => 'required|string|max:50',
-    ]);
+    /**
+     * Cree une ecole et retourne ses donnees en JSON.
+     */
+    public function storeEcole(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'libelle' => 'required|string|max:100',
+            'adresse' => 'required|string|max:100',
+            'code_postal' => 'required|string|max:5',
+            'ville' => 'required|string|max:50',
+        ]);
 
-    $ecole = Ecole::create($validated);
+        $ecole = Ecole::create($validated);
 
-    return response()->json([
-      'id'   => $ecole->id,
-      'name' => $ecole->libelle,
-    ], 201);
-  }
+        return response()->json([
+            'id' => $ecole->id,
+            'name' => $ecole->libelle,
+        ], 201);
+    }
 
-  /**
-   * Cree une formation et retourne ses donnees en JSON.
-   */
-  public function storeFormation(Request $request): JsonResponse
-  {
-    $validated = $request->validate([
-      'libelle' => 'required|string|max:100',
-    ]);
+    /**
+     * Cree une formation et retourne ses donnees en JSON.
+     */
+    public function storeFormation(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'libelle' => 'required|string|max:100',
+        ]);
 
-    $formation = Formations::create($validated);
+        $formation = Formations::create($validated);
 
-    return response()->json([
-      'id'   => $formation->id,
-      'name' => $formation->libelle,
-    ], 201);
-  }
+        return response()->json([
+            'id' => $formation->id,
+            'name' => $formation->libelle,
+        ], 201);
+    }
 
-  /**
-   * Cree une entreprise et retourne ses donnees en JSON.
-   */
-  public function storeEntreprise(Request $request): JsonResponse
-  {
-    $validated = $request->validate([
-      'raison_sociale' => 'required|string|max:50',
-      'mail'           => 'required|email|max:100',
-      'telephone'      => 'nullable|string|max:15',
-      'ville'          => 'nullable|string|max:50',
-      'interlocuteur'  => 'nullable|string|max:100',
-    ]);
+    /**
+     * Cree une entreprise et retourne ses donnees en JSON.
+     */
+    public function storeEntreprise(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'raison_sociale' => 'required|string|max:50',
+            'mail' => 'required|email|max:100',
+            'telephone' => 'nullable|string|max:15',
+            'ville' => 'nullable|string|max:50',
+            'nom' => 'required|string|max:100',
+            'prenom' => 'required|string|max:100',
+            'code_postal' => 'required|string|max:6',
+        ]);
 
-    $entreprise = Entreprise::create($validated);
+        $entreprise = Entreprise::create($validated);
 
-    return response()->json([
-      'id'   => $entreprise->id,
-      'name' => $entreprise->raison_sociale,
-    ], 201);
-  }
+        return response()->json([
+            'id' => $entreprise->id,
+            'name' => $entreprise->raison_sociale,
+        ], 201);
+    }
 }

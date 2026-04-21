@@ -19,6 +19,6 @@ class IsSuperAdmin
         {
             return $next($request);
         }
-        return redirect()->route("dashboard")->with('error', "Vous n'avez pas accès à cette section.");
+        abort(403, "Vous n'avez pas accès à cette section.");
     }
 }

@@ -4,7 +4,7 @@ export interface Participant {
     prenom: string;
     mail: string;
     telephone: string;
-    role: "Apprenti" | "Alumni" | "Formateur" | "Employeur" | string;
+    role: "Apprentis" | "Alumnis" | "Formateurs" | "Employeurs" | string;
     created_at?: string;
     updated_at?: string;
     entreprises?: Entreprise[];

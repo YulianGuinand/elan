@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\ResponseReceived;
 use App\Events\SurveyCreated;
+use App\Models\Choix;
 use App\Models\Enquete;
 use App\Models\Participant;
 use App\Models\Question;
@@ -170,14 +171,15 @@ class SurveyController extends Controller
     public function edit(string $id): Response
     {
         $user = Auth::user();
-        $enqueteQuery = Enquete::with(['questions.type_reponse', 'questions.choix', 'questions.theme'])
-            ->where('id', $id);
 
-        if (! $user->isSuperAdmin()) {
-            $enqueteQuery->where('utilisateur_id', $user->id);
+        // Trouver l'enquête
+        $enquete = Enquete::with(['questions.type_reponse', 'questions.choix', 'questions.theme'])
+            ->findOrFail($id);
+
+        // Vérifier les permissions
+        if (! $user->isSuperAdmin() && $enquete->utilisateur_id !== $user->id) {
+            abort(403);
         }
-
-        $enquete = $enqueteQuery->firstOrFail();
 
         $typesReponse = Type_Reponse::all(['id', 'libelle']);
 
@@ -306,8 +308,7 @@ class SurveyController extends Controller
 
         $enquete->delete();
 
-        // Nettoyage des thèmes orphelins après suppression de l'enquête
-        \App\Models\Theme::doesntHave('questions')->delete();
+        Theme::doesntHave('questions')->delete();
 
         return redirect()->route('surveys.index')
             ->with('success', 'Enquête supprimée.');
@@ -325,12 +326,50 @@ class SurveyController extends Controller
     }
 
     /**
+     * Supprime plusieurs enquetes selectionnees.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:enquetes,id'
+        ]);
+
+        $query = Enquete::whereIn('id', $request->ids);
+
+        // Si pas superadmin, l'admin ne peut supprimer que ses propres enquêtes
+        if (!$user->isSuperAdmin()) {
+            $query->where('utilisateur_id', $user->id);
+        }
+
+        $enquetes = $query->get();
+
+        // Supprimer les enquêtes
+        foreach ($enquetes as $enquete) {
+            $enquete->delete();
+        }
+
+        // Supprimer les thèmes orphelins
+        Theme::doesntHave('questions')->delete();
+
+        return back()
+            ->with('success', count($enquetes) . ' enquête' . (count($enquetes) > 1 ? 's' : '') . ' supprimée' . (count($enquetes) > 1 ? 's' : '') . '.');
+    }
+
+    /**
      * Affiche le formulaire de remplissage avec les vraies questions.
      */
     public function fill(Request $request, string $id): Response
     {
         $enquete = Enquete::with(['questions.type_reponse', 'questions.choix', 'questions.theme'])
             ->findOrFail($id);
+
+        // Vérifier que l'enquête est active
+        if (! $enquete->isActive()) {
+            abort(404);
+        }
 
         $search = $request->input('search');
         $roleFilter = $request->input('role', 'Tous');
@@ -645,27 +684,100 @@ class SurveyController extends Controller
     /**
      * Affiche les réponses d'une enquête.
      */
-    public function responses(string $id): Response
+    public function responses(Request $request,string $id): Response
     {
         $user = Auth::user();
+
         $enqueteQuery = Enquete::with(['questions.choix', 'questions.type_reponse'])
             ->where('id', $id);
 
-        if (! $user->isSuperAdmin()) {
+        if (!$user->isSuperAdmin()) {
             $enqueteQuery->where('utilisateur_id', $user->id);
         }
 
         $enquete = $enqueteQuery->firstOrFail();
 
-        // Récupérer les réponses avec les participants
-        $reponses = \App\Models\Reponse::where('enquete_id', $enquete->id)
-            ->with(['participant', 'question'])
+        $dictionnaireChoix = Choix::whereIn('question_id', $enquete->questions->pluck('id'))
+            ->pluck('libelle', 'id')
+            ->toArray();
+
+        $participants = Participant::whereHas('questions', function ($query) use ($enquete) {
+            $query->where('enquete_id', $enquete->id);
+        })
+            ->with(['questions' => function ($query) use ($enquete) {
+                $query->where('enquete_id', $enquete->id)
+                    ->withPivot('valeur', 'created_at');
+            }])
             ->orderBy('created_at', 'desc')
             ->paginate(config('pagination.per_page'));
 
+        $participants->through(function ($participant) use ($dictionnaireChoix) {
+            foreach ($participant->questions as $question) {
+                $valeurRaw = $question->pivot->valeur;
+
+                // Décodage JSON ou valeur simple
+                $decoded = json_decode($valeurRaw, true);
+                $ids = is_array($decoded) ? $decoded : [$valeurRaw];
+
+                // On cherche les libellés dans notre dictionnaire déjà chargé
+                $libelles = [];
+                foreach ($ids as $idChoix) {
+                    if (isset($dictionnaireChoix[$idChoix])) {
+                        $libelles[] = $dictionnaireChoix[$idChoix];
+                    } else {
+                        // Si ce n'est pas un ID (ex: question texte libre), on garde la valeur brute
+                        $libelles[] = $idChoix;
+                    }
+                }
+
+                $question->pivot->display_value = implode(', ', $libelles);
+            }
+            return $participant;
+        });
+
+        $formatedEnquete =$this->formatEnquete($enquete);
+
+        $selectedParticipantData = null;
+        if ($request->has('participant_id')) {
+            $selectedParticipantData = Participant::with(['questions' => function ($query) use ($id) {
+                $query->where('enquete_id', $id)->with(['theme','type_reponse'])->withPivot('valeur', 'created_at');
+            }])
+                ->find($request->participant_id);
+
+            if ($selectedParticipantData) {
+                // Appliquer la logique de display_value (votre dictionnaire de choix)
+                foreach ($selectedParticipantData->questions as $question) {
+                    $valeurRaw = $question->pivot->valeur;
+
+                    // Décodage JSON ou valeur simple
+                    $decoded = json_decode($valeurRaw, true);
+                    $ids = is_array($decoded) ? $decoded : [$valeurRaw];
+
+                    // On cherche les libellés dans notre dictionnaire déjà chargé
+                    $libelles = [];
+                    foreach ($ids as $idChoix) {
+                        if (isset($dictionnaireChoix[$idChoix])) {
+                            $libelles[] = $dictionnaireChoix[$idChoix];
+                        } else {
+                            // Si ce n'est pas un ID (ex: question texte libre), on garde la valeur brute
+                            $libelles[] = $idChoix;
+                        }
+                    }
+
+                    $question->pivot->display_value = implode(', ', $libelles);
+                }
+            }
+        }
+
         return Inertia::render('Surveys/Responses', [
-            'enquete' => $this->formatEnquete($enquete),
-            'reponses' => $reponses,
+            'enquete' => $formatedEnquete,
+            'participants' => $participants,
+            'selectedParticipantData' => $selectedParticipantData,
+            'filters' => [
+                'search' => $request->query('search', ''),
+                'role' => $request->query('role', 'Tous'),
+            ],
+            'availableRoles' => Participant::distinct()->pluck('role')->filter()->values(),
         ]);
     }
 

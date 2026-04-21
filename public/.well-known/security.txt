@@ -1,0 +1,4 @@
+Contact: security@elan-cfa.local
+Expires: 2027-04-10T00:00:00.000Z
+Preferred-Languages: fr
+Canonical: https://example.com/.well-known/security.txt

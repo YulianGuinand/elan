@@ -1,8 +1,9 @@
 import FadeIn from "@/Components/Animations/FadeIn";
+import PageHead from "@/Components/Seo/PageHead";
 import SurveyTable from "@/Components/Surveys/SurveyTable";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Survey, SurveyFilters, SurveyStats } from "@/types/surveys";
-import { Head, router } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import { Calendar, CheckCircle2, Clock, FileText } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -108,7 +109,11 @@ export default function Surveys({
 
     return (
         <>
-            <Head title="Gestion des Enquêtes" />
+            <PageHead
+                title="Gestion des Enquêtes"
+                description={`Gérez toutes vos enquêtes CFA. ${stats.total} enquêtes dans le système avec suivi détaillé des participations et conformité Qualiopi.`}
+                keywords="gestion enquête, enquête CFA, suivi participation, réponses enquête"
+            />
 
             <DashboardLayout
                 title="Liste des Enquêtes"

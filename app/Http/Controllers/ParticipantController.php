@@ -97,7 +97,7 @@ class ParticipantController extends Controller
             ]);
 
             // Gestion des creations inline pour Apprenti ou Formateur
-            if (in_array($validated['role'], ['Apprenti', 'Formateur']) && $request->filled('ecole_id') && $request->filled('formation_id')) {
+            if (in_array($validated['role'], ['Apprentis', 'Formateurs']) && $request->filled('ecole_id') && $request->filled('formation_id')) {
                 $ecoleId = $this->resolveInlineCreation(Ecole::class, 'libelle', $validated['ecole_id']);
                 $formationId = $this->resolveInlineCreation(Formations::class, 'libelle', $validated['formation_id']);
                 $entrepriseId = $request->filled('entreprise_id') ? $this->resolveInlineCreation(Entreprise::class, 'raison_sociale', $validated['entreprise_id']) : null;
@@ -154,7 +154,7 @@ class ParticipantController extends Controller
             'prenom' => 'required|string|max:255',
             'mail' => 'required|email|max:255',
             'telephone' => 'required|string|max:20',
-            'role' => 'required|in:Apprenti,Alumni,Formateur,Employeur'
+            'role' => 'required|in:Apprentis,Alumnis,Formateurs,Employeurs'
         ]);
 
         $participant->update($validated);
@@ -228,7 +228,7 @@ class ParticipantController extends Controller
                         'nom'       => $row['nom'],
                         'prenom'    => $row['prenom'],
                         'telephone' => $row['telephone'] ?? null,
-                        'role'      => $row['role'] ?? 'Apprenti',
+                        'role'      => $row['role'] ?? 'Apprentis',
                     ]
                 );
 
@@ -288,11 +288,11 @@ class ParticipantController extends Controller
 
         $colonnes = ['nom', 'prenom', 'mail', 'telephone', 'role', 'ecole', 'formation', 'entreprise', 'date_entree', 'date_sortiee'];
         $exemples = [
-            ['Durand', 'Sophie', 'sophie.durand@email.com', '0601020304', 'Apprenti', 'ENSIIE', 'BTS SIO SLAM', 'Tech Solutions SAS', '2024-09-01', '2026-06-30'],
-            ['Martin', 'Lucas', 'lucas.m@email.com', '0711223344', 'Apprenti', 'Lycée Turgot', 'BTS NDRC', 'Boutique Paris', '2025-09-01', '2027-06-30'],
-            ['Lefebvre', 'Marie', 'm.lefebvre@email.com', '0699887766', 'Formateur', '', '', '', '', ''],
-            ['Dubois', 'Thomas', 'thomas.dubois@email.com', '0655443322', 'Apprenti', 'ENSIIE', 'Licence Pro', 'Agence Web Creativ', '2024-09-01', '2025-06-30'],
-            ['Roux', 'Amélie', 'amelie.r@email.com', '', 'Apprenti', 'École du Web', 'Master Dev', 'Google France', '2024-09-01', '2026-06-30'],
+            ['Durand', 'Sophie', 'sophie.durand@email.com', '0601020304', 'Apprentis', 'ENSIIE', 'BTS SIO SLAM', 'Tech Solutions SAS', '2024-09-01', '2026-06-30'],
+            ['Martin', 'Lucas', 'lucas.m@email.com', '0711223344', 'Apprentis', 'Lycée Turgot', 'BTS NDRC', 'Boutique Paris', '2025-09-01', '2027-06-30'],
+            ['Lefebvre', 'Marie', 'm.lefebvre@email.com', '0699887766', 'Formateurs', '', '', '', '', ''],
+            ['Dubois', 'Thomas', 'thomas.dubois@email.com', '0655443322', 'Apprentis', 'ENSIIE', 'Licence Pro', 'Agence Web Creativ', '2024-09-01', '2025-06-30'],
+            ['Roux', 'Amélie', 'amelie.r@email.com', '', 'Apprentis', 'École du Web', 'Master Dev', 'Google France', '2024-09-01', '2026-06-30'],
         ];
 
         $callback = function () use ($colonnes, $exemples) {

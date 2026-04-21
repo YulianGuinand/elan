@@ -251,7 +251,9 @@ function EntrepriseForm({
         mail: "",
         telephone: "",
         ville: "",
-        interlocuteur: "",
+        nom: "",
+        prenom: "",
+        code_postal: "",
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
@@ -275,6 +277,9 @@ function EntrepriseForm({
                 body: JSON.stringify(form),
             });
             const data = await res.json();
+
+            console.log(data);
+
             if (!res.ok) {
                 setErrors(data.errors ?? {});
                 return;
@@ -336,17 +341,41 @@ function EntrepriseForm({
                         placeholder="Paris"
                     />
                 </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Code postale
+                    </label>
+                    <input
+                        className={inputClass()}
+                        value={form.code_postal}
+                        onChange={set("code_postal")}
+                        placeholder="39000"
+                    />
+                </div>
             </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Interlocuteur
-                </label>
-                <input
-                    className={inputClass()}
-                    value={form.interlocuteur}
-                    onChange={set("interlocuteur")}
-                    placeholder="Marie Dupont"
-                />
+            <div className="flex items-center justify-center gap-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Nom de l&apos;interlocuteur
+                    </label>
+                    <input
+                        className={inputClass()}
+                        value={form.nom}
+                        onChange={set("nom")}
+                        placeholder="Dupont"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Prénom de l&apos;interlocuteur
+                    </label>
+                    <input
+                        className={inputClass()}
+                        value={form.prenom}
+                        onChange={set("prenom")}
+                        placeholder="Marie"
+                    />
+                </div>
             </div>
             <div className="flex gap-3 pt-2">
                 <button

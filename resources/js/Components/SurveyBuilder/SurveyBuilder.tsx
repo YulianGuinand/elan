@@ -17,7 +17,7 @@ import {
     SortableContext,
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Eye, Plus } from "lucide-react";
+import {ArrowLeft, Eye, Plus} from "lucide-react";
 import { useState } from "react";
 import QuestionTypeSelector from "./QuestionTypeSelector";
 import SortableThemeItem from "./SortableThemeItem";
@@ -209,9 +209,9 @@ export default function SurveyBuilder() {
                                         setShowQuestionTypes(false);
                                         setSelectedThemeId(null);
                                     }}
-                                    className="text-sm text-gray-600 hover:text-gray-900"
+                                    className="text-sm text-gray-600 hover:text-gray-900 flex flex-row items-center"
                                 >
-                                    ← Annuler
+                                    <ArrowLeft className="size-4"/> Annuler
                                 </button>
                             </div>
                             <QuestionTypeSelector
