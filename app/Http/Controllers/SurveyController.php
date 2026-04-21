@@ -767,6 +767,14 @@ class SurveyController extends Controller
             }
         }
 
+        $availableRoles = Participant::whereHas('questions', function ($query) use ($enquete) {
+            $query->where('enquete_id', $enquete->id);
+        })
+            ->distinct()
+            ->pluck('role')
+            ->filter() // Enlève les valeurs nulles
+            ->values();
+
         return Inertia::render('Surveys/Responses', [
             'enquete' => $formatedEnquete,
             'participants' => $participants,
@@ -775,7 +783,7 @@ class SurveyController extends Controller
                 'search' => $request->query('search', ''),
                 'role' => $request->query('role', 'Tous'),
             ],
-            'availableRoles' => Participant::distinct()->pluck('role')->filter()->values(),
+            'availableRoles' => $availableRoles,
         ]);
     }
 

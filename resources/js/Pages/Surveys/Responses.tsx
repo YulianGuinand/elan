@@ -4,11 +4,16 @@ import SecondaryButton from "@/Components/SecondaryButton";
 import { QUESTION_TYPES } from "@/constants/questionTypes";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, router } from "@inertiajs/react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronRight, ChevronLeft, Download } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { QuestionEnquete, Survey, ThemeEnquete } from "../../types/surveys";
-import { Participant } from "./Fill";
+import { Question } from "@/types/surveyBuilder";
 import ParticipantSelection from "./Partials/Fill/ParticipantSelection";
+import { Participant } from "./Fill";
+import QuestionTypeSelector from "@/Components/SurveyBuilder/QuestionTypeSelector";
+import { QUESTION_TYPES } from "@/constants/questionTypes";
+import ParticipantCard from "@/Pages/Surveys/Partials/Responses/ParticipantCard";
+import ThemeNavigation from "@/Pages/Surveys/Partials/Responses/ThemeNavigation";
 
 interface PivotReponse {
     valeur: string;
@@ -139,9 +144,7 @@ function ResponseValue({
     const isNumeric = !isNaN(Number(display)) && display.trim() !== "";
     if (isNumeric) {
         return (
-            <span className="text-2xl font-black text-orange-500">
-                {display}
-            </span>
+            <span className="text-2 font-black text-orange-500">{display}</span>
         );
     }
 
@@ -161,6 +164,18 @@ export default function SurveyResponses({
     const [currentThemeIndex, setCurrentThemeIndex] = useState(0);
     const [searchQuery, setSearchQuery] = useState(filters.search || "");
     const [roleFilter, setRoleFilter] = useState(filters.role || "Tous");
+
+    const exportUrl = (() => {
+        const params = new URLSearchParams({
+            period: "30days",
+            survey: enquete.id.toString(),
+            audience: "all",
+            indicator: "overview",
+        });
+        return `/rapports/export?${params.toString()}`;
+    });
+
+    const answersExportUrl = `${exportUrl()}&scope=answers`;
 
     // Même logique de thèmes que SurveyFill
     const themes = useMemo((): ThemeEnquete[] => {
@@ -267,84 +282,11 @@ export default function SurveyResponses({
                         {/* Sidebar gauche */}
                         <div className="lg:col-span-3 flex flex-col gap-6 w-full sticky top-8">
                             <FadeIn delay={100}>
-                                {/* Carte participant */}
-                                <div className="bg-white rounded-lg border border-gray-100 p-5">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-sm font-black text-orange-700 flex-shrink-0">
-                                            {getInitials(selectedParticipant)}
-                                        </div>
-                                        <div>
-                                            <p className="font-black text-gray-900 text-sm">
-                                                {selectedParticipant.prenom}{" "}
-                                                {selectedParticipant.nom}
-                                            </p>
-                                            <p className="text-xs text-gray-500">
-                                                {selectedParticipant.role}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="border-t border-gray-100 pt-3 text-xs text-gray-500 space-y-1">
-                                        {selectedParticipant
-                                            .entreprises?.[0] && (
-                                            <p>
-                                                {
-                                                    selectedParticipant
-                                                        .entreprises[0].nom
-                                                }
-                                            </p>
-                                        )}
-                                        {answeredAt && (
-                                            <p>
-                                                Répondu le{" "}
-                                                <span className="text-gray-700">
-                                                    {formatDate(answeredAt)}
-                                                </span>
-                                            </p>
-                                        )}
-                                    </div>
-                                    <SecondaryButton
-                                        type="button"
-                                        onClick={() => setIsConfirmed(false)}
-                                        className="w-full mt-4 justify-center text-xs"
-                                    >
-                                        Changer de participant
-                                    </SecondaryButton>
-                                </div>
+                                <ParticipantCard participant={selectedParticipant} answeredAt={answeredAt} onChangeParticipant={()=>setIsConfirmed(false)}></ParticipantCard>
                             </FadeIn>
 
                             <FadeIn delay={200}>
-                                {/* Navigation thèmes */}
-                                <div className="bg-white rounded-lg border border-gray-100 p-4">
-                                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
-                                        Thèmes
-                                    </p>
-                                    <nav className="space-y-1">
-                                        {themes.map((theme, idx) => (
-                                            <button
-                                                key={theme.id}
-                                                type="button"
-                                                onClick={() =>
-                                                    setCurrentThemeIndex(idx)
-                                                }
-                                                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-left transition-colors ${
-                                                    idx === currentThemeIndex
-                                                        ? "bg-orange-50 text-orange-700 font-black"
-                                                        : "text-gray-500 hover:bg-gray-50"
-                                                }`}
-                                            >
-                                                <span
-                                                    className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                                                        idx ===
-                                                        currentThemeIndex
-                                                            ? "bg-orange-500"
-                                                            : "bg-gray-300"
-                                                    }`}
-                                                />
-                                                {theme.libelle}
-                                            </button>
-                                        ))}
-                                    </nav>
-                                </div>
+                                <ThemeNavigation themes={themes} currentThemeIndex={currentThemeIndex} setCurrentThemeIndex={setCurrentThemeIndex}></ThemeNavigation>
                             </FadeIn>
                         </div>
 
@@ -478,6 +420,24 @@ export default function SurveyResponses({
                         availableRoles={availableRoles}
                         enquete={enquete}
                     />
+                    <div className="flex items-start justify-between flex-wrap gap-4">
+                        <div className="flex flex-wrap gap-3">
+                            <a
+                                href={`${answersExportUrl}&format=csv`}
+                                className="inline-flex items-center whitespace-nowrap gap-2 px-4 py-2 border border-elan-orange rounded-lg text-sm font-medium text-elan-orange bg-white hover:bg-orange-50 transition-colors"
+                            >
+                                <Download className="w-4 h-4" />
+                                Réponses CSV
+                            </a>
+                            <a
+                                href={`${answersExportUrl}&format=xlsx`}
+                                className="inline-flex items-center whitespace-nowrap gap-2 px-4 py-2 border border-elan-orange rounded-lg text-sm font-medium text-elan-orange bg-white hover:bg-orange-50 transition-colors"
+                            >
+                                <Download className="w-4 h-4" />
+                                Réponses Excel
+                            </a>
+                        </div>
+                    </div>
                 </DashboardLayout>
             )}
         </>
