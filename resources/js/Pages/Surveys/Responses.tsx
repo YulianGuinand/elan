@@ -5,9 +5,12 @@ import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, router } from "@inertiajs/react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Survey, ThemeEnquete } from "../../types/surveys";
+import {QuestionEnquete, Survey, ThemeEnquete} from "../../types/surveys";
+import { Question } from "@/types/surveyBuilder";
 import ParticipantSelection from "./Partials/Fill/ParticipantSelection";
 import { Participant } from "./Fill";
+import QuestionTypeSelector from "@/Components/SurveyBuilder/QuestionTypeSelector";
+import {QUESTION_TYPES} from "@/constants/questionTypes";
 
 interface PivotReponse {
     valeur: string;
@@ -43,13 +46,21 @@ interface Props {
     availableRoles: string[];
 }
 
-function ResponseValue({ pivot }: { pivot: PivotReponse }) {
+const getEmojiForLikert = (index: number, total: number) => {
+    const emojis = ['😡', '😐', '😶', '🙂', '🤩'];
+    const mockupEmojis = ['😫', '☹️', '😐', '🙂', '🤩']; // More like mockup
+    if (total === 5) return mockupEmojis[index];
+    const ratio = index / (total - 1);
+    return mockupEmojis[Math.round(ratio * 4)];
+};
+
+function ResponseValue({ pivot , question }: { pivot: PivotReponse ,question: QuestionEnquete}) {
     if (!pivot?.valeur) {
         return <span className="text-gray-400 italic text-sm">—</span>;
     }
 
     const display = pivot.display_value || pivot.valeur;
-
+    const type = question.type_reponse;
     // Essai de parsing JSON (choix multiples)
     try {
         const parsed = JSON.parse(pivot.valeur);
@@ -70,11 +81,48 @@ function ResponseValue({ pivot }: { pivot: PivotReponse }) {
         }
     } catch {}
 
+    if (type == "likert") {
+
+        return (
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                {Array.from({
+                    length: (question.choix) ? question.choix.length : 0
+                }).map((_, idx) => {
+                    const isSelected = question.choix[idx].id === parseInt(pivot.valeur); // compare against parsed index
+                    return (
+                        <label key={idx} className="cursor-pointer group">
+                            <input
+                                type="radio"
+                                name={`q_${question.id}`}
+                                value={String(idx)}
+                                checked={isSelected}
+                                readOnly // add readOnly since this is display-only
+                                className="sr-only"
+                            />
+                            <div className={`
+                            flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all duration-300 h-full
+                            ${isSelected
+                                ? "border-orange-500 bg-white shadow-md shadow-orange-500/5 ring-4 ring-orange-500/5"
+                                : "border-gray-100 bg-white hover:border-gray-200"}
+                        `}>
+                            <span className={`text-2xl transition-all duration-300 ${isSelected ? "scale-110" : "filter grayscale opacity-40 group-hover:opacity-100 group-hover:grayscale-0"}`}>
+                                {getEmojiForLikert(idx, question.choix?.length || 0)}
+                            </span>
+                                <span className={`text-[10px] font-black text-center uppercase tracking-tighter leading-tight ${isSelected ? "text-gray-900" : "text-gray-400"}`}>
+                                {question.choix ? question.choix[idx].libelle : idx + 1}
+                            </span>
+                            </div>
+                        </label>
+                    );
+                })}
+            </div>
+        );
+    }
     // Valeur simple — numérique ou texte long
     const isNumeric = !isNaN(Number(display)) && display.trim() !== "";
     if (isNumeric) {
         return (
-            <span className="text-2xl font-black text-orange-500">
+            <span className="text-2 font-black text-orange-500">
                 {display}
             </span>
         );
@@ -264,16 +312,21 @@ export default function SurveyResponses({
                                     <div className="divide-y divide-gray-50">
                                         {currentTheme.questions.map((question: any) => {
                                             const pivot = answersByQuestionId[question.id];
+                                            const typeq = answersByQuestionId[question.type];
                                             return (
                                                 <div key={question.id} className="p-6 md:px-8">
                                                     <p className="text-xs text-gray-400 uppercase tracking-wide font-black mb-2">
-                                                        {question.type}
+                                                        {QUESTION_TYPES.map((config) => {
+                                                            if(question.type_reponse === config.type) {
+                                                                return config.label
+                                                            }
+                                                        })}
                                                     </p>
-                                                    <p className="text-sm text-gray-600 mb-3 leading-snug">
+                                                    <p className="text-2xl text-gray-600 mb-3 leading-snug font-bold ">
                                                         {question.libelle}
                                                     </p>
                                                     {pivot ? (
-                                                        <ResponseValue pivot={pivot} />
+                                                        <ResponseValue pivot={pivot} question={question} />
                                                     ) : (
                                                         <span className="text-sm text-gray-300 italic">
                                                             Sans réponse
