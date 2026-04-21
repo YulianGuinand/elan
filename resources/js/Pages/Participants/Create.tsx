@@ -22,7 +22,7 @@ export default function Create({ ecoles, formations, entreprises }: Props) {
         prenom: "",
         mail: "",
         telephone: "",
-        role: "Apprenti",
+        role: "Apprentis",
         ecole_id: "",
         formation_id: "",
         entreprise_id: "",
@@ -212,14 +212,14 @@ export default function Create({ ecoles, formations, entreprises }: Props) {
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none bg-white"
                                     >
                                         <option value="Apprentis">
-                                            Apprenti
+                                            Apprentis
                                         </option>
-                                        <option value="Alumnis">Alumni</option>
+                                        <option value="Alumnis">Alumnis</option>
                                         <option value="Formateurs">
-                                            Formateur
+                                            Formateurs
                                         </option>
                                         <option value="Employeurs">
-                                            Employeur
+                                            Employeurs
                                         </option>
                                     </select>
                                     {errors.role && (
@@ -231,8 +231,8 @@ export default function Create({ ecoles, formations, entreprises }: Props) {
                             </div>
 
                             {/* Renseignements supplémentaires pour Apprentis/Formateurs */}
-                            {(data.role === "Apprenti" ||
-                                data.role === "Formateur") && (
+                            {(data.role === "Apprentis" ||
+                                data.role === "Formateurs") && (
                                 <div className="mt-8 pt-6 border-t border-gray-100">
                                     <div className="flex items-center gap-2 mb-4">
                                         <h3 className="text-lg font-bold text-gray-900">

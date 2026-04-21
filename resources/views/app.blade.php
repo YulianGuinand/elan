@@ -7,9 +7,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- SEO Meta Tags -->
-    <meta name="description"
-        content="Elan - Plateforme de gestion d'enquêtes CFA certifiée Qualiopi pour centres de formation">
-    <meta name="keywords" content="enquête CFA, Qualiopi, centre formation, apprentis, insertion">
+    <meta name="description" content="Elan - Plateforme de gestion d'enquêtes pour centres de formation">
+    <meta name="keywords" content="enquête CFA, centre formation, apprentis, insertion">
     <meta name="author" content="Elan">
     <meta name="theme-color" content="#FF6B35">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -27,7 +26,7 @@
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ config('app.name', 'Elan') }}">
-    <meta name="twitter:description" content="Plateforme de gestion d'enquêtes CFA certifiée Qualiopi">
+    <meta name="twitter:description" content="Plateforme de gestion d'enquêtes pour centres de formation">
     <meta name="twitter:image" content="{{ asset('logo.svg') }}">
 
     <!-- Search Engine Optimization -->

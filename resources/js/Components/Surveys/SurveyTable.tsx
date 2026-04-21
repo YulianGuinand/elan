@@ -83,6 +83,21 @@ export default function SurveyTable({
         }
     };
 
+    const handleDeleteMultiple = () => {
+        if (selected.size === 0) return;
+
+        const count = selected.size;
+        if (
+            confirm(
+                `Supprimer ${count} enquête${count > 1 ? "s" : ""} sélectionnée${count > 1 ? "s" : ""} ?`,
+            )
+        ) {
+            router.post(route("surveys.bulk-destroy"), {
+                ids: Array.from(selected),
+            });
+        }
+    };
+
     if (surveys.length === 0) {
         return (
             <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
@@ -107,12 +122,21 @@ export default function SurveyTable({
                         {selected.size} enquête{selected.size > 1 ? "s" : ""}{" "}
                         sélectionnée{selected.size > 1 ? "s" : ""}
                     </p>
-                    <button
-                        onClick={() => setSelected(new Set())}
-                        className="text-sm text-blue-600 hover:text-blue-800 underline"
-                    >
-                        Désélectionner tout
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleDeleteMultiple}
+                            className="inline-flex items-center gap-2 px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors text-sm font-medium"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                            Supprimer
+                        </button>
+                        <button
+                            onClick={() => setSelected(new Set())}
+                            className="text-sm text-blue-600 hover:text-blue-800 underline"
+                        >
+                            Désélectionner tout
+                        </button>
+                    </div>
                 </div>
             )}
 

@@ -1,6 +1,7 @@
 import { ToastContainer, useToastManager } from "@/Components/Common/Toast";
 import Header from "@/Components/Dashboard/Header";
 import Sidebar from "@/Components/Dashboard/Sidebar";
+import OnboardingStepper from "@/Components/Onboarding/OnboardingStepper";
 import { useUnreadNotificationCount } from "@/Hooks/useUnreadNotificationCount";
 import { PageProps } from "@/types";
 import { usePage } from "@inertiajs/react";
@@ -82,6 +83,9 @@ export default function DashboardLayout({
                     {children}
                 </main>
             </div>
+
+            {/* Onboarding Stepper */}
+            <OnboardingStepper />
         </div>
     );
 }

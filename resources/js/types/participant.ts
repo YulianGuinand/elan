@@ -1,8 +1,8 @@
 export type ParticipantRole =
-    | "apprenant"
-    | "tuteur"
-    | "formateur"
-    | "employeur";
+    | "apprentis"
+    | "alumnis"
+    | "formateurs"
+    | "employeurs";
 
 export interface Participant {
     id?: number;

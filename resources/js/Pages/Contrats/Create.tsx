@@ -79,7 +79,7 @@ export default function Create({
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Participant (Apprenti / Formateur){" "}
+                                            Participant (Apprentis / Formateurs){" "}
                                             <span className="text-red-500">
                                                 *
                                             </span>

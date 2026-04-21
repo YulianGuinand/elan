@@ -4,7 +4,7 @@ import PageHead from "@/Components/Seo/PageHead";
 import Pagination from "@/Components/Surveys/Pagination";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { router } from "@inertiajs/react";
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 interface Notification {
@@ -143,6 +143,21 @@ export default function Notifications({
                     },
                 },
             );
+        }
+    };
+
+    const handleDeleteMultiple = () => {
+        if (selectedNotifications.size === 0) return;
+
+        const count = selectedNotifications.size;
+        if (
+            confirm(
+                `Êtes-vous sûr de vouloir supprimer ${count} notification${count > 1 ? "s" : ""} ?`,
+            )
+        ) {
+            router.post(route("notifications.bulk-destroy"), {
+                ids: Array.from(selectedNotifications),
+            });
         }
     };
 
@@ -306,6 +321,35 @@ export default function Notifications({
 
                     {/* Table */}
                     <FadeIn delay={200}>
+                        {/* Barre d'actions rapides */}
+                        {selectedNotifications.size > 0 && (
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 flex items-center justify-between">
+                                <p className="text-sm text-blue-900 font-medium">
+                                    {selectedNotifications.size} notification
+                                    {selectedNotifications.size > 1 ? "s" : ""}{" "}
+                                    sélectionnée
+                                    {selectedNotifications.size > 1 ? "s" : ""}
+                                </p>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={handleDeleteMultiple}
+                                        className="inline-flex items-center gap-2 px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors text-sm font-medium"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                        Supprimer
+                                    </button>
+                                    <button
+                                        onClick={() =>
+                                            setSelectedNotifications(new Set())
+                                        }
+                                        className="text-sm text-blue-600 hover:text-blue-800 underline"
+                                    >
+                                        Désélectionner tout
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
                         {notifications?.data ? (
                             <NotificationTable
                                 notifications={notifications.data}

@@ -11,7 +11,7 @@ export default function Edit({ participant }: { participant: Participant }) {
         prenom: participant.prenom || "",
         mail: participant.mail || "",
         telephone: participant.telephone || "",
-        role: participant.role || "Apprenti",
+        role: participant.role || "Apprentis",
     });
 
     const submit: FormEventHandler = (e) => {
@@ -139,15 +139,15 @@ export default function Edit({ participant }: { participant: Participant }) {
                                         }
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none bg-white"
                                     >
-                                        <option value="Apprenti">
-                                            Apprenti
+                                        <option value="Apprentis">
+                                            Apprentis
                                         </option>
-                                        <option value="Alumni">Alumni</option>
-                                        <option value="Formateur">
-                                            Formateur
+                                        <option value="Alumnis">Alumni</option>
+                                        <option value="Formateurs">
+                                            Formateurs
                                         </option>
-                                        <option value="Employeur">
-                                            Employeur
+                                        <option value="Employeurs">
+                                            Employeurs
                                         </option>
                                     </select>
                                     {errors.role && (

@@ -21,7 +21,8 @@ export default function Welcome({
         "@context": "https://schema.org",
         "@type": "Organization",
         name: "Elan - CFA Survey Manager",
-        description: "Plateforme de gestion d'enquêtes CFA certifiée Qualiopi",
+        description:
+            "Plateforme de gestion d'enquêtes pour centres de formation",
         url: window.location.origin,
         logo: `${window.location.origin}/logo.svg`,
         sameAs: ["https://www.linkedin.com/company/elan-cfa"],
@@ -56,8 +57,8 @@ export default function Welcome({
         <>
             <PageHead
                 title="Elan - CFA Survey Manager"
-                description="Pilotez vos enquêtes CFA facilement. Plateforme tout-en-un certifiée Qualiopi pour centres de formation d'apprentis. Automatisez enquêtes d'insertion et conformité."
-                keywords="enquête CFA, pilotage enquête, Qualiopi, centre formation, apprentis, insertion professionnelle"
+                description="Pilotez vos enquêtes CFA facilement. Plateforme complète pour centres de formation d'apprentis. Automatisez vos enquêtes d'insertion."
+                keywords="enquête CFA, pilotage enquête, centre formation, apprentis, insertion"
                 ogType="website"
                 ogImage="/logo.svg"
             />
@@ -145,8 +146,8 @@ export default function Welcome({
                             {/* Text Content */}
                             <div className="space-y-8 animate-fadeIn">
                                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-bold uppercase tracking-wider">
-                                    <Shield className="w-3 h-3" />
-                                    Solution certifiée Qualiopi
+                                    <Zap className="w-3 h-3" />
+                                    Solution Innovante
                                 </div>
 
                                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight">
@@ -160,8 +161,8 @@ export default function Welcome({
                                     La plateforme tout-en-un conçue
                                     spécifiquement pour les Centres de Formation
                                     d'Apprentis. Automatisez vos enquêtes
-                                    d'insertion, conformez-vous aux exigences
-                                    Qualiopi et boostez votre taux de réponse.
+                                    d'insertion et boostez votre taux de
+                                    réponse.
                                 </p>
 
                                 <div className="flex flex-col sm:flex-row gap-4">
@@ -255,7 +256,7 @@ export default function Welcome({
                                         7/7
                                     </div>
                                     <div className="text-xs text-gray-500 font-medium">
-                                        Critères Qualiopi
+                                        Critères Clés
                                     </div>
                                 </div>
 
@@ -344,9 +345,7 @@ export default function Welcome({
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-3 text-sm text-gray-300">
                                                 <CheckCircle2 className="w-5 h-5 text-green-400" />
-                                                <span>
-                                                    Audit Qualiopi Ready
-                                                </span>
+                                                <span>Audit Ready</span>
                                             </div>
                                             <div className="flex items-center gap-3 text-sm text-gray-300">
                                                 <CheckCircle2 className="w-5 h-5 text-green-400" />
@@ -622,8 +621,7 @@ export default function Welcome({
                                 <p className="text-sm text-gray-500">
                                     Solution de gestion d&apos;enquêtes dédiée
                                     aux CFA. Facilitez le suivi de
-                                    l&apos;insertion professionnelle et la
-                                    conformité Qualiopi.
+                                    l&apos;insertion professionnelle.
                                 </p>
                             </div>
                             <div>

@@ -22,9 +22,9 @@ const formatDate = (date: string | null) => {
 
 const getRoleBadgeColor = (role: string) => {
     switch (role.toLowerCase()) {
-        case "apprenti":
+        case "apprentis":
             return "bg-blue-100 text-blue-800";
-        case "formateur":
+        case "formateurs":
             return "bg-purple-100 text-purple-800";
         default:
             return "bg-gray-100 text-gray-800";

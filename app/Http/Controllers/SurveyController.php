@@ -323,6 +323,39 @@ class SurveyController extends Controller
     }
 
     /**
+     * Supprime plusieurs enquetes selectionnees.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:enquetes,id'
+        ]);
+
+        $query = Enquete::whereIn('id', $request->ids);
+
+        // Si pas superadmin, l'admin ne peut supprimer que ses propres enquêtes
+        if (!$user->isSuperAdmin()) {
+            $query->where('utilisateur_id', $user->id);
+        }
+
+        $enquetes = $query->get();
+
+        // Supprimer les enquêtes
+        foreach ($enquetes as $enquete) {
+            $enquete->delete();
+        }
+
+        // Supprimer les thèmes orphelins
+        Theme::doesntHave('questions')->delete();
+
+        return back()
+            ->with('success', count($enquetes) . ' enquête' . (count($enquetes) > 1 ? 's' : '') . ' supprimée' . (count($enquetes) > 1 ? 's' : '') . '.');
+    }
+
+    /**
      * Affiche le formulaire de remplissage avec les vraies questions.
      */
     public function fill(Request $request, string $id): Response

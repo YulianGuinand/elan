@@ -16,7 +16,7 @@ const initialFormState: Participant = {
     nom: "",
     email: "",
     telephone: "",
-    role: "apprenant",
+    role: "apprentis",
     programme_formation: "",
 };
 
@@ -56,7 +56,7 @@ export default function ManualEntryForm({
             newErrors.role = "Le rôle est requis";
         }
 
-        if (formData.role === "apprenant" && !formData.programme_formation) {
+        if (formData.role === "apprentis" && !formData.programme_formation) {
             newErrors.programme_formation =
                 "Le programme de formation est requis pour les apprenants";
         }
@@ -189,10 +189,10 @@ export default function ManualEntryForm({
                         }
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-elan-orange focus:ring-elan-orange"
                     >
-                        <option value="apprenant">Apprenant</option>
-                        <option value="tuteur">Tuteur</option>
-                        <option value="formateur">Formateur</option>
-                        <option value="employeur">Employeur</option>
+                        <option value="apprentis">Apprentis</option>
+                        <option value="alumnis">Alumnis</option>
+                        <option value="formateurs">Formateurs</option>
+                        <option value="employeurs">Employeurs</option>
                     </select>
                     {errors.role && (
                         <p className="mt-1 text-sm text-red-600">
@@ -203,7 +203,7 @@ export default function ManualEntryForm({
             </div>
 
             {/* Programme de formation (conditonnel) */}
-            {formData.role === "apprenant" && (
+            {formData.role === "apprentis" && (
                 <div>
                     <InputLabel
                         htmlFor="programme"
@@ -218,18 +218,6 @@ export default function ManualEntryForm({
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-elan-orange focus:ring-elan-orange"
                     >
                         <option value="">Sélectionner un programme</option>
-                        <option value="BTS Management Commercial Opérationnel">
-                            BTS Management Commercial Opérationnel
-                        </option>
-                        <option value="BTS Négociation et Digitalisation">
-                            BTS Négociation et Digitalisation
-                        </option>
-                        <option value="BTS Comptabilité et Gestion">
-                            BTS Comptabilité et Gestion
-                        </option>
-                        <option value="BTS Assistant de Gestion PME-PMI">
-                            BTS Assistant de Gestion PME-PMI
-                        </option>
                     </select>
                     {errors.programme_formation && (
                         <p className="mt-1 text-sm text-red-600">

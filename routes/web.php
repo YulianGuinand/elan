@@ -81,6 +81,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/{id}/modifier', [SurveyController::class, 'update'])
             ->name('surveys.update')->middleware(['is_admin']);
 
+        // Supprimer plusieurs enquêtes (protégé par is_admin)
+        Route::post('/bulk-destroy', [SurveyController::class, 'bulkDestroy'])
+            ->name('surveys.bulk-destroy')->middleware(['is_admin']);
+
         // Supprimer toutes les enquêtes (superadmin uniquement)
         Route::delete('/tout', [SurveyController::class, 'destroyAll'])
             ->name('surveys.destroy-all')->middleware(['is_superadmin']);
@@ -265,6 +269,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::patch('/notifications/mark-all-as-read', [NotificationsController::class, 'markAllAsRead'])->middleware(['auth'])
         ->name('notifications.mark-all-as-read');
+
+    Route::post('/notifications/bulk-destroy', [NotificationsController::class, 'bulkDestroy'])->middleware(['auth'])
+        ->name('notifications.bulk-destroy');
 
     Route::delete('/notifications/{notification}', [NotificationsController::class, 'destroy'])->middleware(['auth'])
         ->name('notifications.destroy');

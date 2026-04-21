@@ -1,8 +1,9 @@
+import OnboardingReset from "@/Components/Onboarding/OnboardingReset";
 import {
     GeneralSettings as GeneralSettingsType,
     UserSettings,
 } from "@/types/settings";
-import { Calendar, Mail, User } from "lucide-react";
+import { Calendar, HelpCircle, Mail, User } from "lucide-react";
 
 interface GeneralSettingsProps {
     settings: GeneralSettingsType;
@@ -81,6 +82,23 @@ export default function GeneralSettings({
                         </p>
                     </div>
                 </div>
+            </div>
+
+            {/* Tutoriel et Aide */}
+            <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+                <div className="flex items-center gap-2 mb-4">
+                    <HelpCircle className="h-5 w-5 text-blue-600" />
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                        Tutoriel et Aide
+                    </h3>
+                </div>
+                <p className="text-gray-600 text-sm mb-4">
+                    Si vous avez manqué le tutoriel initial, vous pouvez le
+                    relancer à tout moment pour apprendre comment créer une
+                    formation, une entreprise, une école, ajouter des
+                    participants et créer votre première enquête.
+                </p>
+                <OnboardingReset />
             </div>
         </div>
     );

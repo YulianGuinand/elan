@@ -73,10 +73,10 @@ function getCsrf(): string {
 }
 
 const roleBadge: Record<string, string> = {
-    Apprenti: "bg-blue-100 text-blue-700",
-    Alumni: "bg-green-100 text-green-700",
-    Formateur: "bg-purple-100 text-purple-700",
-    Employeur: "bg-orange-100 text-orange-700",
+    Apprentis: "bg-blue-100 text-blue-700",
+    Alumnis: "bg-green-100 text-green-700",
+    Formateurs: "bg-purple-100 text-purple-700",
+    Employeurs: "bg-orange-100 text-orange-700",
 };
 
 // ─── Composant principal ────
