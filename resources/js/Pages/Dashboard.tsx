@@ -54,7 +54,11 @@ export default function Dashboard({
                     <FadeIn delay={0}>
                         <WelcomeBanner
                             userName={userName}
-                            message={`Vos enquêtes sont performantes. Le taux de réponse moyen est de ${tauxParticipation}%.`}
+                            message={
+                                tauxParticipation > 50
+                                    ? `Vos enquêtes sont performantes. Le taux de réponse moyen est de ${tauxParticipation}%.`
+                                    : `Le taux de réponse est de ${tauxParticipation}%.`
+                            }
                         />
                     </FadeIn>
 
