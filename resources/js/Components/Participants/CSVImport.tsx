@@ -94,10 +94,10 @@ export default function CSVImport({
 
                     if (
                         ![
-                            "apprenant",
-                            "tuteur",
-                            "formateur",
-                            "employeur",
+                            "apprentis",
+                            "alumnis",
+                            "formateurs",
+                            "employeurs",
                         ].includes(participant.role)
                     ) {
                         parseErrors.push({
@@ -105,7 +105,7 @@ export default function CSVImport({
                             field: "role",
                             message: `Ligne ${
                                 index + 1
-                            }: Rôle invalide (doit être: apprenant, tuteur, formateur ou employeur)`,
+                            }: Rôle invalide (doit être: apprentis, alumnis, formateurs ou employeurs)`,
                         });
                     }
 
@@ -136,7 +136,7 @@ export default function CSVImport({
 
     const downloadTemplate = () => {
         const template = `prenom,nom,email,telephone,role,programme_formation
-Jean,Dupont,jean.dupont@exemple.fr,0612345678,apprenant,BTS Management Commercial Opérationnel
+Jean,Dupont,jean.dupont@exemple.fr,0612345678,apprentis,BTS Management Commercial Opérationnel
 Marie,Martin,marie.martin@exemple.fr,0623456789,tuteur,`;
 
         const blob = new Blob([template], { type: "text/csv" });
@@ -270,10 +270,10 @@ Marie,Martin,marie.martin@exemple.fr,0623456789,tuteur,`;
                                         ✓ Oui
                                     </td>
                                     <td className="px-3 py-2 text-gray-600 border-r text-xs">
-                                        apprenant, tuteur, formateur, employeur
+                                        apprentis, alumnis, formateurs, employeurs
                                     </td>
                                     <td className="px-3 py-2 text-gray-600 font-mono">
-                                        apprenant
+                                        apprentis
                                     </td>
                                 </tr>
                                 <tr className="bg-gray-50">
@@ -303,7 +303,7 @@ Marie,Martin,marie.martin@exemple.fr,0623456789,tuteur,`;
                             prenom,nom,email,telephone,role,programme_formation
                         </div>
                         <div>
-                            Jean,Dupont,jean.dupont@exemple.fr,0612345678,apprenant,BTS
+                            Jean,Dupont,jean.dupont@exemple.fr,0612345678,apprentis,BTS
                             MCO
                         </div>
                         <div>

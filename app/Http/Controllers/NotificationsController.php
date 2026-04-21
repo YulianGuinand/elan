@@ -150,4 +150,30 @@ class NotificationsController extends Controller
 
         return back()->with('success', 'Notification supprimée.');
     }
+
+    /**
+     * Supprimer plusieurs notifications sélectionnées
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:notifications,id'
+        ]);
+
+        // Récupérer les notifications et vérifier qu'elles appartiennent à l'utilisateur
+        $notifications = Notification::whereIn('id', $request->ids)
+            ->where('user_id', $user->id)
+            ->get();
+
+        // Supprimer les notifications
+        foreach ($notifications as $notification) {
+            $notification->delete();
+        }
+
+        return back()
+            ->with('success', count($notifications) . ' notification' . (count($notifications) > 1 ? 's' : '') . ' supprimée' . (count($notifications) > 1 ? 's' : '') . '.');
+    }
 }

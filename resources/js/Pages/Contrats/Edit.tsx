@@ -1,7 +1,7 @@
 import FadeIn from "@/Components/Animations/FadeIn";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, useForm } from "@inertiajs/react";
-import { Edit } from "lucide-react";
+import { ChevronLeft, Edit } from "lucide-react";
 
 interface Option {
     id: number;
@@ -65,6 +65,7 @@ export default function EditContrat({
                     { label: "Modifier" },
                 ]}
                 actionButton={{
+                    icon: <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />,
                     label: "Retour",
                     onClick: () => window.history.back(),
                 }}
@@ -96,7 +97,7 @@ export default function EditContrat({
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Participant (Apprenti / Formateur){" "}
+                                            Participant (Apprentis / Formateurs){" "}
                                             <span className="text-red-500">
                                                 *
                                             </span>

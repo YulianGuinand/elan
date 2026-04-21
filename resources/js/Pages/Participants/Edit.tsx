@@ -2,7 +2,7 @@ import FadeIn from "@/Components/Animations/FadeIn";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Participant } from "@/types/participants";
 import { Head, useForm } from "@inertiajs/react";
-import { Save } from "lucide-react";
+import { ChevronLeft, Save } from "lucide-react";
 import { FormEventHandler } from "react";
 
 export default function Edit({ participant }: { participant: Participant }) {
@@ -11,7 +11,7 @@ export default function Edit({ participant }: { participant: Participant }) {
         prenom: participant.prenom || "",
         mail: participant.mail || "",
         telephone: participant.telephone || "",
-        role: participant.role || "Apprenti",
+        role: participant.role || "Apprentis",
     });
 
     const submit: FormEventHandler = (e) => {
@@ -34,6 +34,7 @@ export default function Edit({ participant }: { participant: Participant }) {
                     { label: `${participant.prenom} ${participant.nom}` },
                 ]}
                 actionButton={{
+                    icon: <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />,
                     label: "Retour à la liste",
                     onClick: () => window.history.back(),
                 }}
@@ -138,15 +139,15 @@ export default function Edit({ participant }: { participant: Participant }) {
                                         }
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-elan-orange focus:border-transparent outline-none bg-white"
                                     >
-                                        <option value="Apprenti">
-                                            Apprenti
+                                        <option value="Apprentis">
+                                            Apprentis
                                         </option>
-                                        <option value="Alumni">Alumni</option>
-                                        <option value="Formateur">
-                                            Formateur
+                                        <option value="Alumnis">Alumni</option>
+                                        <option value="Formateurs">
+                                            Formateurs
                                         </option>
-                                        <option value="Employeur">
-                                            Employeur
+                                        <option value="Employeurs">
+                                            Employeurs
                                         </option>
                                     </select>
                                     {errors.role && (

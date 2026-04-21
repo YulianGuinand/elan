@@ -1,7 +1,7 @@
 import FadeIn from "@/Components/Animations/FadeIn";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, router, useForm } from "@inertiajs/react";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, ChevronLeft, Save } from "lucide-react";
 import { FormEventHandler } from "react";
 
 interface Ecole {
@@ -37,6 +37,7 @@ export default function Edit({ ecole }: { ecole: Ecole }) {
                     { label: "Modifier" },
                 ]}
                 actionButton={{
+                    icon: <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />,
                     label: "Retour",
                     onClick: () => window.history.back(),
                 }}

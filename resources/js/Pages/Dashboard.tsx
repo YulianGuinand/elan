@@ -4,6 +4,7 @@ import CircularProgress from "@/Components/Dashboard/CircularProgress";
 import ProgressBar from "@/Components/Dashboard/ProgressBar";
 import StatsCard from "@/Components/Dashboard/StatsCard";
 import WelcomeBanner from "@/Components/Dashboard/WelcomeBanner";
+import PageHead from "@/Components/Seo/PageHead";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import {
     ParticipationData,
@@ -11,7 +12,7 @@ import {
     StatCard,
     SurveyItem,
 } from "@/types/dashboard";
-import { Head, router } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 
 interface DashboardProps {
     stats: StatCard[];
@@ -32,7 +33,10 @@ export default function Dashboard({
 }: DashboardProps) {
     return (
         <>
-            <Head title="Performance des Enquêtes" />
+            <PageHead
+                title="Tableau de Bord"
+                description="Suivi en temps réel de vos enquêtes CFA et statistiques d'insertion. Performance, participation et conformité Qualiopi."
+            />
 
             <DashboardLayout
                 title="Performance des Enquêtes"
@@ -50,7 +54,11 @@ export default function Dashboard({
                     <FadeIn delay={0}>
                         <WelcomeBanner
                             userName={userName}
-                            message={`Vos enquêtes sont performantes. Le taux de réponse moyen est de ${tauxParticipation}%.`}
+                            message={
+                                tauxParticipation > 50
+                                    ? `Vos enquêtes sont performantes. Le taux de réponse moyen est de ${tauxParticipation}%.`
+                                    : `Le taux de réponse est de ${tauxParticipation}%.`
+                            }
                         />
                     </FadeIn>
 

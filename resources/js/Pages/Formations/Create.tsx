@@ -1,7 +1,7 @@
 import FadeIn from "@/Components/Animations/FadeIn";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, useForm } from "@inertiajs/react";
-import { BookOpen } from "lucide-react";
+import { BookOpen, ChevronLeft } from "lucide-react";
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({
@@ -25,6 +25,7 @@ export default function Create() {
                     { label: "Ajouter" },
                 ]}
                 actionButton={{
+                    icon: <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />,
                     label: "Retour",
                     onClick: () => window.history.back(),
                 }}

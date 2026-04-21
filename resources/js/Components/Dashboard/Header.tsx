@@ -1,5 +1,6 @@
 import { Link } from "@inertiajs/react";
 import { Menu, Plus } from "lucide-react";
+import { ReactElement } from "react";
 
 interface BreadcrumbItem {
     label: string;
@@ -11,6 +12,7 @@ interface HeaderProps {
     title: string;
     breadcrumbs?: BreadcrumbItem[];
     actionButton?: {
+        icon?: ReactElement;
         label: string;
         href?: string;
         onClick?: () => void;
@@ -90,7 +92,9 @@ export default function Header({
                         onClick={actionButton.onClick}
                         className="bg-elan-orange hover:bg-elan-orange/90 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-medium flex items-center gap-2 transition-colors shadow-sm text-sm sm:text-base flex-shrink-0"
                     >
-                        <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                        {actionButton.icon ?? (
+                            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                        )}
                         <span className="hidden sm:inline">
                             {actionButton.label}
                         </span>

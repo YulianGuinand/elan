@@ -10,6 +10,8 @@ class Reponse extends Model
 {
     use HasFactory;
 
+    protected $table = 'repondre';
+
     protected $fillable = [
         'question_id',
         'participant_id',

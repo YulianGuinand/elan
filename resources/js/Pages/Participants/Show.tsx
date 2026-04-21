@@ -5,6 +5,7 @@ import { Head, router } from "@inertiajs/react";
 import {
     Briefcase,
     Building2,
+    ChevronLeft,
     Edit,
     GraduationCap,
     Mail,
@@ -31,6 +32,7 @@ export default function Show({ participant }: { participant: Participant }) {
                     { label: `${participant.prenom} ${participant.nom}` },
                 ]}
                 actionButton={{
+                    icon: <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />,
                     label: "Retour",
                     onClick: () => window.history.back(),
                 }}

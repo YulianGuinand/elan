@@ -1,5 +1,6 @@
 import FadeIn from "@/Components/Animations/FadeIn";
 import Modal from "@/Components/Modal";
+import PageHead from "@/Components/Seo/PageHead";
 import Pagination from "@/Components/Students/Pagination";
 import StudentCsvImport from "@/Components/Students/StudentCsvImport";
 import StudentFilterBar from "@/Components/Students/StudentFilterBar";
@@ -11,7 +12,7 @@ import {
     PaginatedParticipants,
     ParticipantFilters,
 } from "@/types/participants";
-import { Head, router, usePage } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import { Upload } from "lucide-react";
 import { useState } from "react";
 
@@ -71,7 +72,11 @@ export default function Students({
 
     return (
         <>
-            <Head title="Liste des Participants" />
+            <PageHead
+                title="Gestion des Participants"
+                description="Gérez la liste complète des participants à vos enquêtes. Import CSV, filtres et statistiques."
+                keywords="participants, apprentis, étudiants, gestion"
+            />
 
             <DashboardLayout
                 title="Liste des Participants"

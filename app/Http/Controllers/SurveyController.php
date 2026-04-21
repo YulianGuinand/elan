@@ -169,14 +169,15 @@ class SurveyController extends Controller
     public function edit(string $id): Response
     {
         $user = Auth::user();
-        $enqueteQuery = Enquete::with(['questions.type_reponse', 'questions.choix', 'questions.theme'])
-            ->where('id', $id);
 
-        if (! $user->isSuperAdmin()) {
-            $enqueteQuery->where('utilisateur_id', $user->id);
+        // Trouver l'enquête
+        $enquete = Enquete::with(['questions.type_reponse', 'questions.choix', 'questions.theme'])
+            ->findOrFail($id);
+
+        // Vérifier les permissions
+        if (! $user->isSuperAdmin() && $enquete->utilisateur_id !== $user->id) {
+            abort(403);
         }
-
-        $enquete = $enqueteQuery->firstOrFail();
 
         $typesReponse = Type_Reponse::all(['id', 'libelle']);
 
@@ -305,8 +306,7 @@ class SurveyController extends Controller
 
         $enquete->delete();
 
-        // Nettoyage des thèmes orphelins après suppression de l'enquête
-        \App\Models\Theme::doesntHave('questions')->delete();
+        Theme::doesntHave('questions')->delete();
 
         return redirect()->route('surveys.index')
             ->with('success', 'Enquête supprimée.');
@@ -324,12 +324,50 @@ class SurveyController extends Controller
     }
 
     /**
+     * Supprime plusieurs enquetes selectionnees.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:enquetes,id'
+        ]);
+
+        $query = Enquete::whereIn('id', $request->ids);
+
+        // Si pas superadmin, l'admin ne peut supprimer que ses propres enquêtes
+        if (!$user->isSuperAdmin()) {
+            $query->where('utilisateur_id', $user->id);
+        }
+
+        $enquetes = $query->get();
+
+        // Supprimer les enquêtes
+        foreach ($enquetes as $enquete) {
+            $enquete->delete();
+        }
+
+        // Supprimer les thèmes orphelins
+        Theme::doesntHave('questions')->delete();
+
+        return back()
+            ->with('success', count($enquetes) . ' enquête' . (count($enquetes) > 1 ? 's' : '') . ' supprimée' . (count($enquetes) > 1 ? 's' : '') . '.');
+    }
+
+    /**
      * Affiche le formulaire de remplissage avec les vraies questions.
      */
     public function fill(Request $request, string $id): Response
     {
         $enquete = Enquete::with(['questions.type_reponse', 'questions.choix', 'questions.theme'])
             ->findOrFail($id);
+
+        // Vérifier que l'enquête est active
+        if (! $enquete->isActive()) {
+            abort(404);
+        }
 
         $search = $request->input('search');
         $roleFilter = $request->input('role', 'Tous');

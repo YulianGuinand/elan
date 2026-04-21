@@ -2,7 +2,7 @@ import ContractsTable from "@/Components/Ecoles/ContractsTable";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { PageProps } from "@/types";
 import { Head, router, usePage } from "@inertiajs/react";
-import { Edit, MapPin } from "lucide-react";
+import { ChevronLeft, Edit, MapPin } from "lucide-react";
 
 interface Contract {
     id: number;
@@ -45,6 +45,7 @@ export default function Show({
                     { label: ecole.libelle },
                 ]}
                 actionButton={{
+                    icon: <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />,
                     label: "Retour",
                     onClick: () => window.history.back(),
                 }}

@@ -3,6 +3,7 @@ import DonutChart from "@/Components/Reports/DonutChart";
 import LineChart from "@/Components/Reports/LineChart";
 import ReportFilterBar from "@/Components/Reports/ReportFilterBar";
 import ReportKPICard from "@/Components/Reports/ReportKPICard";
+import PageHead from "@/Components/Seo/PageHead";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import {
     ChartDataPoint,
@@ -11,7 +12,7 @@ import {
     ReportKPI,
     ReportSurveyOption,
 } from "@/types/reports";
-import { Head, router } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import { Download } from "lucide-react";
 import { useMemo } from "react";
 
@@ -55,7 +56,11 @@ export default function Reports({
 
     return (
         <>
-            <Head title="Rapports Analytiques" />
+            <PageHead
+                title="Rapports Analytiques"
+                description="Analysez les données de vos enquêtes. Participations, satisfaction, tendances et insights détaillés."
+                keywords="rapports, statistiques, analyse enquête, KPI"
+            />
 
             <DashboardLayout
                 title="Rapports Analytiques"
