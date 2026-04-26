@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'logout',
             'register',
         ]);
+        $middleware->trustProxies(at: '*');
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
