@@ -50,7 +50,7 @@ export default function Fill({ nom, prenom, enquete, jeton }: Props) {
                 .map((q) => {
                     let val: any = "";
                     if (q.type_reponse === "checkbox") val = [];
-                    if (q.type_reponse === "likert") val = 5;
+                    // Pour Likert, pas d'initialisation (reste vide) - sera l'ID du choix quand sélectionné
                     return {
                         question_id: q.id,
                         valeur: val,

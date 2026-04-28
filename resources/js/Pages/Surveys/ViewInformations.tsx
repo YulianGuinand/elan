@@ -9,6 +9,7 @@ import {
     Clock,
     Eye,
     Mail,
+    Phone,
     Search,
     Send,
     Users,
@@ -25,6 +26,8 @@ export interface Participant {
     has_responded: boolean;
     status_envoi?: string | null;
     date_envoi?: string | null;
+    canal?: string | null;
+    global_status?: string;
     entreprises?: { nom: string }[];
 }
 
@@ -66,9 +69,10 @@ function parseDateOnly(dateString: string | null): Date {
         return new Date();
     }
 
-    const year = parseInt(parts[0], 10);
+    // Format DD/MM/YYYY (français)
+    const day = parseInt(parts[0], 10);
     const month = parseInt(parts[1], 10);
-    const day = parseInt(parts[2], 10);
+    const year = parseInt(parts[2], 10);
 
     if (isNaN(year) || isNaN(month) || isNaN(day)) {
         return new Date();
@@ -196,9 +200,7 @@ export default function SurveyViewInformation({
             const matchesRole = roleFilter === "Tous" || p.role === roleFilter;
 
             const matchesStatus =
-                statusFilter === "Tous" ||
-                (statusFilter === "Répondu" && p.has_responded) ||
-                (statusFilter === "En attente" && !p.has_responded);
+                statusFilter === "Tous" || p.global_status === statusFilter;
 
             return matchesSearch && matchesRole && matchesStatus;
         });
@@ -272,6 +274,19 @@ export default function SurveyViewInformation({
                 },
             );
         }
+    };
+
+    const handleMarkPhoneContact = () => {
+        if (selectedParticipants.length === 0) {
+            alert("Veuillez sélectionner au moins un participant");
+            return;
+        }
+
+        // Rediriger vers la page de remplissage pour le premier participant sélectionné
+        window.location.href = route("survey.fill.admin", {
+            id: enquete.id,
+            participant_id: selectedParticipants[0],
+        });
     };
 
     return (
@@ -486,18 +501,32 @@ export default function SurveyViewInformation({
                             <div className="flex gap-2">
                                 {!isSendingMails &&
                                     selectedParticipants.length !== 0 && (
-                                        <button
-                                            onClick={handleRelance}
-                                            disabled={
-                                                isSendingMails ||
-                                                selectedParticipants.length ===
-                                                    0
-                                            }
-                                            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors text-sm font-medium"
-                                        >
-                                            <Send className="w-4 h-4" />
-                                            Relancer
-                                        </button>
+                                        <>
+                                            <button
+                                                onClick={handleMarkPhoneContact}
+                                                disabled={
+                                                    isSendingMails ||
+                                                    selectedParticipants.length ===
+                                                        0
+                                                }
+                                                className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white hover:bg-purple-700 rounded-lg transition-colors text-sm font-medium"
+                                            >
+                                                <Phone className="w-4 h-4" />
+                                                Remplir par téléphone
+                                            </button>
+                                            <button
+                                                onClick={handleRelance}
+                                                disabled={
+                                                    isSendingMails ||
+                                                    selectedParticipants.length ===
+                                                        0
+                                                }
+                                                className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors text-sm font-medium"
+                                            >
+                                                <Send className="w-4 h-4" />
+                                                Relancer par mail
+                                            </button>
+                                        </>
                                     )}
                                 <button
                                     onClick={handleSendInvitations}
@@ -580,8 +609,14 @@ export default function SurveyViewInformation({
                                 className="px-4 pr-10 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             >
                                 <option value="Tous">Tous les statuts</option>
-                                <option value="Répondu">Répondus</option>
+                                <option value="Répondu">Répondu</option>
                                 <option value="En attente">En attente</option>
+                                <option value="Relancé par mail">
+                                    Relancé par mail
+                                </option>
+                                <option value="Relancé par téléphone">
+                                    Relancé par téléphone
+                                </option>
                             </select>
                         </div>
 
@@ -613,10 +648,10 @@ export default function SurveyViewInformation({
                                             Rôle
                                         </th>
                                         <th className="px-4 py-3 text-center font-semibold text-gray-900">
-                                            Réponse
+                                            Statut
                                         </th>
                                         <th className="px-4 py-3 text-center font-semibold text-gray-900">
-                                            Mail envoyé
+                                            Date
                                         </th>
                                     </tr>
                                 </thead>
@@ -678,10 +713,23 @@ export default function SurveyViewInformation({
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3 text-center">
-                                                {participant.has_responded ? (
+                                                {participant.global_status ===
+                                                "Répondu" ? (
                                                     <span className="inline-flex items-center gap-1 text-green-600 font-medium">
                                                         <CheckCheck className="w-4 h-4" />
                                                         Répondu
+                                                    </span>
+                                                ) : participant.global_status ===
+                                                  "Relancé par mail" ? (
+                                                    <span className="inline-flex items-center gap-1 text-blue-600 font-medium">
+                                                        <Mail className="w-4 h-4" />
+                                                        Mail
+                                                    </span>
+                                                ) : participant.global_status ===
+                                                  "Relancé par téléphone" ? (
+                                                    <span className="inline-flex items-center gap-1 text-purple-600 font-medium">
+                                                        <Phone className="w-4 h-4" />
+                                                        Téléphone
                                                     </span>
                                                 ) : (
                                                     <span className="inline-flex items-center gap-1 text-orange-600 font-medium">
@@ -690,17 +738,12 @@ export default function SurveyViewInformation({
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className="px-4 py-3 text-center">
-                                                {participant.status_envoi ===
-                                                "sent" ? (
-                                                    <span className="text-xs text-gray-500">
-                                                        Envoyé
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-xs text-gray-400">
-                                                        Non envoyé
-                                                    </span>
-                                                )}
+                                            <td className="px-4 py-3 text-center text-xs text-gray-500">
+                                                {participant.date_envoi
+                                                    ? formatDate(
+                                                          participant.date_envoi,
+                                                      )
+                                                    : "—"}
                                             </td>
                                         </tr>
                                     ))}

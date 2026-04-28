@@ -52,7 +52,7 @@ class Enquete extends Model
     public function participants(): BelongsToMany
     {
         return $this->belongsToMany(Participant::class, 'participer')
-            ->withPivot('jeton', 'statut_envoi', 'date_envoi')
+            ->withPivot('jeton', 'statut_envoi', 'date_envoi', 'canal')
             ->withTimestamps();
     }
 

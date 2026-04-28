@@ -3,7 +3,7 @@ import PrimaryButton from "@/Components/PrimaryButton";
 import SecondaryButton from "@/Components/SecondaryButton";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, router } from "@inertiajs/react";
-import { ChevronRight, Send } from "lucide-react";
+import { ChevronRight, Phone, Send } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Survey, ThemeEnquete } from "../../types/surveys";
 import FillSidebar from "./Partials/Fill/FillSidebar";
@@ -38,6 +38,7 @@ interface Props {
         role: string;
     };
     availableRoles: string[];
+    preSelectedParticipantId?: number;
 }
 
 export default function SurveyFill({
@@ -45,6 +46,7 @@ export default function SurveyFill({
     participants,
     filters,
     availableRoles,
+    preSelectedParticipantId,
 }: Props) {
     const [selectedParticipant, setSelectedParticipant] =
         useState<Participant | null>(null);
@@ -57,6 +59,19 @@ export default function SurveyFill({
     const [roleFilter, setRoleFilter] = useState(filters.role || "Tous");
 
     const totalQuestions = (enquete.questions || []).length;
+
+    // Si mode admin avec pré-sélection, auto-sélectionner le participant
+    useEffect(() => {
+        if (preSelectedParticipantId && !isParticipantConfirmed) {
+            const participant = participants.data.find(
+                (p) => p.id === preSelectedParticipantId,
+            );
+            if (participant) {
+                setSelectedParticipant(participant);
+                setIsParticipantConfirmed(true);
+            }
+        }
+    }, [preSelectedParticipantId, participants.data, isParticipantConfirmed]);
 
     const themes = useMemo((): ThemeEnquete[] => {
         const surveyWithThemes = enquete as Survey & {
@@ -192,10 +207,44 @@ export default function SurveyFill({
             {
                 participant_id: selectedParticipant?.id,
                 reponses: formattedAnswers,
+                phone_no_response: false,
             },
             {
                 onError: (errors: any) => {
-                    // Gestion des erreurs 419
+                    if (
+                        errors[419] ||
+                        window.location.pathname.includes("419")
+                    ) {
+                        alert(
+                            "Votre session a expiré. Veuillez recharger la page et soumettre à nouveau.",
+                        );
+                        window.location.reload();
+                    }
+                },
+            },
+        );
+    };
+
+    const handleSubmitPhoneNoResponse = (e: React.FormEvent) => {
+        e.preventDefault();
+        const formattedAnswers = { ...answers };
+        Object.keys(formattedAnswers).forEach((key) => {
+            if (Array.isArray(formattedAnswers[Number(key)])) {
+                formattedAnswers[Number(key)] = JSON.stringify(
+                    formattedAnswers[Number(key)],
+                );
+            }
+        });
+
+        router.post(
+            route("surveys.fill.submit", { id: enquete.id }),
+            {
+                participant_id: selectedParticipant?.id,
+                reponses: formattedAnswers,
+                phone_no_response: true,
+            },
+            {
+                onError: (errors: any) => {
                     if (
                         errors[419] ||
                         window.location.pathname.includes("419")
@@ -226,7 +275,9 @@ export default function SurveyFill({
                             label: "Sélection",
                             onClick: () => setIsParticipantConfirmed(false),
                         },
-                        { label: "Saisie" },
+                        {
+                            label: "Saisie",
+                        },
                     ]}
                 >
                     <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 w-full items-start">
@@ -335,13 +386,26 @@ export default function SurveyFill({
                                                         <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                                     </PrimaryButton>
                                                 ) : (
-                                                    <PrimaryButton
-                                                        type="submit"
-                                                        className="flex flex-row"
-                                                    >
-                                                        <Send className="w-4 h-4 mr-3.5" />
-                                                        Soumettre l&apos;enquête
-                                                    </PrimaryButton>
+                                                    <div className="flex gap-3">
+                                                        <button
+                                                            type="button"
+                                                            onClick={
+                                                                handleSubmitPhoneNoResponse
+                                                            }
+                                                            className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors text-sm font-medium"
+                                                        >
+                                                            <Phone className="w-4 h-4" />
+                                                            Téléphone - Pas de
+                                                            réponse
+                                                        </button>
+                                                        <PrimaryButton
+                                                            type="submit"
+                                                            className="flex flex-row"
+                                                        >
+                                                            <Send className="w-4 h-4 mr-3.5" />
+                                                            Sauvegarder
+                                                        </PrimaryButton>
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>

@@ -226,14 +226,13 @@ export const LikertInput = ({
     return (
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 pt-4">
             {displayOptions.map((opt, index) => {
-                const optVal = index + 1;
-                const isSelected = value === optVal;
+                const isSelected = value === opt.id;
 
                 return (
                     <button
                         key={opt.id || index}
                         type="button"
-                        onClick={() => onChange(optVal)}
+                        onClick={() => onChange(opt.id)}
                         className={`flex flex-col items-center justify-center p-4 rounded-md border-2 transition-all duration-300 group ${
                             isSelected
                                 ? "border-elan-orange bg-elan-orange/5 ring-0"
@@ -252,7 +251,7 @@ export const LikertInput = ({
                                         : "bg-gray-50 text-gray-400 group-hover:bg-gray-100 group-hover:text-gray-500"
                                 }`}
                             >
-                                {optVal}
+                                {index + 1}
                             </div>
                         )}
                         <span

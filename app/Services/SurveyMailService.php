@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Jobs\SendSurveyInvitationJob;
 use App\Models\Enquete;
 use App\Models\Participant;
-use Illuminate\Support\Facades\Mail;
 
 class SurveyMailService
 {
@@ -38,23 +38,8 @@ class SurveyMailService
                 // Générer le lien unique avec jeton
                 $jeton = $participant->pivot->jeton ?? uniqid();
 
-                $linkRemplir = route('survey.fill.participants', ['jeton' => $jeton]);
-
-                // Envoyer l'email
-                Mail::send('emails.survey-invitation', [
-                    'participant' => $participant,
-                    'enquete' => $enquete,
-                    'lien' => $linkRemplir,
-                ], function ($message) use ($participant, $enquete) {
-                    $message->to($participant->mail)
-                        ->subject("Invitation à répondre : {$enquete->titre}");
-                });
-
-                // Marquer comme envoyé dans la table pivot
-                $enquete->participants()->updateExistingPivot($participant->id, [
-                    'statut_envoi' => 'sent',
-                    'date_envoi' => now(),
-                ]);
+                // Dispatcher le job avec les IDs (pas les modèles) pour éviter les problèmes de sérialisation
+                SendSurveyInvitationJob::dispatch($enquete->id, $participant->id, $jeton);
 
                 $results['sent']++;
             } catch (\Exception $e) {
