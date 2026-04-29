@@ -18,7 +18,7 @@ export interface SurveyItem {
 
 export interface SatisfactionLevel {
     label: string;
-    percentage: number;
+    count: number;
     color: string;
 }
 

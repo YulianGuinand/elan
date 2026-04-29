@@ -1,12 +1,14 @@
 interface ProgressBarProps {
     label: string;
-    percentage: number;
+    percentage?: number;
+    count?: number;
     color: string;
 }
 
 export default function ProgressBar({
     label,
-    percentage,
+    percentage = 0,
+    count,
     color,
 }: ProgressBarProps) {
     return (
@@ -18,13 +20,18 @@ export default function ProgressBar({
                 <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
-                        width: `${percentage}%`,
+                        width:
+                            count !== undefined
+                                ? count > 0
+                                    ? "100%"
+                                    : "0%"
+                                : `${percentage}%`,
                         backgroundColor: color,
                     }}
                 />
             </div>
             <span className="text-sm font-medium text-gray-900 w-12 text-right">
-                {percentage}%
+                {count !== undefined ? count : `${percentage}%`}
             </span>
         </div>
     );

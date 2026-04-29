@@ -110,7 +110,7 @@ export default function Dashboard({
                                             <ProgressBar
                                                 key={index}
                                                 label={level.label}
-                                                percentage={level.percentage}
+                                                count={level.count}
                                                 color={level.color}
                                             />
                                         ),

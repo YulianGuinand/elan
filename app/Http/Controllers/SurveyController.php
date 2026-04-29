@@ -41,7 +41,7 @@ class SurveyController extends Controller
             'a_venir' => $enquetes->where('statut', 'a_venir')->count(),
         ];
 
-        $auteurs = \App\Models\Utilisateur::whereHas('enquetes')
+        $auteurs = Utilisateur::whereHas('enquetes')
             ->get(['id', 'nom', 'prenom'])
             ->map(fn($u) => ['id' => $u->id, 'nom' => $u->nom, 'prenom' => $u->prenom]);
 
@@ -545,7 +545,6 @@ class SurveyController extends Controller
 
         return $choix;
     }
-
     private function formatEnquete(Enquete $e): array
     {
         if (!$e->relationLoaded('questions')) {
@@ -661,7 +660,6 @@ class SurveyController extends Controller
                 : [],
         ];
     }
-
     /**
      * Duplique une enquête (ses propres uniquement).
      */
@@ -709,7 +707,6 @@ class SurveyController extends Controller
         return redirect()->route('surveys.index')
             ->with('success', 'Enquête dupliquée avec succès.');
     }
-
     /**
      * Affiche les réponses d'une enquête.
      */
@@ -850,7 +847,6 @@ class SurveyController extends Controller
             'availableRoles' => $availableRoles,
         ]);
     }
-
     public function informations(Request $request, string $id): Response
     {
         $user = Auth::user();
@@ -944,7 +940,6 @@ class SurveyController extends Controller
             'utilisateur' => $utilisateur,
         ]);
     }
-
     public function sendInvitations(Request $request, string $id)
     {
         // Augmenter le timeout pour la création des jobs en queue

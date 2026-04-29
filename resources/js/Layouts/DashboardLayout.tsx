@@ -58,7 +58,7 @@ export default function DashboardLayout({
             {/* Sidebar */}
             <Sidebar
                 userName={user?.name}
-                userRole="Admin"
+                userRole={user?.role}
                 isOpen={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}
                 unreadNotificationCount={unreadCount}

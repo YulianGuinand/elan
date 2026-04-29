@@ -59,13 +59,13 @@ class DashboardController extends Controller
                 if ($current == 0.0) {
                     return [
                         'change' => 0.0,
-                        'text' => 'Aucune evolution par rapport au mois dernier',
+                        'text' => 'Aucune donnée disponible',
                     ];
                 }
 
                 return [
                     'change' => 100.0,
-                    'text' => 'Nouveau ce mois-ci (pas de reference le mois dernier)',
+                    'text' => 'Nouveau ce mois-ci',
                 ];
             }
 
@@ -75,127 +75,134 @@ class DashboardController extends Controller
             if ($percent > 0) {
                 return [
                     'change' => $percent,
-                    'text' => '+'.$percent.$unit.' vs mois dernier',
+                    'text' => '+' . $percent . $unit . ' vs mois dernier',
                 ];
             }
 
             if ($percent < 0) {
                 return [
                     'change' => $percent,
-                    'text' => $percent.$unit.' vs mois dernier',
+                    'text' => $percent . $unit . ' vs mois dernier',
                 ];
             }
 
             return [
                 'change' => 0.0,
-                'text' => 'Stable vs mois dernier',
+                'text' => 'Pas de changement depuis le mois dernier',
             ];
         };
 
-        // 1) Total enquetes envoyees (global + variation mensuelle)
+        // 1) Total enquetes creees (global + variation mensuelle)
         $totalEnquetes = \App\Models\Enquete::count();
         $enquetesCurrentMonth = \App\Models\Enquete::whereBetween('created_at', [$currentStart, $currentEnd])->count();
         $enquetesPreviousMonth = \App\Models\Enquete::whereBetween('created_at', [$previousStart, $previousEnd])->count();
-        $enqueteVariation = $formatVariation((float) $enquetesCurrentMonth, (float) $enquetesPreviousMonth, '%');
+        $enqueteVariation = $formatVariation((float) $enquetesCurrentMonth, (float) $enquetesPreviousMonth);
 
-        // 2) Taux de reponse moyen (participations / contacts)
-        $contactsTotal = DB::table('contacter')->count();
-        $participationsTotal = DB::table('participer')->count();
-        $tauxParticipation = $contactsTotal > 0
-            ? round(($participationsTotal / $contactsTotal) * 100, 1)
+        // 2) Taux de reponse (participants ayant répondu / participants contactés)
+        $participantsContactes = DB::table('participer')->count();
+        $participantsRepondus = DB::table('repondre as r')
+            ->select('r.participant_id')
+            ->distinct()
+            ->count('r.participant_id');
+
+        $tauxReponseGlobal = $participantsContactes > 0
+            ? round(($participantsRepondus / $participantsContactes) * 100, 1)
             : 0.0;
 
-        $contactsCurrentMonth = DB::table('contacter')
+        // Taux du mois courant
+        $participantsContactesCurrentMonth = DB::table('participer')
             ->whereBetween('created_at', [$currentStart, $currentEnd])
             ->count();
-        $participationsCurrentMonth = DB::table('participer')
-            ->whereBetween('created_at', [$currentStart, $currentEnd])
-            ->count();
-        $tauxCurrentMonth = $contactsCurrentMonth > 0
-            ? round(($participationsCurrentMonth / $contactsCurrentMonth) * 100, 1)
+        $participantsReponsCurrentMonth = DB::table('repondre as r')
+            ->whereBetween('r.created_at', [$currentStart, $currentEnd])
+            ->select('r.participant_id')
+            ->distinct()
+            ->count('r.participant_id');
+        $tauxCurrentMonth = $participantsContactesCurrentMonth > 0
+            ? round(($participantsReponsCurrentMonth / $participantsContactesCurrentMonth) * 100, 1)
             : 0.0;
 
-        $contactsPreviousMonth = DB::table('contacter')
+        // Taux du mois précédent
+        $participantsContactesPreviousMonth = DB::table('participer')
             ->whereBetween('created_at', [$previousStart, $previousEnd])
             ->count();
-        $participationsPreviousMonth = DB::table('participer')
-            ->whereBetween('created_at', [$previousStart, $previousEnd])
-            ->count();
-        $tauxPreviousMonth = $contactsPreviousMonth > 0
-            ? round(($participationsPreviousMonth / $contactsPreviousMonth) * 100, 1)
+        $participantsRepondusPreviousMonth = DB::table('repondre as r')
+            ->whereBetween('r.created_at', [$previousStart, $previousEnd])
+            ->select('r.participant_id')
+            ->distinct()
+            ->count('r.participant_id');
+        $tauxPreviousMonth = $participantsContactesPreviousMonth > 0
+            ? round(($participantsRepondusPreviousMonth / $participantsContactesPreviousMonth) * 100, 1)
             : 0.0;
 
         $tauxDelta = round($tauxCurrentMonth - $tauxPreviousMonth, 1);
         $tauxChangeText = $tauxDelta > 0
-            ? '+'.$tauxDelta.' pts vs mois dernier'
-            : ($tauxDelta < 0 ? $tauxDelta.' pts vs mois dernier' : 'Stable vs mois dernier');
+            ? '+' . $tauxDelta . ' pts vs mois dernier'
+            : ($tauxDelta < 0 ? $tauxDelta . ' pts vs mois dernier' : 'Pas de changement depuis le mois dernier');
 
-        $typeTaux = 'info';
-        if ($tauxParticipation < 40) {
-            $typeTaux = 'warning';
-        } elseif ($tauxParticipation >= 70) {
+        // Statut du taux de réponse
+        $typeTaux = 'warning';
+        if ($tauxReponseGlobal >= 70) {
             $typeTaux = 'success';
+        } elseif ($tauxReponseGlobal >= 50) {
+            $typeTaux = 'info';
         }
 
-        // 3) Relances en attente (contactes mais sans participation)
-        $relancesEnAttente = DB::table('contacter as c')
-            ->leftJoin('participer as p', function ($join) {
-                $join->on('c.participant_id', '=', 'p.participant_id')
-                    ->on('c.enquete_id', '=', 'p.enquete_id');
-            })
-            ->whereNull('p.id')
-            ->count();
+        // 3) Relances nécessaires (participants contactés mais n'ayant pas répondu)
+        $relancesNecessaires = $participantsContactes - $participantsRepondus;
 
-        $relancesCurrentMonth = DB::table('contacter as c')
-            ->leftJoin('participer as p', function ($join) {
-                $join->on('c.participant_id', '=', 'p.participant_id')
-                    ->on('c.enquete_id', '=', 'p.enquete_id');
-            })
-            ->whereBetween('c.created_at', [$currentStart, $currentEnd])
-            ->whereNull('p.id')
-            ->count();
+        // Relances du mois courant
+        $relancesCurrentMonth = max(0, $participantsContactesCurrentMonth - $participantsReponsCurrentMonth);
 
-        $relancesPreviousMonth = DB::table('contacter as c')
-            ->leftJoin('participer as p', function ($join) {
-                $join->on('c.participant_id', '=', 'p.participant_id')
-                    ->on('c.enquete_id', '=', 'p.enquete_id');
-            })
-            ->whereBetween('c.created_at', [$previousStart, $previousEnd])
-            ->whereNull('p.id')
-            ->count();
+        // Relances du mois précédent
+        $relancesPreviousMonth = max(0, $participantsContactesPreviousMonth - $participantsRepondusPreviousMonth);
 
-        $relanceVariation = $formatVariation((float) $relancesCurrentMonth, (float) $relancesPreviousMonth, '%');
-        $relanceChangeText = $relancesEnAttente === 0
-            ? 'Aucune relance necessaire actuellement'
-            : $relanceVariation['text'];
+        $relanceVariation = $formatVariation((float) $relancesCurrentMonth, (float) $relancesPreviousMonth);
+
+        // Statut des relances
+        $typeRelance = 'info';
+        if ($relancesNecessaires === 0) {
+            $typeRelance = 'success';
+            $relanceChangeText = 'Aucune relance nécessaire';
+        } elseif ($relancesNecessaires > 20) {
+            $typeRelance = 'warning';
+            $relanceChangeText = $relanceVariation['text'];
+        } else {
+            $relanceChangeText = $relanceVariation['text'];
+        }
 
         return [
             [
                 'id' => '1',
-                'title' => 'Total Enquetes Envoyees',
+                'title' => 'Enquêtes Créées',
                 'value' => $totalEnquetes,
                 'change' => $enqueteVariation['change'],
                 'changeText' => $enqueteVariation['text'],
                 'icon' => 'send',
                 'type' => 'info',
+                'description' => 'Nombre total d\'enquêtes créées dans le système',
             ],
             [
                 'id' => '2',
-                'title' => 'Taux de Reponse Moyen',
-                'value' => $tauxParticipation.'%',
+                'title' => 'Taux de Réponse',
+                'value' => $tauxReponseGlobal . '%',
                 'change' => $tauxDelta,
                 'changeText' => $tauxChangeText,
                 'icon' => 'response',
                 'type' => $typeTaux,
+                'description' => $participantsRepondus . ' participants ont répondu sur ' . $participantsContactes . ' contactés',
             ],
             [
                 'id' => '3',
-                'title' => 'Relances en Attente',
-                'value' => $relancesEnAttente,
+                'title' => 'Participants à Relancer',
+                'value' => $relancesNecessaires,
                 'change' => $relanceVariation['change'],
                 'changeText' => $relanceChangeText,
                 'icon' => 'alert',
-                'type' => ($relancesEnAttente == 0 ? 'success' : 'warning'),
+                'type' => $typeRelance,
+                'description' => $relancesNecessaires === 0
+                    ? 'Excellent ! Tous les participants ont répondu'
+                    : 'Nombre de participants n\'ayant pas encore répondu',
             ],
         ];
     }
@@ -213,7 +220,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Recupere les donnees de satisfaction globale
+     * Recupere les donnees de satisfaction globale (mois courant)
      */
     private function getSatisfactionData(): array
     {
@@ -221,7 +228,7 @@ class DashboardController extends Controller
         $monthStart = $now->copy()->startOfMonth();
         $monthEnd = $now->copy()->endOfMonth();
 
-        // Récupérer toutes les réponses Likert du mois
+        // Récupérer toutes les réponses Likert du mois courant
         $satisfactionValues = DB::table('repondre as r')
             ->join('questions as q', 'q.id', '=', 'r.question_id')
             ->join('type__reponses as tr', 'tr.id', '=', 'q.type_reponse_id')
@@ -236,18 +243,18 @@ class DashboardController extends Controller
                 ->where('question_id', $row->question_id)
                 ->where('id', '<=', $row->valeur)
                 ->count();
-        })->filter(fn ($value) => $value !== null);
+        })->filter(fn($value) => $value !== null);
 
         if ($positions->isEmpty()) {
             return [
                 'score' => 0,
                 'maxScore' => 5,
                 'levels' => [
-                    ['label' => 'Tres Satisfait', 'percentage' => 0, 'color' => '#F18628'],
-                    ['label' => 'Satisfait', 'percentage' => 0, 'color' => '#F18628'],
-                    ['label' => 'Neutre', 'percentage' => 0, 'color' => '#FFA85C'],
-                    ['label' => 'Insatisfait', 'percentage' => 0, 'color' => '#FFD4B3'],
-                    ['label' => 'Tres Mauvais', 'percentage' => 0, 'color' => '#FFE8D9'],
+                    ['label' => 'Très Satisfait', 'count' => 0, 'color' => '#F18628'],
+                    ['label' => 'Satisfait', 'count' => 0, 'color' => '#F18628'],
+                    ['label' => 'Neutre', 'count' => 0, 'color' => '#FFA85C'],
+                    ['label' => 'Insatisfait', 'count' => 0, 'color' => '#FFD4B3'],
+                    ['label' => 'Très Mauvais', 'count' => 0, 'color' => '#FFE8D9'],
                 ],
             ];
         }
@@ -255,26 +262,21 @@ class DashboardController extends Controller
         $avgScore = round($positions->avg(), 2);
 
         // Compter la distribution par niveau
-        $level5 = $positions->filter(fn ($v) => $v == 5)->count();
-        $level4 = $positions->filter(fn ($v) => $v == 4)->count();
-        $level3 = $positions->filter(fn ($v) => $v == 3)->count();
-        $level2 = $positions->filter(fn ($v) => $v == 2)->count();
-        $level1 = $positions->filter(fn ($v) => $v == 1)->count();
-        $total = $positions->count();
-
-        $calculatePercentage = function ($count) use ($total) {
-            return $total > 0 ? round(($count / $total) * 100, 1) : 0;
-        };
+        $level5 = $positions->filter(fn($v) => $v == 5)->count();
+        $level4 = $positions->filter(fn($v) => $v == 4)->count();
+        $level3 = $positions->filter(fn($v) => $v == 3)->count();
+        $level2 = $positions->filter(fn($v) => $v == 2)->count();
+        $level1 = $positions->filter(fn($v) => $v == 1)->count();
 
         return [
             'score' => $avgScore,
             'maxScore' => 5,
             'levels' => [
-                ['label' => 'Tres Satisfait', 'percentage' => $calculatePercentage($level5), 'color' => '#F18628'],
-                ['label' => 'Satisfait', 'percentage' => $calculatePercentage($level4), 'color' => '#F18628'],
-                ['label' => 'Neutre', 'percentage' => $calculatePercentage($level3), 'color' => '#FFA85C'],
-                ['label' => 'Insatisfait', 'percentage' => $calculatePercentage($level2), 'color' => '#FFD4B3'],
-                ['label' => 'Tres Mauvais', 'percentage' => $calculatePercentage($level1), 'color' => '#FFE8D9'],
+                ['label' => 'Très Satisfait', 'count' => $level5, 'color' => '#F18628'],
+                ['label' => 'Satisfait', 'count' => $level4, 'color' => '#F18628'],
+                ['label' => 'Neutre', 'count' => $level3, 'color' => '#FFA85C'],
+                ['label' => 'Insatisfait', 'count' => $level2, 'color' => '#FFD4B3'],
+                ['label' => 'Très Mauvais', 'count' => $level1, 'color' => '#FFE8D9'],
             ],
         ];
     }
@@ -287,8 +289,8 @@ class DashboardController extends Controller
         $now = now();
 
         return \App\Models\Enquete::where(function ($q) use ($now) {
-                $q->whereNull('date_debut')->orWhere('date_debut', '<=', $now);
-            })
+            $q->whereNull('date_debut')->orWhere('date_debut', '<=', $now);
+        })
             ->where(function ($q) use ($now) {
                 $q->whereNull('date_fin')->orWhere('date_fin', '>=', $now);
             })
@@ -299,13 +301,13 @@ class DashboardController extends Controller
             ->values()
             ->map(function ($enquete) {
                 return [
-                    'id'       => (string) $enquete->id,
-                    'name'     => $enquete->titre,
+                    'id' => (string) $enquete->id,
+                    'name' => $enquete->titre,
                     'subtitle' => $enquete->type_campagne ?? null,
-                    'endDate'  => $enquete->date_fin
+                    'endDate' => $enquete->date_fin
                         ? $enquete->date_fin->format('d/m/Y')
                         : 'Sans date de fin',
-                    'status'   => 'active',
+                    'status' => 'active',
                 ];
             })
             ->toArray();

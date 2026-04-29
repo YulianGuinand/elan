@@ -109,7 +109,7 @@ interface SidebarProps {
 
 export default function Sidebar({
     userName = "Jean Pierre",
-    userRole = "Admin",
+    userRole = "Utilisateur",
     isOpen,
     onClose,
     unreadNotificationCount = 0,
@@ -236,7 +236,11 @@ export default function Sidebar({
                                         {userName}
                                     </p>
                                     <p className="text-xs text-gray-500">
-                                        {userRole}
+                                        {userRole === "superadmin"
+                                            ? "Super Administrateur"
+                                            : userRole === "admin"
+                                              ? "Administrateur"
+                                              : "Utilisateur"}
                                     </p>
                                 </div>
                                 <ChevronUp className="w-4 h-4 text-gray-500 transition-transform" />

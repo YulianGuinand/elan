@@ -25,7 +25,7 @@ class SettingsController extends Controller
                 'name' => trim($user->prenom . ' ' . $user->nom),
                 'email' => $user->email,
                 'email_verified_at' => $user->email_verified_at,
-                'role' => $user->role === 'superadmin' ? 'Super Administrateur' : 'Utilisateur',
+                'role' => $user->role === 'superadmin' ? 'Super Administrateur' : ($user->role === 'admin' ? 'Administrateur' : 'Utilisateur'),
                 'avatar' => null,
                 'two_factor_enabled' => false,
                 'created_at' => $user->created_at,
@@ -46,7 +46,7 @@ class SettingsController extends Controller
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:utilisateurs,email,'.$user->id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:utilisateurs,email,' . $user->id],
         ]);
 
         $user->prenom = $validated['first_name'];
