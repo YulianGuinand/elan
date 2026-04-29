@@ -33,7 +33,7 @@ interface Props {
 
 export default function Show({ formation }: Props) {
     const { auth } = usePage<PageProps>().props;
-    const canManage = auth.user.role_id !== 3;
+    const canManage = (auth as any)?.permissions?.canManageFormations || false;
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     return (

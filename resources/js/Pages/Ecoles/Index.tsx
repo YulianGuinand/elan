@@ -26,6 +26,8 @@ interface Props {
 
 export default function EcolesIndex({ ecoles, filters }: Props) {
     const { auth } = usePage<PageProps>().props;
+    const canManageEcoles =
+        (auth as any)?.permissions?.canManageEcoles || false;
     const [search, setSearch] = useState(filters.search || "");
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -63,7 +65,7 @@ export default function EcolesIndex({ ecoles, filters }: Props) {
                     { label: "Écoles" },
                 ]}
                 actionButton={
-                    auth.user.role_id !== 3
+                    canManageEcoles
                         ? {
                               label: "Ajouter une école",
                               onClick: () => router.get(route("ecoles.create")),
@@ -184,8 +186,7 @@ export default function EcolesIndex({ ecoles, filters }: Props) {
                                                             Voir
                                                         </DropdownItem>
 
-                                                        {auth.user.role_id !==
-                                                            3 && (
+                                                        {canManageEcoles && (
                                                             <>
                                                                 <DropdownItem
                                                                     onClick={() =>

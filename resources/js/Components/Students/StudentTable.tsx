@@ -11,6 +11,8 @@ interface StudentTableProps {
 
 export default function StudentTable({ students }: StudentTableProps) {
     const { auth } = usePage<PageProps>().props;
+    const canManageParticipants =
+        (auth as any)?.permissions?.canManageParticipants || false;
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -62,49 +64,52 @@ export default function StudentTable({ students }: StudentTableProps) {
 
     return (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden animate-slideUp">
-            <ConfirmDialog
-                isOpen={showDeleteDialog}
-                onClose={() => setShowDeleteDialog(false)}
-                onConfirm={handleConfirmDelete}
-                title="Supprimer les participants"
-                message={`Êtes-vous sûr de vouloir supprimer ${selectedIds.length} participant(s) ? Cette action est irréversible.`}
-                confirmText="Supprimer"
-                cancelText="Annuler"
-                variant="danger"
-                isLoading={isDeleting}
-            />
-            {selectedIds.length > 0 && (
+            {canManageParticipants && (
+                <ConfirmDialog
+                    isOpen={showDeleteDialog}
+                    onClose={() => setShowDeleteDialog(false)}
+                    onConfirm={handleConfirmDelete}
+                    title="Supprimer les participants"
+                    message={`Êtes-vous sûr de vouloir supprimer ${selectedIds.length} participant(s) ? Cette action est irréversible.`}
+                    confirmText="Supprimer"
+                    cancelText="Annuler"
+                    variant="danger"
+                    isLoading={isDeleting}
+                />
+            )}
+            {canManageParticipants && selectedIds.length > 0 && (
                 <div className="bg-red-50 px-6 py-3 border-b border-red-100 flex items-center justify-between">
                     <span className="text-sm text-red-700 font-medium">
                         {selectedIds.length} participant(s) sélectionné(s)
                     </span>
-                    {auth.user.role_id !== 3 && (
-                        <button
-                            onClick={handleBulkDelete}
-                            className="text-sm bg-red-600 text-white px-3 py-1.5 rounded-md hover:bg-red-700 transition-colors"
-                        >
-                            Supprimer la sélection
-                        </button>
-                    )}
+                    <button
+                        onClick={handleBulkDelete}
+                        className="text-sm bg-red-600 text-white px-3 py-1.5 rounded-md hover:bg-red-700 transition-colors"
+                    >
+                        Supprimer la sélection
+                    </button>
                 </div>
             )}
             <div className="overflow-x-auto">
                 <table className="w-full">
                     <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
-                            <th className="w-10 px-2 sm:px-3 py-3 text-left">
-                                <input
-                                    type="checkbox"
-                                    checked={allSelected}
-                                    ref={(input) => {
-                                        if (input) {
-                                            input.indeterminate = someSelected;
-                                        }
-                                    }}
-                                    onChange={handleSelectAll}
-                                    className="w-4 h-4 rounded border-gray-300 text-elan-orange focus:ring-elan-orange cursor-pointer"
-                                />
-                            </th>
+                            {canManageParticipants && (
+                                <th className="w-10 px-2 sm:px-3 py-3 text-left">
+                                    <input
+                                        type="checkbox"
+                                        checked={allSelected}
+                                        ref={(input) => {
+                                            if (input) {
+                                                input.indeterminate =
+                                                    someSelected;
+                                            }
+                                        }}
+                                        onChange={handleSelectAll}
+                                        className="w-4 h-4 rounded border-gray-300 text-elan-orange focus:ring-elan-orange cursor-pointer"
+                                    />
+                                </th>
+                            )}
                             <th className="px-4 sm:px-6 py-3 text-left">
                                 <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     Participant
@@ -132,7 +137,7 @@ export default function StudentTable({ students }: StudentTableProps) {
                         {students.length === 0 ? (
                             <tr>
                                 <td
-                                    colSpan={5}
+                                    colSpan={canManageParticipants ? 5 : 4}
                                     className="px-6 py-12 text-center"
                                 >
                                     <p className="text-gray-500">
@@ -149,6 +154,9 @@ export default function StudentTable({ students }: StudentTableProps) {
                                         student.id,
                                     )}
                                     onSelect={handleSelectOne}
+                                    canManageParticipants={
+                                        canManageParticipants
+                                    }
                                 />
                             ))
                         )}

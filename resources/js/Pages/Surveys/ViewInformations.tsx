@@ -1,8 +1,9 @@
 import FadeIn from "@/Components/Animations/FadeIn";
 import ConfirmDialog from "@/Components/ConfirmDialog";
 import DashboardLayout from "@/Layouts/DashboardLayout";
+import { PageProps } from "@/types";
 import { Survey } from "@/types/surveys";
-import { Head, router } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import {
     AlertCircle,
     CheckCheck,
@@ -106,6 +107,9 @@ export default function SurveyViewInformation({
     participants,
     utilisateur,
 }: Props) {
+    const { auth } = usePage<PageProps>().props;
+    const canManageSurveys =
+        (auth as any)?.permissions?.canManageSurveys || false;
     const current = new Date();
     const dateDebut = parseDateOnly(enquete.date_debut);
     const dateFin = parseDateOnly(enquete.date_fin);
@@ -318,19 +322,21 @@ export default function SurveyViewInformation({
 
                             {/* Boutons d'action */}
                             <div className="flex flex-col gap-2 w-full lg:w-auto">
-                                <button
-                                    onClick={() =>
-                                        router.visit(
-                                            route("surveys.responses", {
-                                                id: enquete.id,
-                                            }),
-                                        )
-                                    }
-                                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors text-sm font-medium"
-                                >
-                                    <Eye className="w-4 h-4" />
-                                    Voir les réponses
-                                </button>
+                                {canManageSurveys && (
+                                    <button
+                                        onClick={() =>
+                                            router.visit(
+                                                route("surveys.responses", {
+                                                    id: enquete.id,
+                                                }),
+                                            )
+                                        }
+                                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors text-sm font-medium"
+                                    >
+                                        <Eye className="w-4 h-4" />
+                                        Voir les réponses
+                                    </button>
+                                )}
                                 <button
                                     onClick={() =>
                                         router.visit(

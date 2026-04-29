@@ -850,13 +850,9 @@ class SurveyController extends Controller
     }
     public function informations(Request $request, string $id): Response
     {
-        $user = Auth::user();
         $enqueteQuery = Enquete::with(['questions.choix', 'questions.type_reponse'])
             ->where('id', $id);
 
-        if (!$user->isSuperAdmin()) {
-            $enqueteQuery->where('utilisateur_id', $user->id);
-        }
         $enquete = $enqueteQuery->firstOrFail();
         $utilisateurQuery = Utilisateur::where('id', $enquete->utilisateur_id);
         $utilisateur = $utilisateurQuery->firstOrFail();

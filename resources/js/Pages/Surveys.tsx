@@ -2,8 +2,9 @@ import FadeIn from "@/Components/Animations/FadeIn";
 import PageHead from "@/Components/Seo/PageHead";
 import SurveyTable from "@/Components/Surveys/SurveyTable";
 import DashboardLayout from "@/Layouts/DashboardLayout";
+import { PageProps } from "@/types";
 import { Survey, SurveyFilters, SurveyStats } from "@/types/surveys";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import { Calendar, CheckCircle2, Clock, FileText } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -36,6 +37,10 @@ export default function Surveys({
     userId,
     auteurs,
 }: SurveysProps) {
+    const { auth } = usePage<PageProps>().props;
+    const permissions = (auth as any)?.permissions || {};
+    const canCreate = permissions.canCreateSurveys || false;
+
     const [filters, setFilters] = useState<SurveyFilters>({
         search: "",
         statut: "all",
@@ -105,7 +110,6 @@ export default function Surveys({
         });
     }, [surveys, filters]);
 
-    const canCreate = userRole === "admin" || userRole === "superadmin";
     return (
         <>
             <PageHead

@@ -1,6 +1,7 @@
 import FadeIn from "@/Components/Animations/FadeIn";
 import DashboardLayout from "@/Layouts/DashboardLayout";
-import { Head, router } from "@inertiajs/react";
+import { PageProps } from "@/types";
+import { Head, router, usePage } from "@inertiajs/react";
 import { Building2, Edit, Mail, MapPin, Phone, Users } from "lucide-react";
 
 interface Entreprise {
@@ -18,6 +19,10 @@ export default function EntrepriseShow({
 }: {
     entreprise: Entreprise;
 }) {
+    const { auth } = usePage<PageProps>().props;
+    const canManageEntreprise =
+        (auth as any)?.permissions?.canManageEntreprise || false;
+
     return (
         <>
             <Head title={entreprise.raison_sociale ?? "Entreprise"} />
@@ -29,11 +34,17 @@ export default function EntrepriseShow({
                     { label: "Entreprises", href: route("entreprises.index") },
                     { label: entreprise.raison_sociale ?? "Entreprise" },
                 ]}
-                actionButton={{
-                    label: "Modifier",
-                    onClick: () =>
-                        router.get(route("entreprises.edit", entreprise.id)),
-                }}
+                actionButton={
+                    canManageEntreprise
+                        ? {
+                              label: "Modifier",
+                              onClick: () =>
+                                  router.get(
+                                      route("entreprises.edit", entreprise.id),
+                                  ),
+                          }
+                        : undefined
+                }
             >
                 <div className="w-full space-y-6">
                     <FadeIn delay={0}>
@@ -64,20 +75,22 @@ export default function EntrepriseShow({
                                     })}
                                 </p>
                             </div>
-                            <button
-                                onClick={() =>
-                                    router.get(
-                                        route(
-                                            "entreprises.edit",
-                                            entreprise.id,
-                                        ),
-                                    )
-                                }
-                                className="ml-auto p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                                title="Modifier"
-                            >
-                                <Edit className="w-4 h-4 text-gray-700" />
-                            </button>
+                            {canManageEntreprise && (
+                                <button
+                                    onClick={() =>
+                                        router.get(
+                                            route(
+                                                "entreprises.edit",
+                                                entreprise.id,
+                                            ),
+                                        )
+                                    }
+                                    className="ml-auto p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                                    title="Modifier"
+                                >
+                                    <Edit className="w-4 h-4 text-gray-700" />
+                                </button>
+                            )}
                         </div>
                     </FadeIn>
 

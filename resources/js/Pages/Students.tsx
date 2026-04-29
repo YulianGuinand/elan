@@ -28,6 +28,8 @@ export default function Students({
     filters: initialFilters,
 }: ParticipantsProps) {
     const { auth } = usePage<PageProps>().props;
+    const canManageParticipants =
+        (auth as any)?.permissions?.canManageParticipants || false;
     const [filters, setFilters] = useState<ParticipantFilters>(initialFilters);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
@@ -85,7 +87,7 @@ export default function Students({
                     { label: "Participants" },
                 ]}
                 actionButton={
-                    auth.user.role_id !== 3
+                    canManageParticipants
                         ? {
                               label: "Ajouter un participant",
                               onClick: () =>
@@ -102,7 +104,7 @@ export default function Students({
                                 Gérez les inscriptions, suivez les progrès et
                                 mettez à jour les statuts.
                             </p>
-                            {auth.user.role_id !== 3 && (
+                            {canManageParticipants && (
                                 <button
                                     onClick={() => setIsImportModalOpen(true)}
                                     className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-elan-orange bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"

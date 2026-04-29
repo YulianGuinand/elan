@@ -23,6 +23,8 @@ interface Props {
 
 export default function FormationsIndex({ formations, filters }: Props) {
     const { auth } = usePage<PageProps>().props;
+    const canManageFormations =
+        (auth as any)?.permissions?.canManageFormations || false;
     const [search, setSearch] = useState(filters.search || "");
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -65,7 +67,7 @@ export default function FormationsIndex({ formations, filters }: Props) {
                     { label: "Formations" },
                 ]}
                 actionButton={
-                    auth.user.role_id !== 3
+                    canManageFormations
                         ? {
                               label: "Ajouter une formation",
                               onClick: () =>
@@ -182,9 +184,7 @@ export default function FormationsIndex({ formations, filters }: Props) {
                                                                 Voir
                                                             </DropdownItem>
 
-                                                            {auth.user
-                                                                .role_id !==
-                                                                3 && (
+                                                            {canManageFormations && (
                                                                 <>
                                                                     <DropdownItem
                                                                         onClick={() =>

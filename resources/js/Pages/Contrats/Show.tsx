@@ -44,11 +44,7 @@ interface Props {
 
 export default function Show({ contrat }: Props) {
     const { auth } = usePage<PageProps>().props;
-
-    // RBAC: Superadmin can edit all, Admin can edit their own, User cannot edit
-    const canManage =
-        auth.user.role === "superadmin" ||
-        (auth.user.role === "admin" && contrat.utilisateur_id === auth.user.id);
+    const canManage = (auth as any)?.permissions?.canManageContrats || false;
 
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);

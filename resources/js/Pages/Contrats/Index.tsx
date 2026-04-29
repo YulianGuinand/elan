@@ -51,6 +51,8 @@ interface Props {
 
 export default function ContratsIndex({ contrats, filters }: Props) {
     const { auth } = usePage<PageProps>().props;
+    const canManageContrats =
+        (auth as any)?.permissions?.canManageContrats || false;
     const [search, setSearch] = useState(filters.search || "");
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [id, setId] = useState<number | null>(null);
@@ -80,8 +82,7 @@ export default function ContratsIndex({ contrats, filters }: Props) {
                     { label: "Contrats" },
                 ]}
                 actionButton={
-                    auth.user.role === "superadmin" ||
-                    auth.user.role === "admin"
+                    canManageContrats
                         ? {
                               label: "Créer un contrat",
                               onClick: () =>
@@ -245,16 +246,7 @@ export default function ContratsIndex({ contrats, filters }: Props) {
                                                                     Voir
                                                                 </DropdownItem>
 
-                                                                {(auth.user
-                                                                    .role ===
-                                                                    "superadmin" ||
-                                                                    (auth.user
-                                                                        .role ===
-                                                                        "admin" &&
-                                                                        contrat.utilisateur_id ===
-                                                                            auth
-                                                                                .user
-                                                                                .id)) && (
+                                                                {canManageContrats && (
                                                                     <>
                                                                         <DropdownItem
                                                                             onClick={() =>

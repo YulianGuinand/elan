@@ -73,11 +73,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Voir les informations
         Route::get('/{id}/information', [SurveyController::class, 'informations'])
-            ->name('surveys.informations')->middleware(['is_admin']);
+            ->name('surveys.informations');
 
         // Envoyer les mails aux participants
         Route::post('/{id}/send-invitations', [SurveyController::class, 'sendInvitations'])
-            ->name('surveys.send-invitations')->middleware(['is_admin']);
+            ->name('surveys.send-invitations');
 
         // Dupliquer une enquête (protégé par is_admin)
         Route::post('/{id}/dupliquer', [SurveyController::class, 'duplicate'])
@@ -129,7 +129,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('entreprises.index');
 
         Route::post('/bulk-destroy', [EntrepriseController::class, 'bulkDestroy'])
-            ->name('entreprises.bulk-destroy');
+            ->name('entreprises.bulk-destroy')->middleware('is_admin_or_superadmin');
 
         Route::post('/', [EntrepriseController::class, 'store'])
             ->name('entreprises.store')->middleware('is_admin_or_superadmin');
@@ -144,13 +144,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('entreprises.show');
 
         Route::get('/{entreprise}/modifier', [EntrepriseController::class, 'edit'])
-            ->name('entreprises.edit');
+            ->name('entreprises.edit')->middleware('is_admin_or_superadmin');
 
         Route::put('/{entreprise}', [EntrepriseController::class, 'update'])
-            ->name('entreprises.update');
+            ->name('entreprises.update')->middleware('is_admin_or_superadmin');
 
         Route::delete('/{entreprise}', [EntrepriseController::class, 'destroy'])
-            ->name('entreprises.destroy');
+            ->name('entreprises.destroy')->middleware('is_admin_or_superadmin');
     });
 
     // ============================================
@@ -240,7 +240,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ============================================
     // UTILISATEURS
     // ============================================
-    Route::prefix('utilisateurs')->middleware(['is_admin_or_superadmin'])->group(function () {
+    Route::prefix('utilisateurs')->middleware(['is_superadmin'])->group(function () {
         Route::get('/', [\App\Http\Controllers\UserController::class, 'index'])
             ->name('users.index');
 

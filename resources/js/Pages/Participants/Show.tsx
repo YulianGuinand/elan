@@ -1,7 +1,8 @@
 import FadeIn from "@/Components/Animations/FadeIn";
 import DashboardLayout from "@/Layouts/DashboardLayout";
+import { PageProps } from "@/types";
 import { Participant } from "@/types/participants";
-import { Head, router } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import {
     Briefcase,
     Building2,
@@ -14,6 +15,9 @@ import {
 
 export default function Show({ participant }: { participant: Participant }) {
     const contrat = participant.contrats?.[0];
+    const { auth } = usePage<PageProps>().props;
+    const canManageParticipants =
+        (auth as any)?.permissions?.canManageParticipants || false;
 
     return (
         <>
@@ -37,26 +41,28 @@ export default function Show({ participant }: { participant: Participant }) {
                     onClick: () => window.history.back(),
                 }}
             >
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
                     {/* En-tête du profil */}
                     <FadeIn delay={0}>
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-6 relative">
-                            <div className="absolute top-6 right-6 flex gap-2">
-                                <button
-                                    onClick={() =>
-                                        router.get(
-                                            route(
-                                                "participants.edit",
-                                                participant.id,
-                                            ),
-                                        )
-                                    }
-                                    className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors flex items-center justify-center"
-                                    title="Modifier"
-                                >
-                                    <Edit className="w-4 h-4" />
-                                </button>
-                            </div>
+                            {canManageParticipants && (
+                                <div className="absolute top-6 right-6 flex gap-2">
+                                    <button
+                                        onClick={() =>
+                                            router.get(
+                                                route(
+                                                    "participants.edit",
+                                                    participant.id,
+                                                ),
+                                            )
+                                        }
+                                        className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors flex items-center justify-center"
+                                        title="Modifier"
+                                    >
+                                        <Edit className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
 
                             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-elan-orange to-elan-blue flex items-center justify-center text-white text-3xl font-bold border-4 border-white shadow-sm">
                                 {`${participant.prenom?.charAt(0) || ""}${participant.nom?.charAt(0) || ""}`.toUpperCase()}

@@ -2,9 +2,8 @@ import DropdownMenu, {
     DropdownDivider,
     DropdownItem,
 } from "@/Components/Common/DropdownMenu";
-import { PageProps } from "@/types";
 import { Participant } from "@/types/participants";
-import { router, usePage } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import { Edit, Eye, Mail, MoreVertical, Phone, Trash2 } from "lucide-react";
 import { useState } from "react";
 import ConfirmDialog from "../ConfirmDialog";
@@ -13,14 +12,15 @@ interface StudentRowProps {
     student: Participant;
     isSelected: boolean;
     onSelect: (id: number) => void;
+    canManageParticipants: boolean;
 }
 
 export default function StudentRow({
     student,
     isSelected,
     onSelect,
+    canManageParticipants,
 }: StudentRowProps) {
-    const { auth } = usePage<PageProps>().props;
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [id, setId] = useState<number | null>(null);
 
@@ -42,14 +42,16 @@ export default function StudentRow({
     return (
         <tr className="hover:bg-gray-50 transition-colors">
             {/* Checkbox */}
-            <td className="w-10 px-2 sm:px-3 py-4">
-                <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => onSelect(student.id)}
-                    className="w-4 h-4 rounded border-gray-300 text-elan-orange focus:ring-elan-orange cursor-pointer"
-                />
-            </td>
+            {canManageParticipants && (
+                <td className="w-10 px-2 sm:px-3 py-4">
+                    <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => onSelect(student.id)}
+                        className="w-4 h-4 rounded border-gray-300 text-elan-orange focus:ring-elan-orange cursor-pointer"
+                    />
+                </td>
+            )}
 
             {/* Apprenant */}
             <td className="px-4 sm:px-6 py-4">
@@ -124,7 +126,7 @@ export default function StudentRow({
                         Voir les détails
                     </DropdownItem>
 
-                    {auth.user.role_id !== 3 && (
+                    {canManageParticipants && (
                         <>
                             <DropdownItem
                                 onClick={() =>

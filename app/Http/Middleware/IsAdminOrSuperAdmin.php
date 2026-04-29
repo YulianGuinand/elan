@@ -15,10 +15,9 @@ class IsAdminOrSuperAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(auth()->user() && (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()))
-        {
+        if (auth()->user() && (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())) {
             return $next($request);
         }
-        abort(403, "Vous n'avez pas accès à cette section.");
+        return redirect(route('dashboard'))->with('error', "Vous n'avez pas accès à cette section.");
     }
 }

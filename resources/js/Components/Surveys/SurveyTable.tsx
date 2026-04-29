@@ -1,6 +1,7 @@
 import DropdownMenu, { DropdownItem } from "@/Components/Common/DropdownMenu";
+import { PageProps } from "@/types";
 import { StatutEnquete, Survey } from "@/types/surveys";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import {
     ArrowRight,
     Calendar,
@@ -52,6 +53,9 @@ export default function SurveyTable({
     userRole,
     userId,
 }: SurveyTableProps) {
+    const { auth } = usePage<PageProps>().props;
+    const canManageSurveys =
+        (auth as any)?.permissions?.canManageSurveys || false;
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showDeleteMultipleDialog, setShowDeleteMultipleDialog] =
@@ -130,7 +134,7 @@ export default function SurveyTable({
     return (
         <>
             {/* Barre d'actions rapides */}
-            {selected.size > 0 && (
+            {canManageSurveys && selected.size > 0 && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 flex items-center justify-between">
                     <p className="text-sm text-blue-900 font-medium">
                         {selected.size} enquête{selected.size > 1 ? "s" : ""}{" "}
@@ -159,17 +163,20 @@ export default function SurveyTable({
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-12">
-                                    <input
-                                        type="checkbox"
-                                        checked={
-                                            selected.size === surveys.length &&
-                                            surveys.length > 0
-                                        }
-                                        onChange={toggleSelectAll}
-                                        className="w-4 h-4 rounded cursor-pointer accent-orange-500"
-                                    />
-                                </th>
+                                {canManageSurveys && (
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-12">
+                                        <input
+                                            type="checkbox"
+                                            checked={
+                                                selected.size ===
+                                                    surveys.length &&
+                                                surveys.length > 0
+                                            }
+                                            onChange={toggleSelectAll}
+                                            className="w-4 h-4 rounded cursor-pointer accent-orange-500"
+                                        />
+                                    </th>
+                                )}
                                 {[
                                     "Enquête",
                                     "Cible",
@@ -193,10 +200,7 @@ export default function SurveyTable({
                                     statutConfig[survey.statut] ??
                                     statutConfig.brouillon;
 
-                                const canEdit =
-                                    userRole === "superadmin" ||
-                                    (userRole === "admin" &&
-                                        survey.utilisateur_id === userId);
+                                const canEdit = canManageSurveys;
 
                                 const isSelected = selected.has(survey.id);
 
@@ -205,16 +209,18 @@ export default function SurveyTable({
                                         key={survey.id}
                                         className={`hover:bg-gray-50 transition-colors ${isSelected ? "bg-blue-50" : ""}`}
                                     >
-                                        <td className="px-4 py-4 text-center">
-                                            <input
-                                                type="checkbox"
-                                                checked={isSelected}
-                                                onChange={() =>
-                                                    toggleSelect(survey.id)
-                                                }
-                                                className="w-4 h-4 rounded cursor-pointer accent-orange-500"
-                                            />
-                                        </td>
+                                        {canManageSurveys && (
+                                            <td className="px-4 py-4 text-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    onChange={() =>
+                                                        toggleSelect(survey.id)
+                                                    }
+                                                    className="w-4 h-4 rounded cursor-pointer accent-orange-500"
+                                                />
+                                            </td>
+                                        )}
 
                                         {/* Titre */}
                                         <td className="px-5 py-4">
@@ -296,7 +302,7 @@ export default function SurveyTable({
                                                     Répondre
                                                 </DropdownItem>
 
-                                                {canEdit && (
+                                                {canManageSurveys && (
                                                     <DropdownItem
                                                         icon={
                                                             <Edit className="w-4 h-4" />
@@ -334,25 +340,27 @@ export default function SurveyTable({
                                                     Voir les informations
                                                 </DropdownItem>
 
-                                                <DropdownItem
-                                                    icon={
-                                                        <FileText className="w-4 h-4" />
-                                                    }
-                                                    onClick={() => {
-                                                        router.visit(
-                                                            route(
-                                                                "surveys.responses",
-                                                                {
-                                                                    id: survey.id,
-                                                                },
-                                                            ),
-                                                        );
-                                                    }}
-                                                >
-                                                    Voir les réponses
-                                                </DropdownItem>
+                                                {canManageSurveys && (
+                                                    <DropdownItem
+                                                        icon={
+                                                            <FileText className="w-4 h-4" />
+                                                        }
+                                                        onClick={() => {
+                                                            router.visit(
+                                                                route(
+                                                                    "surveys.responses",
+                                                                    {
+                                                                        id: survey.id,
+                                                                    },
+                                                                ),
+                                                            );
+                                                        }}
+                                                    >
+                                                        Voir les réponses
+                                                    </DropdownItem>
+                                                )}
 
-                                                {canEdit && (
+                                                {canManageSurveys && (
                                                     <DropdownItem
                                                         icon={
                                                             <Copy className="w-4 h-4" />
@@ -367,7 +375,7 @@ export default function SurveyTable({
                                                     </DropdownItem>
                                                 )}
 
-                                                {canEdit && (
+                                                {canManageSurveys && (
                                                     <DropdownItem
                                                         icon={
                                                             <Trash2 className="w-4 h-4" />
@@ -394,7 +402,7 @@ export default function SurveyTable({
             </div>
 
             <ConfirmDialog
-                isOpen={showDeleteDialog}
+                isOpen={canManageSurveys && showDeleteDialog}
                 onClose={() => setShowDeleteDialog(false)}
                 onConfirm={() => handleDelete()}
                 title="Supprimer l'enquête"
@@ -406,7 +414,7 @@ export default function SurveyTable({
             />
 
             <ConfirmDialog
-                isOpen={showDuplicateDialog}
+                isOpen={canManageSurveys && showDuplicateDialog}
                 onClose={() => {
                     setShowDuplicateDialog(false);
                     setSurveyToDuplicate(null);
@@ -420,7 +428,7 @@ export default function SurveyTable({
             />
 
             <ConfirmDialog
-                isOpen={showDeleteMultipleDialog}
+                isOpen={canManageSurveys && showDeleteMultipleDialog}
                 onClose={() => setShowDeleteMultipleDialog(false)}
                 onConfirm={handleConfirmDeleteMultiple}
                 title="Supprimer les enquêtes"

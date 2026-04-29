@@ -3,7 +3,7 @@ import DropdownMenu, {
     DropdownItem,
 } from "@/Components/Common/DropdownMenu";
 import ConfirmDialog from "@/Components/ConfirmDialog";
-import { Link, router } from "@inertiajs/react";
+import { Link, router, usePage } from "@inertiajs/react";
 import {
     Bell,
     BookOpen,
@@ -29,7 +29,26 @@ interface NavItem {
     href: string;
     icon: React.ComponentType<{ className?: string }>;
     routeName: string;
+    requiredPermission?: keyof typeof defaultPermissions;
 }
+
+const defaultPermissions = {
+    canAccessUsers: false,
+    canViewSurveys: true,
+    canManageEcoles: false,
+    canViewEcoles: true,
+    canManageFormations: false,
+    canViewFormations: true,
+    canManageContrats: false,
+    canViewContrats: true,
+    canManageEntreprise: false,
+    canViewEntreprise: true,
+    canManageParticipants: false,
+    canViewParticipants: true,
+    canCreateSurveys: false,
+    canManageSurveys: false,
+    canAccessReports: true,
+};
 
 const navigationItems: NavItem[] = [
     {
@@ -43,48 +62,56 @@ const navigationItems: NavItem[] = [
         href: "/enquetes",
         icon: SurveyIcon,
         routeName: "surveys.index",
+        requiredPermission: "canViewSurveys",
     },
     {
         name: "Participants",
         href: "/participants",
         icon: StudentIcon,
         routeName: "participants.index",
+        requiredPermission: "canViewParticipants",
     },
     {
         name: "Contrats",
         href: "/contrats",
         icon: FileText,
         routeName: "contrats.index",
+        requiredPermission: "canViewContrats",
     },
     {
         name: "Écoles",
         href: "/ecoles",
         icon: GraduationCap,
         routeName: "ecoles.index",
+        requiredPermission: "canViewEcoles",
     },
     {
         name: "Formations",
         href: "/formations",
         icon: BookOpen,
         routeName: "formations.index",
+        requiredPermission: "canViewFormations",
     },
     {
         name: "Entreprises",
         href: "/entreprises",
         icon: EntrepriseIcon,
         routeName: "entreprises.index",
+        requiredPermission: "canViewEntreprise",
     },
     {
         name: "Utilisateurs",
         href: "/utilisateurs",
         icon: UserCog,
         routeName: "users.index",
+        requiredPermission: "canAccessUsers",
     },
     {
         name: "Rapports",
         href: "/rapports",
         icon: ReportIcon,
         routeName: "reports.index",
+        requiredPermission: "canAccessReports",
     },
     {
         name: "Notifications",
@@ -118,6 +145,9 @@ export default function Sidebar({
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
     const currentPath =
         typeof window !== "undefined" ? window.location.pathname : "/dashboard";
+
+    const { props } = usePage();
+    const permissions = (props.auth as any)?.permissions || defaultPermissions;
 
     const handleLogout = () => {
         setShowLogoutDialog(true);
@@ -188,6 +218,15 @@ export default function Sidebar({
                             item.routeName === "notifications.index";
                         const hasUnread =
                             isNotificationsItem && unreadNotificationCount > 0;
+
+                        // Vérifier si l'utilisateur a accès à cet élément
+                        const hasPermission = item.requiredPermission
+                            ? permissions[item.requiredPermission]
+                            : true;
+
+                        if (!hasPermission) {
+                            return null;
+                        }
 
                         return (
                             <Link

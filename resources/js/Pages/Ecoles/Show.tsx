@@ -32,6 +32,8 @@ export default function Show({
     contrats: Contract[];
 }) {
     const { auth } = usePage<PageProps>().props;
+    const canManageEcoles =
+        (auth as any)?.permissions?.canManageEcoles || false;
 
     return (
         <>
@@ -53,7 +55,7 @@ export default function Show({
                 <div className="space-y-6 w-full">
                     {/* En-tête de l'école */}
                     <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-6 relative">
-                        {auth.user.role_id !== 3 && (
+                        {canManageEcoles && (
                             <div className="absolute top-6 right-6 flex gap-2">
                                 <button
                                     onClick={() =>

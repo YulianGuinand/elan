@@ -3,7 +3,8 @@ import DropdownMenu, {
     DropdownItem,
 } from "@/Components/Common/DropdownMenu";
 import ConfirmDialog from "@/Components/ConfirmDialog";
-import { router } from "@inertiajs/react";
+import { PageProps } from "@/types";
+import { router, usePage } from "@inertiajs/react";
 import {
     Building2,
     Edit,
@@ -46,6 +47,9 @@ export default function EntrepriseTable({
     entreprises,
     totalCount,
 }: EntrepriseTableProps) {
+    const { auth } = usePage<PageProps>().props;
+    const canManageEntreprise =
+        (auth as any)?.permissions?.canManageEntreprise || false;
     const [selected, setSelected] = useState<number[]>([]);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
@@ -113,8 +117,9 @@ export default function EntrepriseTable({
                     Aucune entreprise enregistrée
                 </h3>
                 <p className="text-sm text-gray-500 max-w-xs">
-                    Ajoutez votre première entreprise via la saisie manuelle ou
-                    en important un fichier CSV.
+                    {canManageEntreprise
+                        ? "Ajoutez votre première entreprise via la saisie manuelle ou en important un fichier CSV."
+                        : "Aucune entreprise n'est disponible pour le moment."}
                 </p>
             </div>
         );
@@ -135,7 +140,7 @@ export default function EntrepriseTable({
                 </div>
 
                 {/* Bulk delete */}
-                {selected.length > 0 && (
+                {canManageEntreprise && selected.length > 0 && (
                     <button
                         onClick={handleBulkDelete}
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-semibold transition-colors"
@@ -151,21 +156,21 @@ export default function EntrepriseTable({
                 <table className="w-full">
                     <thead>
                         <tr className="border-b border-gray-100 bg-gray-50">
-                            {/* Checkbox */}
-                            <th className="w-10 px-2 sm:px-3 py-3">
-                                <input
-                                    type="checkbox"
-                                    checked={allSelected}
-                                    ref={(el) => {
-                                        if (el) el.indeterminate = someSelected;
-                                    }}
-                                    onChange={toggleAll}
-                                    className="w-4 h-4 rounded border-gray-300 text-elan-orange focus:ring-elan-orange cursor-pointer"
-                                />
-                            </th>
-                            <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                Entreprise
-                            </th>
+                            {canManageEntreprise && (
+                                <th className="w-10 px-2 sm:px-3 py-3">
+                                    <input
+                                        type="checkbox"
+                                        checked={allSelected}
+                                        ref={(el) => {
+                                            if (el) {
+                                                el.indeterminate = someSelected;
+                                            }
+                                        }}
+                                        onChange={toggleAll}
+                                        className="w-4 h-4 rounded border-gray-300 text-elan-orange focus:ring-elan-orange cursor-pointer"
+                                    />
+                                </th>
+                            )}
                             <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">
                                 Contact
                             </th>
@@ -187,14 +192,16 @@ export default function EntrepriseTable({
                                 className={`hover:bg-gray-50 transition-colors ${selected.includes(e.id) ? "bg-orange-50/50" : ""}`}
                             >
                                 {/* Checkbox */}
-                                <td className="w-10 px-2 sm:px-3 py-4">
-                                    <input
-                                        type="checkbox"
-                                        checked={selected.includes(e.id)}
-                                        onChange={() => toggleOne(e.id)}
-                                        className="w-4 h-4 rounded border-gray-300 text-elan-orange focus:ring-elan-orange cursor-pointer"
-                                    />
-                                </td>
+                                {canManageEntreprise && (
+                                    <td className="w-10 px-2 sm:px-3 py-4">
+                                        <input
+                                            type="checkbox"
+                                            checked={selected.includes(e.id)}
+                                            onChange={() => toggleOne(e.id)}
+                                            className="w-4 h-4 rounded border-gray-300 text-elan-orange focus:ring-elan-orange cursor-pointer"
+                                        />
+                                    </td>
+                                )}
 
                                 {/* Entreprise */}
                                 <td className="px-6 py-4">
@@ -266,29 +273,37 @@ export default function EntrepriseTable({
                                         >
                                             Voir
                                         </DropdownItem>
-                                        <DropdownItem
-                                            icon={<Edit className="w-4 h-4" />}
-                                            onClick={() =>
-                                                router.get(
-                                                    route(
-                                                        "entreprises.edit",
-                                                        e.id,
-                                                    ),
-                                                )
-                                            }
-                                        >
-                                            Modifier
-                                        </DropdownItem>
-                                        <DropdownDivider />
-                                        <DropdownItem
-                                            icon={
-                                                <Trash2 className="w-4 h-4" />
-                                            }
-                                            onClick={() => handleDelete(e.id)}
-                                            danger
-                                        >
-                                            Supprimer
-                                        </DropdownItem>
+                                        {canManageEntreprise && (
+                                            <>
+                                                <DropdownItem
+                                                    icon={
+                                                        <Edit className="w-4 h-4" />
+                                                    }
+                                                    onClick={() =>
+                                                        router.get(
+                                                            route(
+                                                                "entreprises.edit",
+                                                                e.id,
+                                                            ),
+                                                        )
+                                                    }
+                                                >
+                                                    Modifier
+                                                </DropdownItem>
+                                                <DropdownDivider />
+                                                <DropdownItem
+                                                    icon={
+                                                        <Trash2 className="w-4 h-4" />
+                                                    }
+                                                    onClick={() =>
+                                                        handleDelete(e.id)
+                                                    }
+                                                    danger
+                                                >
+                                                    Supprimer
+                                                </DropdownItem>
+                                            </>
+                                        )}
                                     </DropdownMenu>
                                 </td>
                             </tr>

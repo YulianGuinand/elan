@@ -12,7 +12,7 @@ import {
     StatCard,
     SurveyItem,
 } from "@/types/dashboard";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 
 interface DashboardProps {
     stats: StatCard[];
@@ -31,6 +31,10 @@ export default function Dashboard({
     userName,
     tauxParticipation,
 }: DashboardProps) {
+    const { props } = usePage();
+    const permissions = (props.auth as any)?.permissions || {};
+    const canCreateSurveys = permissions.canCreateSurveys || false;
+
     return (
         <>
             <PageHead
@@ -44,10 +48,15 @@ export default function Dashboard({
                     { label: "Accueil", href: "/tableau-de-bord" },
                     { label: "Vue d'ensemble" },
                 ]}
-                actionButton={{
-                    label: "Créer une enquête",
-                    onClick: () => router.get(route("surveys.create")),
-                }}
+                actionButton={
+                    canCreateSurveys
+                        ? {
+                              label: "Créer une enquête",
+                              onClick: () =>
+                                  router.get(route("surveys.create")),
+                          }
+                        : undefined
+                }
             >
                 <div className="space-y-6 w-full">
                     {/* Welcome Banner */}
