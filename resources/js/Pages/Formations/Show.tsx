@@ -1,7 +1,9 @@
+import ConfirmDialog from "@/Components/ConfirmDialog";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { PageProps } from "@/types";
 import { Head, Link, router, usePage } from "@inertiajs/react";
 import { BookOpen, Clock, Edit, Trash2, Users } from "lucide-react";
+import { useState } from "react";
 
 interface Props {
     formation: {
@@ -32,6 +34,7 @@ interface Props {
 export default function Show({ formation }: Props) {
     const { auth } = usePage<PageProps>().props;
     const canManage = auth.user.role_id !== 3;
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     return (
         <>
@@ -91,20 +94,9 @@ export default function Show({ formation }: Props) {
                                         Modifier
                                     </Link>
                                     <button
-                                        onClick={() => {
-                                            if (
-                                                confirm(
-                                                    "Êtes-vous sûr de vouloir supprimer cette formation ?",
-                                                )
-                                            ) {
-                                                router.delete(
-                                                    route(
-                                                        "formations.destroy",
-                                                        formation.id,
-                                                    ),
-                                                );
-                                            }
-                                        }}
+                                        onClick={() =>
+                                            setShowDeleteDialog(true)
+                                        }
                                         className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium text-sm"
                                     >
                                         <Trash2 className="w-4 h-4" />
@@ -204,6 +196,23 @@ export default function Show({ formation }: Props) {
                         )}
                     </div>
                 </div>
+
+                {/* Delete Formation Dialog */}
+                <ConfirmDialog
+                    isOpen={showDeleteDialog}
+                    onClose={() => setShowDeleteDialog(false)}
+                    onConfirm={() => {
+                        router.post(route("formations.destroy", formation.id), {
+                            _method: "DELETE",
+                        });
+                        setShowDeleteDialog(false);
+                    }}
+                    title="Supprimer la formation"
+                    message="Êtes-vous sûr de vouloir supprimer cette formation ?"
+                    confirmText="Supprimer"
+                    cancelText="Annuler"
+                    variant="danger"
+                />
             </DashboardLayout>
         </>
     );

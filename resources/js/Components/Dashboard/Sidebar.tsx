@@ -11,6 +11,7 @@ import {
     FileText,
     GraduationCap,
     LogOut,
+    LogOutIcon,
     Settings,
     UserCog,
     X,
@@ -136,7 +137,8 @@ export default function Sidebar({
                 message="Êtes-vous sûr de vouloir vous déconnecter ?"
                 confirmText="Déconnecter"
                 cancelText="Annuler"
-                variant="warning"
+                variant="default"
+                icon={<LogOutIcon className="w-6 h-6 flex-shrink-0 mt-0.5" />}
             />
             {/* Overlay pour mobile */}
             {isOpen && (

@@ -6,7 +6,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/Components/ui/dialog";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, InfoIcon } from "lucide-react";
+import { ReactElement } from "react";
 
 interface ConfirmDialogProps {
     isOpen: boolean;
@@ -18,6 +19,7 @@ interface ConfirmDialogProps {
     cancelText?: string;
     variant?: "danger" | "warning" | "default";
     isLoading?: boolean;
+    icon?: ReactElement;
 }
 
 export default function ConfirmDialog({
@@ -30,14 +32,19 @@ export default function ConfirmDialog({
     cancelText = "Annuler",
     variant = "default",
     isLoading = false,
+    icon,
 }: ConfirmDialogProps) {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent showCloseButton={false}>
                 <DialogHeader>
                     <div className="flex items-center gap-3">
-                        {variant === "danger" && (
+                        {variant === "danger" ? (
                             <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+                        ) : variant === "warning" ? (
+                            <InfoIcon className="w-6 h-6 text-elan-orange flex-shrink-0 mt-0.5"/>
+                        ) : (
+                            icon
                         )}
                         <DialogTitle>{title}</DialogTitle>
                     </div>

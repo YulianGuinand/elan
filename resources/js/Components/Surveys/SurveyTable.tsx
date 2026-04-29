@@ -54,7 +54,13 @@ export default function SurveyTable({
 }: SurveyTableProps) {
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [showDeleteMultipleDialog, setShowDeleteMultipleDialog] =
+        useState(false);
+    const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
     const [id, setId] = useState<number | null>(null);
+    const [surveyToDuplicate, setSurveyToDuplicate] = useState<Survey | null>(
+        null,
+    );
 
     const toggleSelect = (id: number) => {
         const newSelected = new Set(selected);
@@ -75,8 +81,17 @@ export default function SurveyTable({
     };
 
     const handleDuplicate = (survey: Survey) => {
-        if (confirm(`Dupliquer "${survey.titre}" ?`)) {
-            router.post(route("surveys.duplicate", { id: survey.id }));
+        setSurveyToDuplicate(survey);
+        setShowDuplicateDialog(true);
+    };
+
+    const handleConfirmDuplicate = () => {
+        if (surveyToDuplicate) {
+            router.post(
+                route("surveys.duplicate", { id: surveyToDuplicate.id }),
+            );
+            setShowDuplicateDialog(false);
+            setSurveyToDuplicate(null);
         }
     };
 
@@ -87,17 +102,14 @@ export default function SurveyTable({
 
     const handleDeleteMultiple = () => {
         if (selected.size === 0) return;
+        setShowDeleteMultipleDialog(true);
+    };
 
-        const count = selected.size;
-        if (
-            confirm(
-                `Supprimer ${count} enquête${count > 1 ? "s" : ""} sélectionnée${count > 1 ? "s" : ""} ?`,
-            )
-        ) {
-            router.post(route("surveys.bulk-destroy"), {
-                ids: Array.from(selected),
-            });
-        }
+    const handleConfirmDeleteMultiple = () => {
+        router.post(route("surveys.bulk-destroy"), {
+            ids: Array.from(selected),
+        });
+        setShowDeleteMultipleDialog(false);
     };
 
     if (surveys.length === 0) {
@@ -391,6 +403,31 @@ export default function SurveyTable({
                 cancelText="Annuler"
                 variant="danger"
                 isLoading={false}
+            />
+
+            <ConfirmDialog
+                isOpen={showDuplicateDialog}
+                onClose={() => {
+                    setShowDuplicateDialog(false);
+                    setSurveyToDuplicate(null);
+                }}
+                onConfirm={handleConfirmDuplicate}
+                title="Dupliquer l'enquête"
+                message={`Dupliquer "${surveyToDuplicate?.titre}" ?`}
+                confirmText="Dupliquer"
+                cancelText="Annuler"
+                variant="default"
+            />
+
+            <ConfirmDialog
+                isOpen={showDeleteMultipleDialog}
+                onClose={() => setShowDeleteMultipleDialog(false)}
+                onConfirm={handleConfirmDeleteMultiple}
+                title="Supprimer les enquêtes"
+                message={`Êtes-vous sûr de vouloir supprimer ${selected.size} enquête${selected.size > 1 ? "s" : ""} sélectionnée${selected.size > 1 ? "s" : ""} ?`}
+                confirmText="Supprimer"
+                cancelText="Annuler"
+                variant="danger"
             />
         </>
     );

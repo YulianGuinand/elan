@@ -31,7 +31,7 @@ class ReportsController extends Controller
             ->select('id', 'titre')
             ->orderByDesc('created_at')
             ->get()
-            ->map(fn ($survey) => [
+            ->map(fn($survey) => [
                 'value' => (string) $survey->id,
                 'label' => $survey->titre,
             ])
@@ -39,7 +39,7 @@ class ReportsController extends Controller
 
         return Inertia::render('Reports', [
             'kpis' => $kpis,
-            'satisfactionEvolution' => $this->buildSatisfactionEvolution($filters, $startDate, $endDate),
+            'satisfactionEvolution' => $this->buildSatisfactionEvolution($filters),
             'audienceDistribution' => $this->buildAudienceDistribution($filters, $startDate, $endDate),
             'filters' => $filters,
             'surveyOptions' => $surveyOptions,
@@ -57,12 +57,12 @@ class ReportsController extends Controller
         $filters = $this->sanitizeFilters($request);
         [$startDate, $endDate] = $this->resolvePeriodBounds($filters['period']);
         $scope = $request->string('scope')->toString();
-        if (! in_array($scope, ['summary', 'answers'], true)) {
+        if (!in_array($scope, ['summary', 'answers'], true)) {
             $scope = 'summary';
         }
 
         $format = $request->string('format')->toString();
-        if (! in_array($format, ['csv', 'xlsx'], true)) {
+        if (!in_array($format, ['csv', 'xlsx'], true)) {
             abort(422, 'Format d export invalide.');
         }
 
@@ -94,13 +94,13 @@ class ReportsController extends Controller
         $validAudiences = ['all', 'apprentis', 'formateurs', 'employeurs'];
         $validIndicators = ['overview', 'participation', 'satisfaction', 'responses'];
 
-        if (! in_array($period, $validPeriods, true)) {
+        if (!in_array($period, $validPeriods, true)) {
             $period = '30days';
         }
-        if (! in_array($audience, $validAudiences, true)) {
+        if (!in_array($audience, $validAudiences, true)) {
             $audience = 'all';
         }
-        if (! in_array($indicator, $validIndicators, true)) {
+        if (!in_array($indicator, $validIndicators, true)) {
             $indicator = 'overview';
         }
 
@@ -230,7 +230,7 @@ class ReportsController extends Controller
 
                 return $this->normalizeNumericValue((string) $position);
             })
-            ->filter(fn ($value) => $value !== null)
+            ->filter(fn($value) => $value !== null)
             ->values();
 
         $satisfactionAvg = $valuesArray->isNotEmpty()
@@ -272,8 +272,8 @@ class ReportsController extends Controller
             [
                 'id' => 'participation',
                 'title' => 'Taux de participation',
-                'value' => $participationRateCurrent.'%',
-                'subtitle' => $current['contacts'] > 0 ? $current['participations'].' participants / '.$current['contacts'].' invitations' : 'Aucune invitation sur la période',
+                'value' => $participationRateCurrent . '%',
+                'subtitle' => $current['contacts'] > 0 ? $current['participations'] . ' participants / ' . $current['contacts'] . ' invitations' : 'Aucune invitation sur la période',
                 'change' => round($participationRateCurrent - $participationRatePrevious, 1),
                 'changeText' => $this->formatDeltaText($participationRateCurrent - $participationRatePrevious, 'pts'),
                 'icon' => 'participation',
@@ -311,14 +311,18 @@ class ReportsController extends Controller
             return $kpis;
         }
 
-        return array_values(array_filter($kpis, fn ($kpi) => $kpi['id'] === $filters['indicator']));
+        return array_values(array_filter($kpis, fn($kpi) => $kpi['id'] === $filters['indicator']));
     }
 
     /**
      * Construit les données de la courbe de satisfaction.
      */
-    private function buildSatisfactionEvolution(array $filters, Carbon $startDate, Carbon $endDate): array
+    private function buildSatisfactionEvolution(array $filters): array
     {
+        // Toujours utiliser les 6 derniers mois pour ce graphique
+        $endDate = Carbon::today()->endOfDay();
+        $startDate = Carbon::today()->subMonthsNoOverflow(5)->startOfMonth();
+
         $buckets = $this->buildTimeBuckets($startDate, $endDate, 6);
 
         return collect($buckets)->map(function ($bucket) use ($filters) {
@@ -339,24 +343,34 @@ class ReportsController extends Controller
             }
 
             // Récupérer les valeurs en utilisant la position du choix
-            $values = $query
+            $responses = $query
                 ->select('r.valeur', 'q.id as question_id')
-                ->get()
-                ->map(function ($row) {
-                    // Obtenir la position du choix au sein de sa question
-                    $position = DB::table('choixes')
-                        ->where('question_id', $row->question_id)
-                        ->where('id', '<=', $row->valeur)
-                        ->count();
+                ->get();
 
-                    return $this->normalizeNumericValue((string) $position);
-                })
-                ->filter(fn ($value) => $value !== null)
+            $values = $responses->map(function ($row) {
+                // Obtenir la position du choix au sein de sa question
+                $position = DB::table('choixes')
+                    ->where('question_id', $row->question_id)
+                    ->where('id', '<=', $row->valeur)
+                    ->count();
+
+                $normalized = $this->normalizeNumericValue((string) $position);
+                // S'assurer que la valeur est entre 0 et 5
+                return $normalized !== null ? (float) max(0, min(5, $normalized)) : null;
+            })
+                ->filter(fn($value) => $value !== null && is_numeric($value))
                 ->values();
+
+            // Calcul de la moyenne avec fallback à 0
+            $average = 0.0;
+            if ($values->isNotEmpty()) {
+                $average = (float) $values->avg();
+                $average = max(0.0, min(5.0, $average)); // Double-check: clamp à 0-5
+            }
 
             return [
                 'label' => $bucket['label'],
-                'value' => $values->isNotEmpty() ? round($values->avg(), 2) : 0,
+                'value' => round($average, 2),
             ];
         })->toArray();
     }
@@ -434,7 +448,7 @@ class ReportsController extends Controller
     private function buildExportRows(array $filters, Carbon $startDate, Carbon $endDate): Collection
     {
         $surveys = Enquete::query()
-            ->when($filters['survey'] !== 'all', fn ($q) => $q->where('id', $filters['survey']))
+            ->when($filters['survey'] !== 'all', fn($q) => $q->where('id', $filters['survey']))
             ->orderByDesc('created_at')
             ->get(['id', 'titre']);
 
@@ -442,7 +456,7 @@ class ReportsController extends Controller
             return collect([
                 [
                     'Enquête' => 'Aucune enquête',
-                    'Période' => $startDate->format('d/m/Y').' - '.$endDate->format('d/m/Y'),
+                    'Période' => $startDate->format('d/m/Y') . ' - ' . $endDate->format('d/m/Y'),
                     'Contacts' => 0,
                     'Participations' => 0,
                     'Taux participation (%)' => 0,
@@ -463,7 +477,7 @@ class ReportsController extends Controller
 
             return [
                 'Enquête' => $survey->titre,
-                'Période' => $startDate->format('d/m/Y').' - '.$endDate->format('d/m/Y'),
+                'Période' => $startDate->format('d/m/Y') . ' - ' . $endDate->format('d/m/Y'),
                 'Contacts' => $metrics['contacts'],
                 'Participations' => $metrics['participations'],
                 'Taux participation (%)' => $rate,
@@ -511,7 +525,7 @@ class ReportsController extends Controller
 
                 return [
                     'Enquête' => $row->enquete_titre,
-                    'Nom participant' => trim(($row->participant_prenom ?? '').' '.($row->participant_nom ?? '')),
+                    'Nom participant' => trim(($row->participant_prenom ?? '') . ' ' . ($row->participant_nom ?? '')),
                     'Email participant' => $row->participant_mail,
                     'Rôle participant' => $row->participant_role,
                     'Question #' => $row->question_numero,
@@ -534,7 +548,7 @@ class ReportsController extends Controller
                 'Question #' => '-',
                 'Question' => '-',
                 'Réponse' => '-',
-                'Date réponse' => $startDate->format('d/m/Y').' - '.$endDate->format('d/m/Y'),
+                'Date réponse' => $startDate->format('d/m/Y') . ' - ' . $endDate->format('d/m/Y'),
             ],
         ]);
     }
@@ -552,7 +566,7 @@ class ReportsController extends Controller
                     $labels = DB::table('choixes')
                         ->where('question_id', $questionId)
                         ->whereIn('id', $ids)
-                        ->orderByRaw('FIELD(id, '.implode(',', $ids).')')
+                        ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
                         ->pluck('libelle')
                         ->toArray();
 
@@ -617,19 +631,47 @@ class ReportsController extends Controller
 
         $prefix = $delta > 0 ? '+' : '';
 
-        return $prefix.round($delta, 1).' '.$unit;
+        return $prefix . round($delta, 1) . ' ' . $unit;
     }
 
     /**
      * Crée des tranches de temps pour les graphiques.
+     * Pour 6 buckets, crée des buckets mensuels (1 mois par bucket).
      */
     private function buildTimeBuckets(Carbon $startDate, Carbon $endDate, int $bucketCount): array
     {
+        $buckets = [];
+
+        // Cas spécial : 6 buckets = 6 mois
+        if ($bucketCount === 6) {
+            $cursor = $startDate->copy()->startOfMonth();
+
+            for ($i = 0; $i < $bucketCount; $i++) {
+                $bucketStart = $cursor->copy();
+                $bucketEnd = $i === $bucketCount - 1
+                    ? $endDate->copy()
+                    : $cursor->copy()->endOfMonth();
+
+                // Format du label: mois-année
+                $label = $bucketStart->format('M Y');
+
+                $buckets[] = [
+                    'start' => $bucketStart,
+                    'end' => $bucketEnd,
+                    'label' => $label,
+                ];
+
+                $cursor = $bucketEnd->copy()->addDay()->startOfMonth();
+            }
+
+            return $buckets;
+        }
+
+        // Cas générique : division temporelle égale
         $totalSeconds = max(1, $endDate->diffInSeconds($startDate));
         $step = (int) floor($totalSeconds / $bucketCount);
         $step = max(1, $step);
 
-        $buckets = [];
         $cursor = $startDate->copy();
 
         for ($i = 0; $i < $bucketCount; $i++) {
@@ -638,10 +680,12 @@ class ReportsController extends Controller
                 ? $endDate->copy()
                 : $cursor->copy()->addSeconds($step)->subSecond();
 
+            $label = $bucketStart->format('M Y');
+
             $buckets[] = [
                 'start' => $bucketStart,
                 'end' => $bucketEnd,
-                'label' => $bucketStart->format('d/m'),
+                'label' => $label,
             ];
 
             $cursor = $bucketEnd->copy()->addSecond();

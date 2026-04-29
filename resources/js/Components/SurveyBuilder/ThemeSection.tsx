@@ -1,4 +1,5 @@
 import Card, { CardHeader } from "@/Components/Common/Card";
+import ConfirmDialog from "@/Components/ConfirmDialog";
 import {
     getQuestionIcon,
     getQuestionTypeLabel,
@@ -40,16 +41,21 @@ export default function ThemeSection({
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState(theme.title);
     const [editingQuestion, setEditingQuestion] = useState<Question | null>(
-        null
+        null,
+    );
+    const [showDeleteThemeDialog, setShowDeleteThemeDialog] = useState(false);
+    const [showDeleteQuestionDialog, setShowDeleteQuestionDialog] =
+        useState(false);
+    const [questionToDelete, setQuestionToDelete] = useState<string | null>(
+        null,
     );
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8, // Require 8px movement before dragging starts
+                distance: 8,
             },
-        })
-        // KeyboardSensor désactivé pour éviter les conflits avec les champs de saisie
+        }),
     );
 
     const handleSaveTitle = () => {
@@ -60,18 +66,24 @@ export default function ThemeSection({
     };
 
     const handleDeleteTheme = () => {
-        if (
-            confirm(
-                `Êtes-vous sûr de vouloir supprimer le thème "${theme.title}" et toutes ses questions ?`
-            )
-        ) {
-            deleteTheme(theme.id);
-        }
+        setShowDeleteThemeDialog(true);
+    };
+
+    const handleConfirmDeleteTheme = () => {
+        deleteTheme(theme.id);
+        setShowDeleteThemeDialog(false);
     };
 
     const handleDeleteQuestion = (questionId: string) => {
-        if (confirm("Êtes-vous sûr de vouloir supprimer cette question ?")) {
-            deleteQuestion(theme.id, questionId);
+        setQuestionToDelete(questionId);
+        setShowDeleteQuestionDialog(true);
+    };
+
+    const handleConfirmDeleteQuestion = () => {
+        if (questionToDelete) {
+            deleteQuestion(theme.id, questionToDelete);
+            setShowDeleteQuestionDialog(false);
+            setQuestionToDelete(null);
         }
     };
 
@@ -80,14 +92,14 @@ export default function ThemeSection({
 
         if (over && active.id !== over.id) {
             const oldIndex = theme.questions.findIndex(
-                (q) => q.id === active.id
+                (q) => q.id === active.id,
             );
             const newIndex = theme.questions.findIndex((q) => q.id === over.id);
 
             const newOrder = arrayMove(theme.questions, oldIndex, newIndex);
             reorderQuestions(
                 theme.id,
-                newOrder.map((q) => q.id)
+                newOrder.map((q) => q.id),
             );
         }
     };
@@ -211,6 +223,33 @@ export default function ThemeSection({
                     onClose={() => setEditingQuestion(null)}
                 />
             )}
+
+            {/* Delete Theme Dialog */}
+            <ConfirmDialog
+                isOpen={showDeleteThemeDialog}
+                onClose={() => setShowDeleteThemeDialog(false)}
+                onConfirm={handleConfirmDeleteTheme}
+                title="Supprimer le thème"
+                message={`Êtes-vous sûr de vouloir supprimer le thème "${theme.title}" et toutes ses questions ?`}
+                confirmText="Supprimer"
+                cancelText="Annuler"
+                variant="danger"
+            />
+
+            {/* Delete Question Dialog */}
+            <ConfirmDialog
+                isOpen={showDeleteQuestionDialog}
+                onClose={() => {
+                    setShowDeleteQuestionDialog(false);
+                    setQuestionToDelete(null);
+                }}
+                onConfirm={handleConfirmDeleteQuestion}
+                title="Supprimer la question"
+                message="Êtes-vous sûr de vouloir supprimer cette question ?"
+                confirmText="Supprimer"
+                cancelText="Annuler"
+                variant="danger"
+            />
         </>
     );
 }

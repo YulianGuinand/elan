@@ -2,6 +2,7 @@ import { ToastContainer, useToastManager } from "@/Components/Common/Toast";
 import Header from "@/Components/Dashboard/Header";
 import Sidebar from "@/Components/Dashboard/Sidebar";
 import OnboardingStepper from "@/Components/Onboarding/OnboardingStepper";
+import useRefreshOnLogin from "@/Hooks/useRefreshOnLogin";
 import { useUnreadNotificationCount } from "@/Hooks/useUnreadNotificationCount";
 import { PageProps } from "@/types";
 import { usePage } from "@inertiajs/react";
@@ -32,6 +33,9 @@ export default function DashboardLayout({
     children,
     noPadding = false,
 }: DashboardLayoutProps) {
+    // Refrais automatique de la page une fois après la connexion
+    useRefreshOnLogin();
+
     const { auth, flash, errors } = usePage<PageProps>().props;
     const user = auth?.user;
     const [sidebarOpen, setSidebarOpen] = useState(false);

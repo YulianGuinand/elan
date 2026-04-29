@@ -1,4 +1,5 @@
 import FadeIn from "@/Components/Animations/FadeIn";
+import ConfirmDialog from "@/Components/ConfirmDialog";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Survey } from "@/types/surveys";
 import { Head, router } from "@inertiajs/react";
@@ -133,6 +134,9 @@ export default function SurveyViewInformation({
         [],
     );
     const [isSendingMails, setIsSendingMails] = useState(false);
+    const [showSendAllDialog, setShowSendAllDialog] = useState(false);
+    const [showRelanceDialog, setShowRelanceDialog] = useState(false);
+    const [showPhoneContactAlert, setShowPhoneContactAlert] = useState(false);
 
     // Debounce la recherche (500ms)
     useEffect(() => {
@@ -219,20 +223,21 @@ export default function SurveyViewInformation({
     const notRespondedCount = filteredParticipants.length - respondedCount;
 
     const handleSendInvitations = () => {
-        if (
-            confirm(
-                "Envoyer les invitations par mail à tous les participants ?",
-            )
-        ) {
-            setIsSendingMails(true);
-            router.post(
-                route("surveys.send-invitations", { id: enquete.id }),
-                {},
-                {
-                    onFinish: () => setIsSendingMails(false),
+        setShowSendAllDialog(true);
+    };
+
+    const handleConfirmSendAll = () => {
+        setIsSendingMails(true);
+        router.post(
+            route("surveys.send-invitations", { id: enquete.id }),
+            {},
+            {
+                onFinish: () => {
+                    setIsSendingMails(false);
+                    setShowSendAllDialog(false);
                 },
-            );
-        }
+            },
+        );
     };
 
     const handleToggleParticipant = (participantId: number) => {
@@ -253,40 +258,26 @@ export default function SurveyViewInformation({
 
     const handleRelance = () => {
         if (selectedParticipants.length === 0) {
-            alert("Veuillez sélectionner au moins un participant");
+            setShowPhoneContactAlert(true);
             return;
         }
 
-        if (
-            confirm(
-                `Envoyer les invitations par mail à ${selectedParticipants.length} participant(s) sélectionné(s) ?`,
-            )
-        ) {
-            setIsSendingMails(true);
-            router.post(
-                route("surveys.send-invitations", { id: enquete.id }),
-                { participant_ids: selectedParticipants },
-                {
-                    onFinish: () => {
-                        setIsSendingMails(false);
-                        setSelectedParticipants([]);
-                    },
-                },
-            );
-        }
+        setShowRelanceDialog(true);
     };
 
-    const handleMarkPhoneContact = () => {
-        if (selectedParticipants.length === 0) {
-            alert("Veuillez sélectionner au moins un participant");
-            return;
-        }
-
-        // Rediriger vers la page de remplissage pour le premier participant sélectionné
-        window.location.href = route("survey.fill.admin", {
-            id: enquete.id,
-            participant_id: selectedParticipants[0],
-        });
+    const handleConfirmRelance = () => {
+        setIsSendingMails(true);
+        router.post(
+            route("surveys.send-invitations", { id: enquete.id }),
+            { participant_ids: selectedParticipants },
+            {
+                onFinish: () => {
+                    setIsSendingMails(false);
+                    setSelectedParticipants([]);
+                    setShowRelanceDialog(false);
+                },
+            },
+        );
     };
 
     return (
@@ -501,32 +492,18 @@ export default function SurveyViewInformation({
                             <div className="flex gap-2">
                                 {!isSendingMails &&
                                     selectedParticipants.length !== 0 && (
-                                        <>
-                                            <button
-                                                onClick={handleMarkPhoneContact}
-                                                disabled={
-                                                    isSendingMails ||
-                                                    selectedParticipants.length ===
-                                                        0
-                                                }
-                                                className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white hover:bg-purple-700 rounded-lg transition-colors text-sm font-medium"
-                                            >
-                                                <Phone className="w-4 h-4" />
-                                                Remplir par téléphone
-                                            </button>
-                                            <button
-                                                onClick={handleRelance}
-                                                disabled={
-                                                    isSendingMails ||
-                                                    selectedParticipants.length ===
-                                                        0
-                                                }
-                                                className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors text-sm font-medium"
-                                            >
-                                                <Send className="w-4 h-4" />
-                                                Relancer par mail
-                                            </button>
-                                        </>
+                                        <button
+                                            onClick={handleRelance}
+                                            disabled={
+                                                isSendingMails ||
+                                                selectedParticipants.length ===
+                                                    0
+                                            }
+                                            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors text-sm font-medium"
+                                        >
+                                            <Send className="w-4 h-4" />
+                                            Relancer par mail
+                                        </button>
                                     )}
                                 <button
                                     onClick={handleSendInvitations}
@@ -787,6 +764,43 @@ export default function SurveyViewInformation({
                     </div>
                 </FadeIn>
             </DashboardLayout>
+
+            {/* Send All Invitations Dialog */}
+            <ConfirmDialog
+                isOpen={showSendAllDialog}
+                onClose={() => setShowSendAllDialog(false)}
+                onConfirm={handleConfirmSendAll}
+                title="Envoyer les invitations"
+                message="Envoyer les invitations par mail à tous les participants (sauf à ceux qui ont déjà répondu) ?"
+                confirmText="Envoyer"
+                cancelText="Annuler"
+                variant="default"
+                isLoading={isSendingMails}
+            />
+
+            {/* Relance Dialog */}
+            <ConfirmDialog
+                isOpen={showRelanceDialog}
+                onClose={() => setShowRelanceDialog(false)}
+                onConfirm={handleConfirmRelance}
+                title="Relancer les participants"
+                message={`Envoyer les invitations par mail à ${selectedParticipants.length} participant(s) sélectionné(s) ?`}
+                confirmText="Envoyer"
+                cancelText="Annuler"
+                variant="default"
+                isLoading={isSendingMails}
+            />
+
+            {/* Phone Contact Alert Dialog */}
+            <ConfirmDialog
+                isOpen={showPhoneContactAlert}
+                onClose={() => setShowPhoneContactAlert(false)}
+                onConfirm={() => setShowPhoneContactAlert(false)}
+                title="Aucune sélection"
+                message="Veuillez sélectionner au moins un participant"
+                confirmText="OK"
+                variant="default"
+            />
         </>
     );
 }

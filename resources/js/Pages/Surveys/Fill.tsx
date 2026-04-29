@@ -282,23 +282,38 @@ export default function SurveyFill({
                 >
                     <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 w-full items-start">
                         {/* Barre Latérale Gauche */}
-                        <div className="lg:col-span-3 flex flex-col gap-6 w-full sticky top-8">
-                            <FadeIn delay={100}>
-                                <FillSidebar
-                                    participant={selectedParticipant}
-                                    onChangeParticipant={() =>
-                                        setIsParticipantConfirmed(false)
-                                    }
-                                />
-                            </FadeIn>
+                        <div className="lg:col-span-3 flex flex-col gap-6 w-full">
+                            <div className="sticky top-8 flex flex-col gap-6">
+                                <FadeIn delay={100}>
+                                    <FillSidebar
+                                        participant={selectedParticipant}
+                                        onChangeParticipant={() =>
+                                            setIsParticipantConfirmed(false)
+                                        }
+                                    />
+                                </FadeIn>
 
-                            <FadeIn delay={200}>
-                                <ThemeNavigation
-                                    themes={themes}
-                                    currentThemeIndex={currentThemeIndex}
-                                    setCurrentThemeIndex={setCurrentThemeIndex}
-                                    answers={answers}
-                                />
+                                <FadeIn delay={200}>
+                                    <ThemeNavigation
+                                        themes={themes}
+                                        currentThemeIndex={currentThemeIndex}
+                                        setCurrentThemeIndex={
+                                            setCurrentThemeIndex
+                                        }
+                                        answers={answers}
+                                    />
+                                </FadeIn>
+                            </div>
+
+                            <FadeIn delay={300}>
+                                <button
+                                    type="button"
+                                    onClick={handleSubmitPhoneNoResponse}
+                                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors text-sm font-medium w-full"
+                                >
+                                    <Phone className="w-4 h-4" />
+                                    Téléphone - Pas de réponse
+                                </button>
                             </FadeIn>
                         </div>
 
@@ -386,26 +401,13 @@ export default function SurveyFill({
                                                         <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                                     </PrimaryButton>
                                                 ) : (
-                                                    <div className="flex gap-3">
-                                                        <button
-                                                            type="button"
-                                                            onClick={
-                                                                handleSubmitPhoneNoResponse
-                                                            }
-                                                            className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors text-sm font-medium"
-                                                        >
-                                                            <Phone className="w-4 h-4" />
-                                                            Téléphone - Pas de
-                                                            réponse
-                                                        </button>
-                                                        <PrimaryButton
-                                                            type="submit"
-                                                            className="flex flex-row"
-                                                        >
-                                                            <Send className="w-4 h-4 mr-3.5" />
-                                                            Sauvegarder
-                                                        </PrimaryButton>
-                                                    </div>
+                                                    <PrimaryButton
+                                                        type="submit"
+                                                        className="flex flex-row"
+                                                    >
+                                                        <Send className="w-4 h-4 mr-3.5" />
+                                                        Sauvegarder
+                                                    </PrimaryButton>
                                                 )}
                                             </div>
                                         </div>

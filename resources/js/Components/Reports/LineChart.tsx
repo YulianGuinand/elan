@@ -15,7 +15,9 @@ export default function LineChart({
         return (
             <div className="bg-white rounded-lg shadow-sm p-6 h-full">
                 <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                        {title}
+                    </h3>
                 </div>
                 <div className="h-[250px] flex items-center justify-center text-sm text-gray-500">
                     Aucune donnée disponible
@@ -34,13 +36,20 @@ export default function LineChart({
 
     // Trouver min et max des valeurs
     const values = data.map((d) => d.value);
-    const minValue = Math.min(...values);
-    const maxValue = Math.max(...values);
+    const dataMinValue = Math.min(...values);
+    const dataMaxValue = Math.max(...values);
+
+    // Pour les graphiques de satisfaction, utiliser une plage fixe 0-5
+    // Sinon, adapter la plage aux données
+    const minValue = dataMinValue >= 0 && dataMaxValue <= 5 ? 0 : dataMinValue;
+    const maxValue = dataMinValue >= 0 && dataMaxValue <= 5 ? 5 : dataMaxValue;
     const valueRange = maxValue - minValue || 1;
 
     // Fonction pour convertir les données en points SVG
     const getX = (index: number) =>
-        data.length === 1 ? chartWidth / 2 : (index / (data.length - 1)) * chartWidth;
+        data.length === 1
+            ? chartWidth / 2
+            : (index / (data.length - 1)) * chartWidth;
     const getY = (value: number) =>
         chartHeight - ((value - minValue) / valueRange) * chartHeight;
 

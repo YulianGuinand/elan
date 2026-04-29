@@ -12,6 +12,7 @@ use App\Models\Reponse;
 use App\Models\Theme;
 use App\Models\Type_Reponse;
 use App\Models\Utilisateur;
+use App\Services\SurveyMailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -942,7 +943,6 @@ class SurveyController extends Controller
     }
     public function sendInvitations(Request $request, string $id)
     {
-        // Augmenter le timeout pour la création des jobs en queue
         set_time_limit(60);
 
         $user = Auth::user();
@@ -957,7 +957,7 @@ class SurveyController extends Controller
         $participantIds = $request->input('participant_ids', []);
 
         // Utiliser le service
-        $mailService = new \App\Services\SurveyMailService;
+        $mailService = new SurveyMailService();
         $results = $mailService->sendSurveyInvitations($enquete, $participantIds);
 
         $message = "Invitations en cours d'envoi à {$results['sent']} participant(s)...";

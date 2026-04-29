@@ -148,14 +148,45 @@ class DashboardController extends Controller
             $typeTaux = 'info';
         }
 
-        // 3) Relances nécessaires (participants contactés mais n'ayant pas répondu)
-        $relancesNecessaires = $participantsContactes - $participantsRepondus;
+        // 3) Relances nécessaires (participants n'ayant pas répondu depuis 14 jours après date_debut)
+        $relancesNecessaires = 0;
+        $relancesCurrentMonth = 0;
+        $relancesPreviousMonth = 0;
 
-        // Relances du mois courant
-        $relancesCurrentMonth = max(0, $participantsContactesCurrentMonth - $participantsReponsCurrentMonth);
+        // Boucler sur chaque enquête
+        $enquetes = \App\Models\Enquete::all();
 
-        // Relances du mois précédent
-        $relancesPreviousMonth = max(0, $participantsContactesPreviousMonth - $participantsRepondusPreviousMonth);
+        foreach ($enquetes as $enquete) {
+            // Vérifier si la date de début existe et si 14 jours ont passé
+            if ($enquete->date_debut && $enquete->date_debut->addDays(14) <= $now) {
+                // Participants contactés pour cette enquête
+                $participantsContactesEnquete = DB::table('participer')
+                    ->where('enquete_id', $enquete->id)
+                    ->count();
+
+                // Participants ayant répondu à cette enquête
+                $participantsReponsEnquete = DB::table('repondre as r')
+                    ->join('questions as q', 'q.id', '=', 'r.question_id')
+                    ->where('q.enquete_id', $enquete->id)
+                    ->select('r.participant_id')
+                    ->distinct()
+                    ->count('r.participant_id');
+
+                // Ajouter à relances nécessaires
+                $relancesEnquete = max(0, $participantsContactesEnquete - $participantsReponsEnquete);
+                $relancesNecessaires += $relancesEnquete;
+
+                // Relances du mois courant (si l'enquête a été lancée ce mois)
+                if ($enquete->date_debut->between($currentStart, $currentEnd)) {
+                    $relancesCurrentMonth += $relancesEnquete;
+                }
+
+                // Relances du mois précédent
+                if ($enquete->date_debut->between($previousStart, $previousEnd)) {
+                    $relancesPreviousMonth += $relancesEnquete;
+                }
+            }
+        }
 
         $relanceVariation = $formatVariation((float) $relancesCurrentMonth, (float) $relancesPreviousMonth);
 

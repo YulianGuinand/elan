@@ -1,4 +1,5 @@
 import FadeIn from "@/Components/Animations/FadeIn";
+import ConfirmDialog from "@/Components/ConfirmDialog";
 import NotificationTable from "@/Components/Notifications/NotificationTable";
 import PageHead from "@/Components/Seo/PageHead";
 import Pagination from "@/Components/Surveys/Pagination";
@@ -63,6 +64,12 @@ export default function Notifications({
     const [selectedNotifications, setSelectedNotifications] = useState<
         Set<number>
     >(new Set());
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [showDeleteMultipleDialog, setShowDeleteMultipleDialog] =
+        useState(false);
+    const [notificationToDelete, setNotificationToDelete] = useState<
+        number | null
+    >(null);
 
     const [filters, setFilters] = useState({
         search: initialFilters.search,
@@ -116,30 +123,46 @@ export default function Notifications({
     };
 
     const handleMarkAsRead = (notificationId: number) => {
-        router.patch(
+        router.post(
             route("notifications.mark-as-read", {
                 notification: notificationId,
             }),
-            {},
+            {
+                _method: "PATCH",
+            },
             {
                 onSuccess: () => {
                     setSelectedNotifications(new Set());
+                },
+                onError: (errors) => {
+                    console.error("Mark as read error:", errors);
                 },
             },
         );
     };
 
     const handleDelete = (notificationId: number) => {
-        if (
-            confirm("Êtes-vous sûr de vouloir supprimer cette notification ?")
-        ) {
-            router.delete(
+        setNotificationToDelete(notificationId);
+        setShowDeleteDialog(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (notificationToDelete) {
+            router.post(
                 route("notifications.destroy", {
-                    notification: notificationId,
+                    notification: notificationToDelete,
                 }),
+                {
+                    _method: "DELETE",
+                },
                 {
                     onSuccess: () => {
                         setSelectedNotifications(new Set());
+                        setShowDeleteDialog(false);
+                        setNotificationToDelete(null);
+                    },
+                    onError: (errors) => {
+                        console.error("Delete error:", errors);
                     },
                 },
             );
@@ -148,26 +171,38 @@ export default function Notifications({
 
     const handleDeleteMultiple = () => {
         if (selectedNotifications.size === 0) return;
+        setShowDeleteMultipleDialog(true);
+    };
 
-        const count = selectedNotifications.size;
-        if (
-            confirm(
-                `Êtes-vous sûr de vouloir supprimer ${count} notification${count > 1 ? "s" : ""} ?`,
-            )
-        ) {
-            router.post(route("notifications.bulk-destroy"), {
+    const handleConfirmDeleteMultiple = () => {
+        router.post(
+            route("notifications.bulk-destroy"),
+            {
                 ids: Array.from(selectedNotifications),
-            });
-        }
+            },
+            {
+                onSuccess: () => {
+                    setShowDeleteMultipleDialog(false);
+                },
+                onError: (errors) => {
+                    console.error("Delete multiple error:", errors);
+                },
+            },
+        );
     };
 
     const handleMarkAllAsRead = () => {
-        router.patch(
+        router.post(
             route("notifications.mark-all-as-read"),
-            {},
+            {
+                _method: "PATCH",
+            },
             {
                 onSuccess: () => {
                     setSelectedNotifications(new Set());
+                },
+                onError: (errors) => {
+                    console.error("Mark all as read error:", errors);
                 },
             },
         );
@@ -326,7 +361,9 @@ export default function Notifications({
                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 flex items-center justify-between">
                                 <p className="text-sm text-blue-900 font-medium">
                                     {selectedNotifications.size} notification
-                                    {selectedNotifications.size > 1 ? "s" : ""}{" "}
+                                    {selectedNotifications.size > 1
+                                        ? "s"
+                                        : ""}{" "}
                                     sélectionnée
                                     {selectedNotifications.size > 1 ? "s" : ""}
                                 </p>
@@ -386,6 +423,33 @@ export default function Notifications({
                         )}
                 </div>
             </DashboardLayout>
+
+            {/* Delete Notification Dialog */}
+            <ConfirmDialog
+                isOpen={showDeleteDialog}
+                onClose={() => {
+                    setShowDeleteDialog(false);
+                    setNotificationToDelete(null);
+                }}
+                onConfirm={handleConfirmDelete}
+                title="Supprimer la notification"
+                message="Êtes-vous sûr de vouloir supprimer cette notification ?"
+                confirmText="Supprimer"
+                cancelText="Annuler"
+                variant="danger"
+            />
+
+            {/* Delete Multiple Notifications Dialog */}
+            <ConfirmDialog
+                isOpen={showDeleteMultipleDialog}
+                onClose={() => setShowDeleteMultipleDialog(false)}
+                onConfirm={handleConfirmDeleteMultiple}
+                title="Supprimer les notifications"
+                message={`Êtes-vous sûr de vouloir supprimer ${selectedNotifications.size} notification${selectedNotifications.size > 1 ? "s" : ""} ?`}
+                confirmText="Supprimer"
+                cancelText="Annuler"
+                variant="danger"
+            />
         </>
     );
 }

@@ -1,12 +1,6 @@
 import FadeIn from "@/Components/Animations/FadeIn";
 import { router } from "@inertiajs/react";
-import {
-    ChevronLeft,
-    ChevronRight,
-    HelpCircle,
-    Info,
-    Search,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, Search } from "lucide-react";
 import { Survey } from "../../../../types/surveys";
 import { Participant } from "../../Fill";
 
@@ -58,7 +52,7 @@ export default function ParticipantSelection({
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 w-full">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                 {/* Colonne Gauche: Détails et Aide */}
                 <div className="lg:col-span-4 space-y-8">
@@ -100,38 +94,10 @@ export default function ParticipantSelection({
                             </div>
                         </div>
                     </FadeIn>
-
-                    <FadeIn delay={200}>
-                        <div className="bg-[#F58232] rounded-lg p-6 text-white relative overflow-hidden group">
-                            <div className="absolute top-[-20px] right-[-20px] w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-700" />
-                            <div className="relative z-10">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <HelpCircle className="w-5 h-5" />
-                                    <h3 className="font-black text-base tracking-tight">
-                                        Besoin d&apos;aide ?
-                                    </h3>
-                                </div>
-                                <p className="text-white/90 text-sm font-bold mb-4 leading-relaxed">
-                                    Si le participant n&apos;est pas dans la
-                                    liste, assurez-vous qu&apos;il a bien été
-                                    importé dans la base de données globale des
-                                    contacts.
-                                </p>
-                                <button
-                                    onClick={() =>
-                                        router.get(route("participants.index"))
-                                    }
-                                    className="w-full py-2 bg-white text-[#F58232] font-black rounded-lg uppercase tracking-[0.15em] text-xs"
-                                >
-                                    Consulter l&apos;aide
-                                </button>
-                            </div>
-                        </div>
-                    </FadeIn>
                 </div>
 
                 {/* Colonne Droite: Filtres et Liste */}
-                <div className="lg:col-span-8">
+                <div className="lg:col-span-8 w-full">
                     <FadeIn delay={150}>
                         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden flex flex-col">
                             {/* Header Filtres */}
