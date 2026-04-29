@@ -3,6 +3,7 @@ import DropdownMenu, {
     DropdownDivider,
     DropdownItem,
 } from "@/Components/Common/DropdownMenu";
+import ConfirmDialog from "@/Components/ConfirmDialog";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { PageProps } from "@/types";
 import { Head, router, usePage } from "@inertiajs/react";
@@ -51,6 +52,8 @@ interface Props {
 export default function ContratsIndex({ contrats, filters }: Props) {
     const { auth } = usePage<PageProps>().props;
     const [search, setSearch] = useState(filters.search || "");
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [id, setId] = useState<number | null>(null);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -59,6 +62,11 @@ export default function ContratsIndex({ contrats, filters }: Props) {
             { search },
             { preserveState: true },
         );
+    };
+
+    const handleDelete = () => {
+        if (!id) return;
+        router.delete(route("contrats.destroy", id));
     };
 
     return (
@@ -266,18 +274,12 @@ export default function ContratsIndex({ contrats, filters }: Props) {
                                                                         <DropdownDivider />
                                                                         <DropdownItem
                                                                             onClick={() => {
-                                                                                if (
-                                                                                    confirm(
-                                                                                        "Supprimer ce contrat ?",
-                                                                                    )
-                                                                                ) {
-                                                                                    router.delete(
-                                                                                        route(
-                                                                                            "contrats.destroy",
-                                                                                            contrat.id,
-                                                                                        ),
-                                                                                    );
-                                                                                }
+                                                                                setShowDeleteDialog(
+                                                                                    true,
+                                                                                );
+                                                                                setId(
+                                                                                    contrat.id,
+                                                                                );
                                                                             }}
                                                                             icon={
                                                                                 <Trash2 className="w-4 h-4" />
@@ -300,6 +302,18 @@ export default function ContratsIndex({ contrats, filters }: Props) {
                         </div>
                     </FadeIn>
                 </div>
+
+                <ConfirmDialog
+                    isOpen={showDeleteDialog}
+                    onClose={() => setShowDeleteDialog(false)}
+                    onConfirm={handleDelete}
+                    title="Supprimer le contrat"
+                    message="Êtes-vous sûr de vouloir supprimer ce contrat ?"
+                    confirmText="Supprimer"
+                    cancelText="Annuler"
+                    variant="danger"
+                    isLoading={false}
+                />
             </DashboardLayout>
         </>
     );

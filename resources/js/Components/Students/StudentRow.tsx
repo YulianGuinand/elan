@@ -6,6 +6,8 @@ import { PageProps } from "@/types";
 import { Participant } from "@/types/participants";
 import { router, usePage } from "@inertiajs/react";
 import { Edit, Eye, Mail, MoreVertical, Phone, Trash2 } from "lucide-react";
+import { useState } from "react";
+import ConfirmDialog from "../ConfirmDialog";
 
 interface StudentRowProps {
     student: Participant;
@@ -19,8 +21,9 @@ export default function StudentRow({
     onSelect,
 }: StudentRowProps) {
     const { auth } = usePage<PageProps>().props;
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [id, setId] = useState<number | null>(null);
 
-    // Générer les initiales pour l'avatar
     const initials =
         `${student.prenom?.charAt(0) || ""}${student.nom?.charAt(0) || ""}`.toUpperCase();
     const fullName = `${student.prenom} ${student.nom}`;
@@ -30,6 +33,11 @@ export default function StudentRow({
         student.contrats && student.contrats.length > 0
             ? student.contrats[0].formation?.libelle || "Non spécifié"
             : "Non spécifié";
+
+    const handleConfirmDelete = () => {
+        if (!id) return;
+        router.delete(route("participants.destroy", student.id));
+    };
 
     return (
         <tr className="hover:bg-gray-50 transition-colors">
@@ -131,18 +139,8 @@ export default function StudentRow({
                             <DropdownDivider />
                             <DropdownItem
                                 onClick={() => {
-                                    if (
-                                        confirm(
-                                            "Voulez-vous vraiment supprimer ce participant ?",
-                                        )
-                                    ) {
-                                        router.delete(
-                                            route(
-                                                "participants.destroy",
-                                                student.id,
-                                            ),
-                                        );
-                                    }
+                                    setShowDeleteDialog(true);
+                                    setId(student.id);
                                 }}
                                 icon={<Trash2 className="w-4 h-4" />}
                                 danger
@@ -153,6 +151,17 @@ export default function StudentRow({
                     )}
                 </DropdownMenu>
             </td>
+            <ConfirmDialog
+                isOpen={showDeleteDialog}
+                onClose={() => setShowDeleteDialog(false)}
+                onConfirm={handleConfirmDelete}
+                title="Supprimer le participant"
+                message={`Êtes-vous sûr de vouloir supprimer ce participant ? Cette action est irréversible.`}
+                confirmText="Supprimer"
+                cancelText="Annuler"
+                variant="danger"
+                isLoading={false}
+            />
         </tr>
     );
 }

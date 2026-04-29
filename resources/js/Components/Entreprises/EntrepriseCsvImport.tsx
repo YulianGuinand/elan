@@ -173,7 +173,7 @@ export default function EntrepriseCsvImport() {
                                 ["fonction", "Poste du contact"],
                                 ["ville", "Ville du siège"],
                                 ["adresse", "Adresse complète"],
-                                ["code_postal", "Code postal"],
+                                ["code_postal", "Code postale"],
                             ].map(([col, desc]) => (
                                 <tr key={col}>
                                     <td className="py-1 pr-4 font-mono text-orange-600">

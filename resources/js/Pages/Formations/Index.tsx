@@ -3,6 +3,7 @@ import DropdownMenu, {
     DropdownDivider,
     DropdownItem,
 } from "@/Components/Common/DropdownMenu";
+import ConfirmDialog from "@/Components/ConfirmDialog";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { PageProps } from "@/types";
 import { Head, router, usePage } from "@inertiajs/react";
@@ -23,6 +24,10 @@ interface Props {
 export default function FormationsIndex({ formations, filters }: Props) {
     const { auth } = usePage<PageProps>().props;
     const [search, setSearch] = useState(filters.search || "");
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [formationToDelete, setFormationToDelete] =
+        useState<Formation | null>(null);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -31,6 +36,22 @@ export default function FormationsIndex({ formations, filters }: Props) {
             { search },
             { preserveState: true },
         );
+    };
+
+    const handleOpenDelete = (formation: Formation) => {
+        setFormationToDelete(formation);
+        setShowDeleteDialog(true);
+    };
+
+    const handleConfirmDelete = () => {
+        setIsDeleting(true);
+        router.delete(route("formations.destroy", formationToDelete!.id), {
+            onFinish: () => {
+                setIsDeleting(false);
+                setShowDeleteDialog(false);
+                setFormationToDelete(null);
+            },
+        });
     };
 
     return (
@@ -182,20 +203,11 @@ export default function FormationsIndex({ formations, filters }: Props) {
                                                                     </DropdownItem>
                                                                     <DropdownDivider />
                                                                     <DropdownItem
-                                                                        onClick={() => {
-                                                                            if (
-                                                                                confirm(
-                                                                                    "Supprimer cette formation ?",
-                                                                                )
-                                                                            ) {
-                                                                                router.delete(
-                                                                                    route(
-                                                                                        "formations.destroy",
-                                                                                        formation.id,
-                                                                                    ),
-                                                                                );
-                                                                            }
-                                                                        }}
+                                                                        onClick={() =>
+                                                                            handleOpenDelete(
+                                                                                formation,
+                                                                            )
+                                                                        }
                                                                         icon={
                                                                             <Trash2 className="w-4 h-4" />
                                                                         }
@@ -216,6 +228,17 @@ export default function FormationsIndex({ formations, filters }: Props) {
                         </div>
                     </FadeIn>
                 </div>
+                <ConfirmDialog
+                    isOpen={showDeleteDialog}
+                    onClose={() => setShowDeleteDialog(false)}
+                    onConfirm={handleConfirmDelete}
+                    title="Supprimer la formation"
+                    message="Êtes-vous sûr de vouloir supprimer cette formation ?"
+                    confirmText="Supprimer"
+                    cancelText="Annuler"
+                    variant="danger"
+                    isLoading={isDeleting}
+                />
             </DashboardLayout>
         </>
     );

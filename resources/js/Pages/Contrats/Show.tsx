@@ -1,4 +1,5 @@
 import FadeIn from "@/Components/Animations/FadeIn";
+import ConfirmDialog from "@/Components/ConfirmDialog";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { PageProps } from "@/types";
 import { Head, router, usePage } from "@inertiajs/react";
@@ -9,6 +10,7 @@ import {
     GraduationCap,
     Trash2,
 } from "lucide-react";
+import { useState } from "react";
 
 interface Props {
     contrat: {
@@ -47,6 +49,19 @@ export default function Show({ contrat }: Props) {
     const canManage =
         auth.user.role === "superadmin" ||
         (auth.user.role === "admin" && contrat.utilisateur_id === auth.user.id);
+
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleConfirmDelete = () => {
+        setIsDeleting(true);
+        router.delete(route("contrats.destroy", contrat.id), {
+            onFinish: () => {
+                setIsDeleting(false);
+                setShowDeleteDialog(false);
+            },
+        });
+    };
 
     return (
         <>
@@ -98,20 +113,9 @@ export default function Show({ contrat }: Props) {
 
                                 {canManage && (
                                     <button
-                                        onClick={() => {
-                                            if (
-                                                confirm(
-                                                    "Supprimer ce contrat ?",
-                                                )
-                                            ) {
-                                                router.delete(
-                                                    route(
-                                                        "contrats.destroy",
-                                                        contrat.id,
-                                                    ),
-                                                );
-                                            }
-                                        }}
+                                        onClick={() =>
+                                            setShowDeleteDialog(true)
+                                        }
                                         className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors cursor-pointer"
                                         title="Supprimer ce contrat"
                                     >
@@ -223,6 +227,17 @@ export default function Show({ contrat }: Props) {
                         </div>
                     </FadeIn>
                 </div>
+                <ConfirmDialog
+                    isOpen={showDeleteDialog}
+                    onClose={() => setShowDeleteDialog(false)}
+                    onConfirm={handleConfirmDelete}
+                    title="Supprimer le contrat"
+                    message="Êtes-vous sûr de vouloir supprimer ce contrat ?"
+                    confirmText="Supprimer"
+                    cancelText="Annuler"
+                    variant="danger"
+                    isLoading={isDeleting}
+                />
             </DashboardLayout>
         </>
     );

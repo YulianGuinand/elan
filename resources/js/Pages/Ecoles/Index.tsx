@@ -3,6 +3,7 @@ import DropdownMenu, {
     DropdownDivider,
     DropdownItem,
 } from "@/Components/Common/DropdownMenu";
+import ConfirmDialog from "@/Components/ConfirmDialog";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { PageProps } from "@/types";
 import { Head, router, usePage } from "@inertiajs/react";
@@ -26,10 +27,29 @@ interface Props {
 export default function EcolesIndex({ ecoles, filters }: Props) {
     const { auth } = usePage<PageProps>().props;
     const [search, setSearch] = useState(filters.search || "");
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [ecoleToDelete, setEcoleToDelete] = useState<Ecole | null>(null);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         router.get(route("ecoles.index"), { search }, { preserveState: true });
+    };
+
+    const handleOpenDelete = (ecole: Ecole) => {
+        setEcoleToDelete(ecole);
+        setShowDeleteDialog(true);
+    };
+
+    const handleConfirmDelete = () => {
+        setIsDeleting(true);
+        router.delete(route("ecoles.destroy", ecoleToDelete!.id), {
+            onFinish: () => {
+                setIsDeleting(false);
+                setShowDeleteDialog(false);
+                setEcoleToDelete(null);
+            },
+        });
     };
 
     return (
@@ -184,20 +204,11 @@ export default function EcolesIndex({ ecoles, filters }: Props) {
                                                                 </DropdownItem>
                                                                 <DropdownDivider />
                                                                 <DropdownItem
-                                                                    onClick={() => {
-                                                                        if (
-                                                                            confirm(
-                                                                                "Supprimer cette école ?",
-                                                                            )
-                                                                        ) {
-                                                                            router.delete(
-                                                                                route(
-                                                                                    "ecoles.destroy",
-                                                                                    ecole.id,
-                                                                                ),
-                                                                            );
-                                                                        }
-                                                                    }}
+                                                                    onClick={() =>
+                                                                        handleOpenDelete(
+                                                                            ecole,
+                                                                        )
+                                                                    }
                                                                     icon={
                                                                         <Trash2 className="w-4 h-4" />
                                                                     }
@@ -217,6 +228,17 @@ export default function EcolesIndex({ ecoles, filters }: Props) {
                         </div>
                     </FadeIn>
                 </div>
+                <ConfirmDialog
+                    isOpen={showDeleteDialog}
+                    onClose={() => setShowDeleteDialog(false)}
+                    onConfirm={handleConfirmDelete}
+                    title="Supprimer l'école"
+                    message="Êtes-vous sûr de vouloir supprimer cette école ?"
+                    confirmText="Supprimer"
+                    cancelText="Annuler"
+                    variant="danger"
+                    isLoading={isDeleting}
+                />
             </DashboardLayout>
         </>
     );

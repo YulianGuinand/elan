@@ -1,3 +1,4 @@
+import ConfirmDialog from "@/Components/ConfirmDialog";
 import { PageProps } from "@/types";
 import { Participant } from "@/types/participants";
 import { router, usePage } from "@inertiajs/react";
@@ -11,6 +12,8 @@ interface StudentTableProps {
 export default function StudentTable({ students }: StudentTableProps) {
     const { auth } = usePage<PageProps>().props;
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const handleSelectAll = () => {
         if (selectedIds.length === students.length) {
@@ -36,19 +39,40 @@ export default function StudentTable({ students }: StudentTableProps) {
         selectedIds.length > 0 && selectedIds.length < students.length;
 
     const handleBulkDelete = () => {
-        if (!confirm("Voulez-vous vraiment supprimer ces participants ?"))
-            return;
+        setShowDeleteDialog(true);
+    };
+
+    const handleConfirmDelete = () => {
+        setIsDeleting(true);
         router.post(
             route("participants.bulk-destroy"),
             { ids: selectedIds },
             {
-                onSuccess: () => setSelectedIds([]),
+                onSuccess: () => {
+                    setSelectedIds([]);
+                    setShowDeleteDialog(false);
+                    setIsDeleting(false);
+                },
+                onFinish: () => {
+                    setIsDeleting(false);
+                },
             },
         );
     };
 
     return (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden animate-slideUp">
+            <ConfirmDialog
+                isOpen={showDeleteDialog}
+                onClose={() => setShowDeleteDialog(false)}
+                onConfirm={handleConfirmDelete}
+                title="Supprimer les participants"
+                message={`Êtes-vous sûr de vouloir supprimer ${selectedIds.length} participant(s) ? Cette action est irréversible.`}
+                confirmText="Supprimer"
+                cancelText="Annuler"
+                variant="danger"
+                isLoading={isDeleting}
+            />
             {selectedIds.length > 0 && (
                 <div className="bg-red-50 px-6 py-3 border-b border-red-100 flex items-center justify-between">
                     <span className="text-sm text-red-700 font-medium">

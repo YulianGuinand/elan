@@ -106,7 +106,6 @@ export default function Surveys({
     }, [surveys, filters]);
 
     const canCreate = userRole === "admin" || userRole === "superadmin";
-
     return (
         <>
             <PageHead

@@ -101,7 +101,7 @@ export default function EntrepriseForm({ onCancel }: EntrepriseFormProps) {
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Code postal
+                        Code postale
                     </label>
                     <input
                         type="text"

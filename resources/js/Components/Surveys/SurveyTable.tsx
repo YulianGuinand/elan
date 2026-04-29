@@ -13,6 +13,7 @@ import {
     Trash2,
 } from "lucide-react";
 import { useState } from "react";
+import ConfirmDialog from "../ConfirmDialog";
 
 interface SurveyTableProps {
     surveys: Survey[];
@@ -52,6 +53,8 @@ export default function SurveyTable({
     userId,
 }: SurveyTableProps) {
     const [selected, setSelected] = useState<Set<number>>(new Set());
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [id, setId] = useState<number | null>(null);
 
     const toggleSelect = (id: number) => {
         const newSelected = new Set(selected);
@@ -77,10 +80,9 @@ export default function SurveyTable({
         }
     };
 
-    const handleDelete = (survey: Survey) => {
-        if (confirm(`Supprimer "${survey.titre}" ?`)) {
-            router.delete(route("surveys.destroy", { id: survey.id }));
-        }
+    const handleDelete = () => {
+        if (!id) return;
+        router.delete(route("surveys.destroy", { id }));
     };
 
     const handleDeleteMultiple = () => {
@@ -359,9 +361,10 @@ export default function SurveyTable({
                                                             <Trash2 className="w-4 h-4" />
                                                         }
                                                         onClick={() => {
-                                                            handleDelete(
-                                                                survey,
+                                                            setShowDeleteDialog(
+                                                                true,
                                                             );
+                                                            setId(survey.id);
                                                         }}
                                                         danger
                                                     >
@@ -377,6 +380,18 @@ export default function SurveyTable({
                     </table>
                 </div>
             </div>
+
+            <ConfirmDialog
+                isOpen={showDeleteDialog}
+                onClose={() => setShowDeleteDialog(false)}
+                onConfirm={() => handleDelete()}
+                title="Supprimer l'enquête"
+                message="Êtes-vous sûr de vouloir supprimer cette enquête ?"
+                confirmText="Supprimer"
+                cancelText="Annuler"
+                variant="danger"
+                isLoading={false}
+            />
         </>
     );
 }

@@ -2,6 +2,7 @@ import DropdownMenu, {
     DropdownDivider,
     DropdownItem,
 } from "@/Components/Common/DropdownMenu";
+import ConfirmDialog from "@/Components/ConfirmDialog";
 import { router } from "@inertiajs/react";
 import {
     Building2,
@@ -46,6 +47,12 @@ export default function EntrepriseTable({
     totalCount,
 }: EntrepriseTableProps) {
     const [selected, setSelected] = useState<number[]>([]);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [entrepriseToDelete, setEntrepriseToDelete] = useState<number | null>(
+        null,
+    );
 
     const allSelected =
         selected.length === entreprises.length && entreprises.length > 0;
@@ -60,18 +67,39 @@ export default function EntrepriseTable({
         );
 
     const handleDelete = (id: number) => {
-        if (!confirm("Supprimer cette entreprise ?")) return;
-        router.delete(route("entreprises.destroy", id), {
+        setEntrepriseToDelete(id);
+        setShowDeleteDialog(true);
+    };
+
+    const handleConfirmDelete = () => {
+        setIsDeleting(true);
+        router.delete(route("entreprises.destroy", entrepriseToDelete!), {
             preserveScroll: true,
+            onFinish: () => {
+                setIsDeleting(false);
+                setShowDeleteDialog(false);
+                setEntrepriseToDelete(null);
+            },
         });
     };
 
     const handleBulkDelete = () => {
-        if (!confirm(`Supprimer ${selected.length} entreprise(s) ?`)) return;
+        setShowBulkDeleteDialog(true);
+    };
+
+    const handleConfirmBulkDelete = () => {
+        setIsDeleting(true);
         router.post(
             route("entreprises.bulk-destroy"),
             { ids: selected },
-            { preserveScroll: true, onSuccess: () => setSelected([]) },
+            {
+                preserveScroll: true,
+                onSuccess: () => setSelected([]),
+                onFinish: () => {
+                    setIsDeleting(false);
+                    setShowBulkDeleteDialog(false);
+                },
+            },
         );
     };
 
@@ -268,6 +296,28 @@ export default function EntrepriseTable({
                     </tbody>
                 </table>
             </div>
+            <ConfirmDialog
+                isOpen={showDeleteDialog}
+                onClose={() => setShowDeleteDialog(false)}
+                onConfirm={handleConfirmDelete}
+                title="Supprimer l'entreprise"
+                message="Supprimer cette entreprise ?"
+                confirmText="Supprimer"
+                cancelText="Annuler"
+                variant="danger"
+                isLoading={isDeleting}
+            />
+            <ConfirmDialog
+                isOpen={showBulkDeleteDialog}
+                onClose={() => setShowBulkDeleteDialog(false)}
+                onConfirm={handleConfirmBulkDelete}
+                title="Supprimer les entreprises"
+                message={`Êtes-vous sûr de vouloir supprimer ${selected.length} entreprise(s) ?`}
+                confirmText="Supprimer"
+                cancelText="Annuler"
+                variant="danger"
+                isLoading={isDeleting}
+            />
         </div>
     );
 }

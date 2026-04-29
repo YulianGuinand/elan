@@ -2,6 +2,7 @@ import DropdownMenu, {
     DropdownDivider,
     DropdownItem,
 } from "@/Components/Common/DropdownMenu";
+import ConfirmDialog from "@/Components/ConfirmDialog";
 import { Link, router } from "@inertiajs/react";
 import {
     Bell,
@@ -14,6 +15,7 @@ import {
     UserCog,
     X,
 } from "lucide-react";
+import { useState } from "react";
 import DashboardIcon from "./icons/DashboardIcon";
 import EntrepriseIcon from "./icons/EntrepriseIcon";
 import ReportIcon from "./icons/ReportIcon";
@@ -112,17 +114,30 @@ export default function Sidebar({
     onClose,
     unreadNotificationCount = 0,
 }: SidebarProps) {
+    const [showLogoutDialog, setShowLogoutDialog] = useState(false);
     const currentPath =
         typeof window !== "undefined" ? window.location.pathname : "/dashboard";
 
     const handleLogout = () => {
-        if (confirm("Êtes-vous sûr de vouloir vous déconnecter ?")) {
-            router.post(route("logout"));
-        }
+        setShowLogoutDialog(true);
+    };
+
+    const handleConfirmLogout = () => {
+        router.post(route("logout"));
     };
 
     return (
         <>
+            <ConfirmDialog
+                isOpen={showLogoutDialog}
+                onClose={() => setShowLogoutDialog(false)}
+                onConfirm={handleConfirmLogout}
+                title="Déconnexion"
+                message="Êtes-vous sûr de vouloir vous déconnecter ?"
+                confirmText="Déconnecter"
+                cancelText="Annuler"
+                variant="warning"
+            />
             {/* Overlay pour mobile */}
             {isOpen && (
                 <div
@@ -167,8 +182,10 @@ export default function Sidebar({
                     {navigationItems.map((item, index) => {
                         const Icon = item.icon;
                         const isActive = currentPath === item.href;
-                        const isNotificationsItem = item.routeName === "notifications.index";
-                        const hasUnread = isNotificationsItem && unreadNotificationCount > 0;
+                        const isNotificationsItem =
+                            item.routeName === "notifications.index";
+                        const hasUnread =
+                            isNotificationsItem && unreadNotificationCount > 0;
 
                         return (
                             <Link
@@ -193,7 +210,9 @@ export default function Sidebar({
                                 </span>
                                 {hasUnread && (
                                     <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full px-2 py-1 min-w-[24px] text-center">
-                                        {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+                                        {unreadNotificationCount > 99
+                                            ? "99+"
+                                            : unreadNotificationCount}
                                     </span>
                                 )}
                             </Link>

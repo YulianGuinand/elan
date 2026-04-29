@@ -111,20 +111,12 @@ export default function Welcome({
                                         Accéder au tableau de bord
                                     </Link>
                                 ) : (
-                                    <>
-                                        <Link
-                                            href={route("login")}
-                                            className="hidden sm:block text-sm font-medium text-gray-700 hover:text-gray-900"
-                                        >
-                                            Connexion
-                                        </Link>
-                                        <Link
-                                            href={route("register")}
-                                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-elan-orange hover:bg-elan-orange/85 transition-colors shadow-sm shadow-orange-200"
-                                        >
-                                            Demander de s&apos;inscrire
-                                        </Link>
-                                    </>
+                                    <Link
+                                        href={route("login")}
+                                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-elan-orange hover:bg-elan-orange/85 transition-colors shadow-sm shadow-orange-200"
+                                    >
+                                        Connexion
+                                    </Link>
                                 )}
                             </div>
                         </div>
@@ -167,10 +159,10 @@ export default function Welcome({
 
                                 <div className="flex flex-col sm:flex-row gap-4">
                                     <Link
-                                        href={route("register")}
+                                        href={route("login")}
                                         className="inline-flex justify-center items-center px-8 py-3.5 border border-transparent text-base font-semibold rounded-xl text-white bg-elan-orange hover:bg-elan-orange/85 transition-all"
                                     >
-                                        Demander une démo
+                                        Se connecter
                                     </Link>
                                     <button className="inline-flex justify-center items-center px-8 py-3.5 border border-gray-200 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all">
                                         En savoir plus
@@ -222,7 +214,7 @@ export default function Welcome({
                                                     92%
                                                 </div>
                                                 <div className="text-xs text-blue-700">
-                                                    Taux d'insertion
+                                                    Taux d&apos;insertion
                                                 </div>
                                             </div>
                                         </div>
@@ -592,10 +584,10 @@ export default function Welcome({
                                 </p>
                                 <div className="flex flex-col sm:flex-row justify-center gap-4">
                                     <Link
-                                        href={route("register")}
+                                        href={route("login")}
                                         className="inline-flex justify-center items-center px-8 py-3.5 border border-transparent text-base font-semibold rounded-xl text-white bg-elan-orange hover:bg-elan-orange/85 transition-all shadow-lg shadow-orange-200"
                                     >
-                                        Demander une inscription
+                                        Se connecter
                                     </Link>
                                     <button className="inline-flex justify-center items-center px-8 py-3.5 border border-gray-200 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all">
                                         Voir les avantages
@@ -651,14 +643,6 @@ export default function Welcome({
                                             className="hover:text-elan-orange"
                                         >
                                             Connexion
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href={route("register")}
-                                            className="hover:text-elan-orange"
-                                        >
-                                            Inscription
                                         </Link>
                                     </li>
                                 </ul>

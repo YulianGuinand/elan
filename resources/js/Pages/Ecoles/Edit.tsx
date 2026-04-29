@@ -92,7 +92,7 @@ export default function Edit({ ecole }: { ecole: Ecole }) {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Code postal *
+                                            Code postale *
                                         </label>
                                         <input
                                             type="text"

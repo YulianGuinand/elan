@@ -3,6 +3,7 @@ import DropdownMenu, {
     DropdownDivider,
     DropdownItem,
 } from "@/Components/Common/DropdownMenu";
+import ConfirmDialog from "@/Components/ConfirmDialog";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { PageProps } from "@/types";
 import { Head, router, usePage } from "@inertiajs/react";
@@ -40,6 +41,9 @@ const roleColor: Record<string, string> = {
 export default function UsersIndex({ users, filters }: Props) {
     const { auth } = usePage<PageProps>().props;
     const [search, setSearch] = useState(filters.search || "");
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<UserItem | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // Détermine si l'utilisateur connecté peut gérer un compte donné
     const canManageUser = (targetRole: string) => {
@@ -53,9 +57,39 @@ export default function UsersIndex({ users, filters }: Props) {
         router.get(route("users.index"), { search }, { preserveState: true });
     };
 
+    const handleOpenDeleteDialog = (user: UserItem) => {
+        setUserToDelete(user);
+        setShowDeleteDialog(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (userToDelete) {
+            setIsDeleting(true);
+            router.delete(route("users.destroy", userToDelete.id), {
+                onFinish: () => {
+                    setIsDeleting(false);
+                    setShowDeleteDialog(false);
+                    setUserToDelete(null);
+                },
+            });
+        }
+    };
+
     return (
         <>
             <Head title="Gestion des Utilisateurs" />
+
+            <ConfirmDialog
+                isOpen={showDeleteDialog}
+                onClose={() => setShowDeleteDialog(false)}
+                onConfirm={handleConfirmDelete}
+                title="Supprimer un utilisateur"
+                message={`Êtes-vous sûr de vouloir supprimer ${userToDelete?.prenom} ${userToDelete?.nom} ? Cette action est irréversible.`}
+                confirmText="Supprimer"
+                cancelText="Annuler"
+                variant="danger"
+                isLoading={isDeleting}
+            />
 
             <DashboardLayout
                 title="Gestion des Utilisateurs"
@@ -201,20 +235,11 @@ export default function UsersIndex({ users, filters }: Props) {
                                                             </DropdownItem>
                                                             <DropdownDivider />
                                                             <DropdownItem
-                                                                onClick={() => {
-                                                                    if (
-                                                                        confirm(
-                                                                            "Supprimer cet utilisateur ?",
-                                                                        )
-                                                                    ) {
-                                                                        router.delete(
-                                                                            route(
-                                                                                "users.destroy",
-                                                                                user.id,
-                                                                            ),
-                                                                        );
-                                                                    }
-                                                                }}
+                                                                onClick={() =>
+                                                                    handleOpenDeleteDialog(
+                                                                        user,
+                                                                    )
+                                                                }
                                                                 icon={
                                                                     <Trash2 className="w-4 h-4" />
                                                                 }
