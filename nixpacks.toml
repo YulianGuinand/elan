@@ -10,7 +10,7 @@ nixPkgs = [
     "php83Extensions.xml",
     "php83Extensions.zip",
     "python311Packages.supervisor",
-    "nodejs",
+    "nodejs_22",
     "nginx"
 ]
 
@@ -129,6 +129,8 @@ php_admin_value[upload_max_filesize] = 30M
 '''
 
 "nginx.template.conf" = '''
+error_log /tmp/nginx_error.log;
+pid /tmp/nginx.pid;
 user www-data www-data;
 worker_processes 5;
 daemon off;
