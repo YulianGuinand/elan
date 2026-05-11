@@ -1,0 +1,170 @@
+import FadeIn from "@/Components/Animations/FadeIn";
+import DonutChart from "@/Components/Reports/DonutChart";
+import LineChart from "@/Components/Reports/LineChart";
+import ReportFilterBar from "@/Components/Reports/ReportFilterBar";
+import ReportKPICard from "@/Components/Reports/ReportKPICard";
+import PageHead from "@/Components/Seo/PageHead";
+import DashboardLayout from "@/Layouts/DashboardLayout";
+import {
+    ChartDataPoint,
+    DonutChartSegment,
+    ReportFilters,
+    ReportKPI,
+    ReportSurveyOption,
+} from "@/types/reports";
+import { router } from "@inertiajs/react";
+import { Download } from "lucide-react";
+import { useMemo } from "react";
+
+interface ReportsProps {
+    kpis: ReportKPI[];
+    satisfactionEvolution: ChartDataPoint[];
+    audienceDistribution: DonutChartSegment[];
+    filters: ReportFilters;
+    surveyOptions: ReportSurveyOption[];
+    hasData: boolean;
+}
+
+export default function Reports({
+    kpis,
+    satisfactionEvolution,
+    audienceDistribution,
+    filters,
+    surveyOptions,
+    hasData,
+}: ReportsProps) {
+    const updateFilters = (nextFilters: ReportFilters) => {
+        router.get("/rapports", nextFilters, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    };
+
+    const exportUrl = useMemo(() => {
+        const params = new URLSearchParams({
+            period: filters.period,
+            survey: filters.survey,
+            audience: filters.audience,
+            indicator: filters.indicator,
+        });
+        return `/rapports/export?${params.toString()}`;
+    }, [filters]);
+
+    const summaryExportUrl = `${exportUrl}&scope=summary`;
+    const answersExportUrl = `${exportUrl}&scope=answers`;
+
+    return (
+        <>
+            <PageHead
+                title="Rapports Analytiques"
+                description="Analysez les données de vos enquêtes. Participations, satisfaction, tendances et insights détaillés."
+                keywords="rapports, statistiques, analyse enquête, KPI"
+            />
+
+            <DashboardLayout
+                title="Rapports Analytiques"
+                breadcrumbs={[
+                    { label: "Accueil", href: "/tableau-de-bord" },
+                    { label: "Rapports" },
+                ]}
+            >
+                <div className="space-y-6 w-full">
+                    {/* En-tête avec description et boutons d'export */}
+                    <FadeIn delay={0}>
+                        <div className="flex items-start justify-between flex-wrap gap-4">
+                            <div>
+                                <p className="text-gray-600 mt-1 max-w-2xl">
+                                    Visualisez et analysez les performances de
+                                    vos enquêtes de satisfaction, les taux de
+                                    retour et l'engagement des apprenants.
+                                </p>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                                <a
+                                    href={`${summaryExportUrl}&format=csv`}
+                                    className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Synthèse CSV
+                                </a>
+                                <a
+                                    href={`${summaryExportUrl}&format=xlsx`}
+                                    className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Synthèse Excel
+                                </a>
+                                <a
+                                    href={`${answersExportUrl}&format=csv`}
+                                    className="inline-flex items-center gap-2 px-4 py-2 border border-elan-orange rounded-lg text-sm font-medium text-elan-orange bg-white hover:bg-orange-50 transition-colors"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Réponses CSV
+                                </a>
+                                <a
+                                    href={`${answersExportUrl}&format=xlsx`}
+                                    className="inline-flex items-center gap-2 px-4 py-2 border border-elan-orange rounded-lg text-sm font-medium text-elan-orange bg-white hover:bg-orange-50 transition-colors"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Réponses Excel
+                                </a>
+                            </div>
+                        </div>
+                    </FadeIn>
+
+                    {/* Barre de filtres */}
+                    <FadeIn delay={100}>
+                        <ReportFilterBar
+                            filters={filters}
+                            surveys={surveyOptions}
+                            onFiltersChange={updateFilters}
+                        />
+                    </FadeIn>
+
+                    {!hasData && (
+                        <FadeIn delay={120}>
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-900 text-sm">
+                                Aucune donnée disponible pour ces filtres. Les
+                                indicateurs sont affichés à 0 et les exports
+                                restent disponibles.
+                            </div>
+                        </FadeIn>
+                    )}
+
+                    {/* Cartes KPI */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {kpis.map((kpi, index) => (
+                            <FadeIn key={kpi.id} delay={150 + index * 50}>
+                                <ReportKPICard kpi={kpi} />
+                            </FadeIn>
+                        ))}
+                    </div>
+
+                    {/* Graphiques */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Évolution de la Satisfaction */}
+                        <FadeIn delay={350}>
+                            <LineChart
+                                data={satisfactionEvolution}
+                                title="Évolution de la Satisfaction (6 mois)"
+                                detailsLink={() =>
+                                    console.log("Afficher les détails")
+                                }
+                            />
+                        </FadeIn>
+
+                        {/* Répartition par Public */}
+                        <FadeIn delay={400}>
+                            <DonutChart
+                                data={audienceDistribution}
+                                title="Répartition par Public"
+                                totalLabel="Réponses"
+                            />
+                        </FadeIn>
+                    </div>
+                </div>
+            </DashboardLayout>
+        </>
+    );
+}

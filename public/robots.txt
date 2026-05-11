@@ -1,2 +1,64 @@
+# Elan - CFA Survey Manager
+# SEO-optimized robots.txt
+
+# Allow all robots by default
 User-agent: *
-Disallow:
+Allow: /
+
+# Specific rules for search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+# Disallow private and admin paths
+User-agent: *
+Disallow: /app/
+Disallow: /config/
+Disallow: /storage/
+Disallow: /vendor/
+Disallow: /bootstrap/
+Disallow: /node_modules/
+Disallow: /tests/
+Disallow: /database/
+Disallow: /admin/
+Disallow: /login
+Disallow: /register
+Disallow: /reset-password
+Disallow: /tableau-de-bord
+Disallow: /enquetes/*
+Disallow: /participants
+Disallow: /entreprises
+Disallow: /ecoles
+Disallow: /contrats
+Disallow: /formations
+Disallow: /rapports
+Disallow: /notifications
+Disallow: /parametres
+Disallow: /profil
+Disallow: /*.json
+Disallow: /*?*
+Disallow: /.*
+
+# Sitemap location
+Sitemap: /sitemap.xml
+
+# Allow common search engine bots
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Googlebot-Mobile
+Allow: /
+
+User-agent: MSNBot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+

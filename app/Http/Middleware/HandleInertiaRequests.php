@@ -24,15 +24,46 @@ class HandleInertiaRequests extends Middleware
 
     /**
      * Define the props that are shared by default.
-     *
-     * @return array<string, mixed>
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'nom' => $user->nom,
+                    'prenom' => $user->prenom,
+                    'name' => $user->name, // Accesseur nom complet
+                    'email' => $user->email,
+                    'fonction' => $user->fonction,
+                    'role' => $user->role,
+                    'role_id' => $user->role_id,
+                ] : null,
+                'permissions' => $user ? [
+                    'canAccessUsers' => $user->isSuperAdmin(),
+                    'canViewSurveys' => true,
+                    'canManageEcoles' => $user->isAdmin() || $user->isSuperAdmin(),
+                    'canViewEcoles' => true,
+                    'canManageFormations' => $user->isAdmin() || $user->isSuperAdmin(),
+                    'canViewFormations' => true,
+                    'canManageContrats' => $user->isAdmin() || $user->isSuperAdmin(),
+                    'canViewContrats' => true,
+                    'canManageEntreprise' => $user->isAdmin() || $user->isSuperAdmin(),
+                    'canViewEntreprise' => true,
+                    'canManageParticipants' => $user->isAdmin() || $user->isSuperAdmin(),
+                    'canViewParticipants' => true,
+                    'canCreateSurveys' => $user->isAdmin() || $user->isSuperAdmin(),
+                    'canManageSurveys' => $user->isAdmin() || $user->isSuperAdmin(),
+                    'canAccessReports' => true,
+                ] : [],
+            ],
+            'flash' => [
+                'success' => fn() => $request->session()->get('success'),
+                'error' => fn() => $request->session()->get('error'),
+                'message' => fn() => $request->session()->get('message'),
             ],
         ];
     }

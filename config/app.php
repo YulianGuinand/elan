@@ -123,4 +123,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'aliases' => [
+        'FastExcel' => Rap2hpoutre\FastExcel\Facades\FastExcel::class,
+    ],
 ];

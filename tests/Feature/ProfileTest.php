@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\User;
+use App\Models\Utilisateur;
 
 test('profile page is displayed', function () {
-    $user = User::factory()->create();
+    $user = Utilisateur::factory()->create();
 
     $response = $this
         ->actingAs($user)
@@ -13,12 +13,12 @@ test('profile page is displayed', function () {
 });
 
 test('profile information can be updated', function () {
-    $user = User::factory()->create();
+    $user = Utilisateur::factory()->create();
 
     $response = $this
         ->actingAs($user)
         ->patch('/profile', [
-            'name' => 'Test User',
+            'nom' => 'Test User',
             'email' => 'test@example.com',
         ]);
 
@@ -28,18 +28,18 @@ test('profile information can be updated', function () {
 
     $user->refresh();
 
-    $this->assertSame('Test User', $user->name);
+    $this->assertSame('Test User', $user->nom);
     $this->assertSame('test@example.com', $user->email);
     $this->assertNull($user->email_verified_at);
 });
 
 test('email verification status is unchanged when the email address is unchanged', function () {
-    $user = User::factory()->create();
+    $user = Utilisateur::factory()->create();
 
     $response = $this
         ->actingAs($user)
         ->patch('/profile', [
-            'name' => 'Test User',
+            'nom' => 'Test User',
             'email' => $user->email,
         ]);
 
