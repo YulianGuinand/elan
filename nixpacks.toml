@@ -8,6 +8,7 @@ cmds = [
 ]
 
 [phases.build]
+dependsOn = ["install"]
 cmds = [
     "npm run build",
     "chmod +x /assets/start.sh",
@@ -23,7 +24,13 @@ cmd = 'bash /assets/start.sh'
 cd /app
 
 echo "Running migrations..."
-php artisan migrate --force
+# On ne lance la migration QUE si le dossier vendor existe
+if [ -d "vendor" ]; then
+    php artisan migrate --force
+else
+    echo "ERREUR : Le dossier vendor est absent. L'installation Composer a échoué."
+    exit 1
+fi
 
 # Configuration Nginx
 node /assets/scripts/prestart.mjs /assets/nginx.template.conf /etc/nginx.conf
@@ -60,8 +67,8 @@ process_name=%(program_name)s_%(process_num)02d
 command=nginx -c /etc/nginx.conf
 autostart=true
 autorestart=true
-stdout_logfile=/tmp/log/worker-nginx.log
-stderr_logfile=/tmp/log/worker-nginx.log
+stdout_logfile=/tmp/worker-nginx.log
+stderr_logfile=/tmp/worker-nginx.log
 '''
 
 "worker-phpfpm.conf" = '''
@@ -70,8 +77,8 @@ process_name=%(program_name)s_%(process_num)02d
 command=php-fpm -y /assets/php-fpm.conf -F
 autostart=true
 autorestart=true
-stdout_logfile=/tmp/log/worker-phpfpm.log
-stderr_logfile=/tmp/log/worker-phpfpm.log
+stdout_logfile=/tmp/worker-phpfpm.log
+stderr_logfile=/tmp/worker-phpfpm.log
 '''
 
 "worker-laravel.conf" = '''
@@ -85,8 +92,8 @@ killasgroup=true
 numprocs=12 # To reduce memory/CPU usage, change to 2.
 startsecs=0
 stopwaitsecs=3600
-stdout_logfile=/tmp/log/worker-laravel.log
-stderr_logfile=/tmp/log/worker-laravel.log
+stdout_logfile=/tmp/worker-laravel.log
+stderr_logfile=/tmp/worker-laravel.log
 '''
 
 "php-fpm.conf" = '''
@@ -125,8 +132,8 @@ http {
     log_format   main '$remote_addr - $remote_user [$time_local]  $status '
         '"$request" $body_bytes_sent "$http_referer" '
         '"$http_user_agent" "$http_x_forwarded_for"';
-    access_log /tmp/log/nginx-access.log;
-    error_log /tmp/log/nginx-error.log;
+    access_log /tmp/nginx-access.log;
+    error_log /tmp/nginx-error.log;
     sendfile     on;
     tcp_nopush   on;
     server_names_hash_bucket_size 128; # this seems to be required for some vhosts
