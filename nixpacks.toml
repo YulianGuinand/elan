@@ -1,7 +1,7 @@
 [phases.setup]
 nixPkgs = [
-    "php83", 
-    "php83Packages.composer", 
+    "php83",
+    "php83Packages.composer",
     "php83Extensions.pdo_mysql",
     "php83Extensions.mbstring",
     "php83Extensions.openssl",
@@ -10,7 +10,7 @@ nixPkgs = [
     "php83Extensions.xml",
     "php83Extensions.zip",
     "python311Packages.supervisor",
-    "nodejs", 
+    "nodejs",
     "nginx"
 ]
 
@@ -35,6 +35,10 @@ cmd = 'bash /assets/start.sh'
 "start.sh" = '''
 #!/bin/bash
 cd /app
+
+mkdir -p /var/log/nginx
+mkdir -p /var/cache/nginx
+touch /tmp/nginx.pid
 
 echo "Running migrations..."
 # On ne lance la migration QUE si le dossier vendor existe
@@ -102,7 +106,7 @@ autostart=true
 autorestart=true
 stopasgroup=true
 killasgroup=true
-numprocs=12 # To reduce memory/CPU usage, change to 2.
+numprocs=2 # To reduce memory/CPU usage, change to 2.
 startsecs=0
 stopwaitsecs=3600
 stdout_logfile=/tmp/worker-laravel.log
@@ -112,8 +116,8 @@ stderr_logfile=/tmp/worker-laravel.log
 "php-fpm.conf" = '''
 [www]
 listen = 127.0.0.1:9000
-user = www-data
-group = www-data
+# user = www-data
+# group = www-data
 listen.owner = www-data
 listen.group = www-data
 pm = dynamic
@@ -131,6 +135,8 @@ user www-data www-data;
 worker_processes 5;
 daemon off;
 
+pid /tmp/nginx.pid;
+
 worker_rlimit_nofile 8192;
 
 events {
@@ -138,6 +144,12 @@ events {
 }
 
 http {
+    client_body_temp_path /tmp/client_temp;
+    proxy_temp_path       /tmp/proxy_temp_path;
+    fastcgi_temp_path     /tmp/fastcgi_temp;
+    uwsgi_temp_path       /tmp/uwsgi_temp;
+    scgi_temp_path        /tmp/scgi_temp;
+
     include    $!{nginx}/conf/mime.types;
     index    index.html index.htm index.php;
 
@@ -165,11 +177,11 @@ http {
         add_header X-Content-Type-Options "nosniff";
 
         client_max_body_size 35M;
-     
+
         index index.php;
-     
+
         charset utf-8;
-     
+
 
         $if(NIXPACKS_PHP_FALLBACK_PATH) (
             location / {
@@ -180,14 +192,14 @@ http {
                 try_files $uri $uri/ /index.php?$query_string;
            }
         )
-     
+
         location = /favicon.ico { access_log off; log_not_found off; }
         location = /robots.txt  { access_log off; log_not_found off; }
-     
+
         $if(IS_LARAVEL) (
             error_page 404 /index.php;
         ) else ()
-     
+
         location ~ \.php$ {
             fastcgi_buffer_size 8k;
             fastcgi_pass 127.0.0.1:9000;
@@ -195,7 +207,7 @@ http {
             include $!{nginx}/conf/fastcgi_params;
             include $!{nginx}/conf/fastcgi.conf;
         }
-     
+
         location ~ /\.(?!well-known).* {
             deny all;
         }
