@@ -1,13 +1,16 @@
 [phases.setup]
 nixPkgs = ["...", "python311Packages.supervisor"]
 
+[phases.install]
+cmds = ["composer install --no-dev --no-interaction --optimize-autoloader"]
+
 [phases.build]
 cmds = [
     "mkdir -p /etc/supervisor/conf.d/",
     "cp /assets/worker-*.conf /etc/supervisor/conf.d/",
     "cp /assets/supervisord.conf /etc/supervisord.conf",
     "chmod +x /assets/start.sh",
-    "..."
+    "php artisan optimize:clear"
 ]
 
 [start]
@@ -16,15 +19,18 @@ cmd = 'bash /assets/start.sh'
 [staticAssets]
 "start.sh" = '''
 #!/bin/bash
+cd /app
+
+touch /tmp/supervisord.log /tmp/worker-nginx.log /tmp/worker-phpfpm.log /tmp/worker-laravel.log
 
 echo "Running migrations..."
-php /app/artisan migrate --force
+php artisan migrate --force
 
-# Transform the nginx configuration
+# Generation de la config Nginx
 node /assets/scripts/prestart.mjs /assets/nginx.template.conf /etc/nginx.conf
 
-# Start supervisor
-supervisord -c /etc/supervisord.conf -n
+# Lancement de supervisor en pointant sur le BON chemin
+supervisord -c /assets/supervisord.conf -n
 '''
 
 "supervisord.conf" = '''
@@ -49,7 +55,7 @@ supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 serverurl=unix:///assets/supervisor.sock
 
 [include]
-files = /etc/supervisor/conf.d/*.conf
+files = /assets/worker-*.conf
 '''
 
 "worker-nginx.conf" = '''
