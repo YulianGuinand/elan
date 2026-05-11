@@ -36,6 +36,8 @@ cmd = 'bash /assets/start.sh'
 #!/bin/bash
 cd /app
 
+chmod -R 775 storage bootstrap/cache
+
 mkdir -p /var/log/nginx
 mkdir -p /var/cache/nginx
 touch /tmp/nginx.pid
@@ -116,10 +118,6 @@ stderr_logfile=/tmp/worker-laravel.log
 "php-fpm.conf" = '''
 [www]
 listen = 127.0.0.1:9000
-# user = www-data
-# group = www-data
-listen.owner = www-data
-listen.group = www-data
 pm = dynamic
 pm.max_children = 50
 pm.min_spare_servers = 4
