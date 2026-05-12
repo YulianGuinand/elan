@@ -20,7 +20,7 @@ COPY . .
 
 # Installation des dépendances projet (production)
 RUN composer install --no-dev --no-interaction --optimize-autoloader
-RUN npm install && npm run build
+RUN npm install --legacy-peer-deps && npm run build
 
 # Attribution des permissions requises par Laravel
 RUN chown -R www-data:www-data /var/www/html \
