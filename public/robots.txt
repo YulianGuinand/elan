@@ -1,4 +1,4 @@
-# Elan - CFA Survey Manager
+# Elan
 # SEO-optimized robots.txt
 
 # Allow all robots by default

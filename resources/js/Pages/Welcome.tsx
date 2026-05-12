@@ -6,7 +6,6 @@ import {
     BarChart3,
     Check,
     CheckCircle2,
-    Globe2,
     MousePointer2,
     Phone,
     Shield,
@@ -20,7 +19,7 @@ export default function Welcome({
     const organizationSchema = {
         "@context": "https://schema.org",
         "@type": "Organization",
-        name: "Elan - CFA Survey Manager",
+        name: "Elan",
         description:
             "Plateforme de gestion d'enquêtes pour centres de formation",
         url: window.location.origin,
@@ -36,7 +35,7 @@ export default function Welcome({
     const softwareApplicationSchema = {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
-        name: "Elan - CFA Survey Manager",
+        name: "Elan",
         description:
             "Plateforme complète de gestion d'enquêtes pour centres de formation d'apprentis",
         url: window.location.origin,
@@ -56,7 +55,7 @@ export default function Welcome({
     return (
         <>
             <PageHead
-                title="Elan - CFA Survey Manager"
+                title="Elan"
                 description="Pilotez vos enquêtes CFA facilement. Plateforme complète pour centres de formation d'apprentis. Automatisez vos enquêtes d'insertion."
                 keywords="enquête CFA, pilotage enquête, centre formation, apprentis, insertion"
                 ogType="website"
@@ -92,12 +91,6 @@ export default function Welcome({
                                     className="text-sm font-medium text-gray-600 hover:text-elan-orange transition-colors"
                                 >
                                     Fonctionnalités
-                                </a>
-                                <a
-                                    href="#temoignages"
-                                    className="text-sm font-medium text-gray-600 hover:text-elan-orange transition-colors"
-                                >
-                                    Témoignages
                                 </a>
                             </div>
 
@@ -164,9 +157,12 @@ export default function Welcome({
                                     >
                                         Se connecter
                                     </Link>
-                                    <button className="inline-flex justify-center items-center px-8 py-3.5 border border-gray-200 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all">
+                                    <Link
+                                        href="#fonctionnalites"
+                                        className="inline-flex justify-center items-center px-8 py-3.5 border border-gray-200 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all"
+                                    >
                                         En savoir plus
-                                    </button>
+                                    </Link>
                                 </div>
                             </div>
 
@@ -589,9 +585,12 @@ export default function Welcome({
                                     >
                                         Se connecter
                                     </Link>
-                                    <button className="inline-flex justify-center items-center px-8 py-3.5 border border-gray-200 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all">
+                                    <Link
+                                        href="#fonctionnalites"
+                                        className="inline-flex justify-center items-center px-8 py-3.5 border border-gray-200 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all"
+                                    >
                                         Voir les avantages
-                                    </button>
+                                    </Link>
                                 </div>
                             </div>
                         </div>
@@ -647,123 +646,13 @@ export default function Welcome({
                                     </li>
                                 </ul>
                             </div>
-                            <div>
-                                <h4 className="font-semibold text-gray-900 mb-4">
-                                    Légal
-                                </h4>
-                                <ul className="space-y-2 text-sm text-gray-600">
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="hover:text-elan-orange"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                alert(
-                                                    "Page en cours de développement",
-                                                );
-                                            }}
-                                        >
-                                            Mentions légales
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="hover:text-elan-orange"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                alert(
-                                                    "Page en cours de développement",
-                                                );
-                                            }}
-                                        >
-                                            Politique de confidentialité
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="hover:text-elan-orange"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                alert(
-                                                    "Page en cours de développement",
-                                                );
-                                            }}
-                                        >
-                                            RGPD
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="mailto:contact@elan-formation.fr"
-                                            className="hover:text-elan-orange"
-                                        >
-                                            Contact
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
                         </div>
                         <div className="mt-12 pt-8 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500">
-                            <p>
-                                © 2024 CFA Survey Manager. Tous droits réservés.
-                            </p>
-                            <div className="flex gap-4">
-                                <Globe2 className="w-4 h-4 cursor-pointer hover:text-gray-900" />
-                                <Shield className="w-4 h-4 cursor-pointer hover:text-gray-900" />
-                            </div>
+                            <p>© 2024 Elan. Tous droits réservés.</p>
                         </div>
                     </div>
                 </footer>
             </div>
         </>
-    );
-}
-
-// Subcomponents for clearer structure
-function FeatureCard({
-    icon,
-    title,
-    description,
-    color,
-}: {
-    icon: React.ReactNode;
-    title: string;
-    description: string;
-    color: string;
-}) {
-    return (
-        <div className="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300 group">
-            <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 ${color} group-hover:scale-110 transition-transform`}
-            >
-                {icon}
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">{title}</h3>
-            <p className="text-gray-600 leading-relaxed">{description}</p>
-        </div>
-    );
-}
-
-function BenefitRow({
-    icon,
-    title,
-    description,
-}: {
-    icon: React.ReactNode;
-    title: string;
-    description: string;
-}) {
-    return (
-        <div className="flex gap-4">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-elan-orange">
-                {icon}
-            </div>
-            <div>
-                <h3 className="font-bold text-gray-900 mb-1">{title}</h3>
-                <p className="text-sm text-gray-600">{description}</p>
-            </div>
-        </div>
     );
 }

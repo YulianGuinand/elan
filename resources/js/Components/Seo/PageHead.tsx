@@ -19,7 +19,7 @@ export default function PageHead({
     twitterCard = "summary_large_image",
     keywords,
 }: PageHeadProps) {
-    const siteName = "Elan - CFA Survey Manager";
+    const siteName = "Elan";
     const fullTitle = title === siteName ? title : `${title} | ${siteName}`;
 
     return (

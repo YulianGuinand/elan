@@ -1,4 +1,4 @@
-# Documentation des Tests - Elan CFA Survey Manager
+# Documentation des Tests - Elan
 
 ## Vue d'ensemble
 

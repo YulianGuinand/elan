@@ -1,4 +1,4 @@
-# Guide d'Optimisation SEO - Elan CFA Survey Manager
+# Guide d'Optimisation SEO - Elan
 
 ## Améliorations Apportées
 
@@ -19,7 +19,7 @@
 ```
 
 ### 2. **Meta Tags Améliorés** ✅
-- **Titre principal:** "Elan - CFA Survey Manager" + contexte de page
+- **Titre principal:** "Elan" + contexte de page
 - **Description:** 155-160 caractères par page
 - **Keywords:** Mots-clés pertinents pour chaque section
 - **Open Graph:** Partage social optimisé
