@@ -1,7 +1,7 @@
 FROM php:8.3-apache
 
 RUN apt-get update && apt-get install -y \
-    libpng-dev libonig-dev libxml2-dev zip unzip nodejs_22 npm \
+    libpng-dev libonig-dev libxml2-dev zip unzip nodejs npm \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # Installation de Composer
