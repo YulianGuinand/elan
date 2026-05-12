@@ -1,8 +1,10 @@
 FROM php:8.3-apache
 
-RUN apt-get update && apt-get install -y \
-    libpng-dev libonig-dev libxml2-dev zip unzip nodejs npm \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+RUN apt-get update && apt-get install -y curl \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y \
+    libpng-dev libonig-dev libxml2-dev libzip-dev zip unzip nodejs \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
 # Installation de Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
