@@ -15,7 +15,9 @@ use Inertia\Response;
 
 class ParticipantController extends Controller
 {
-    public function __construct(private ExcelService $excelService) {}
+    public function __construct(private ExcelService $excelService)
+    {
+    }
 
     /**
      * Affiche la liste des participants avec recherche, filtres et pagination
@@ -68,68 +70,6 @@ class ParticipantController extends Controller
             'formations' => $formations,
             'entreprises' => $entreprises,
         ]);
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'prenom' => 'required|string|max:255',
-            'mail' => 'required|email|max:255',
-            'telephone' => 'required|string|max:20',
-            'role' => 'required|in:Apprentis,Alumnis,Formateurs,Employeurs',
-
-            // Champs additionnels pour creation inline
-            'ecole_id' => 'nullable|string',
-            'formation_id' => 'nullable|string',
-            'entreprise_id' => 'nullable|string',
-            'date_entree' => 'nullable|date',
-            'date_sortiee' => 'nullable|date|after_or_equal:date_entree',
-        ]);
-
-        try {
-            $participant = Participant::create([
-                'nom' => $validated['nom'],
-                'prenom' => $validated['prenom'],
-                'mail' => $validated['mail'],
-                'telephone' => $validated['telephone'],
-                'role' => $validated['role'],
-            ]);
-
-            // Gestion des creations inline pour Apprenti ou Formateur
-            if (in_array($validated['role'], ['Apprentis', 'Formateurs']) && $request->filled('ecole_id') && $request->filled('formation_id')) {
-                $ecoleId = $this->resolveInlineCreation(Ecole::class, 'libelle', $validated['ecole_id']);
-                $formationId = $this->resolveInlineCreation(Formations::class, 'libelle', $validated['formation_id']);
-                $entrepriseId = $request->filled('entreprise_id') ? $this->resolveInlineCreation(Entreprise::class, 'raison_sociale', $validated['entreprise_id']) : null;
-
-                Contrat::create([
-                    'participant_id' => $participant->id,
-                    'ecole_id' => $ecoleId,
-                    'formation_id' => $formationId,
-                    'entreprise_id' => $entrepriseId,
-                    'utilisateur_id' => \Illuminate\Support\Facades\Auth::id(),
-                    'date_entree' => $validated['date_entree'] ?? now()->toDateString(),
-                    'date_sortiee' => $validated['date_sortiee'] ?? null,
-                ]);
-            }
-
-            return redirect()->route('participants.index')->with('success', 'Participant cree avec succès.');
-        } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Erreur lors de la creation : ' . $e->getMessage()]);
-        }
-    }
-
-    /**
-     * Helper to resolve new vs existing entity.
-     */
-    private function resolveInlineCreation($modelClass, $field, $value)
-    {
-        if (str_starts_with($value, 'NEW_')) {
-            $newName = substr($value, 4);
-            $entity = $modelClass::create([$field => $newName]);
-            return $entity->id;
-        }
-        return $value;
     }
 
     public function show(Participant $participant)
@@ -188,18 +128,19 @@ class ParticipantController extends Controller
         $request->validate(['fichier' => 'required|file']);
 
         try {
-            $knownEcoles      = Ecole::pluck('libelle')->toArray();
-            $knownFormations  = Formations::pluck('libelle')->toArray();
-            $knownEntreprises = Entreprise::pluck('raison_sociale')->toArray();
+            $knownEcoles = Ecole::get(["id", "libelle"])->toArray();
+            $knownFormations = Formations::get(["id", "libelle"])->toArray();
+            $knownEntreprises = Entreprise::get(['raison_sociale', 'id'])->toArray();
+
 
             $preview = $this->excelService->previewParticipants(
                 $request->file('fichier'),
-                $knownEcoles,
-                $knownFormations,
-                $knownEntreprises
+                array_column($knownEcoles, 'libelle'),
+                array_column($knownFormations, 'libelle'),
+                array_column($knownEntreprises, 'raison_sociale')
             );
 
-            return response()->json($preview);
+            return response()->json([...$preview, "knownEcoles" => $knownEcoles, "knownFormations" => $knownFormations, "knownEntreprises" => $knownEntreprises]);
         } catch (\Throwable $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
@@ -212,7 +153,17 @@ class ParticipantController extends Controller
     {
         $request->validate([
             'fichier' => 'required|file',
+            'resolutions' => 'nullable|string',
         ]);
+
+        $resolutions = json_decode($request->input('resolutions', '{}'), true);
+        if (!is_array($resolutions)) {
+            $resolutions = [];
+        }
+
+        $resolvedEcoles = is_array($resolutions['ecoles'] ?? null) ? $resolutions['ecoles'] : [];
+        $resolvedFormations = is_array($resolutions['formations'] ?? null) ? $resolutions['formations'] : [];
+        $resolvedEntreprises = is_array($resolutions['entreprises'] ?? null) ? $resolutions['entreprises'] : [];
 
         try {
             $donnees = $this->excelService->importParticipants(
@@ -225,42 +176,27 @@ class ParticipantController extends Controller
                 $participant = Participant::firstOrCreate(
                     ['mail' => $row['mail']],
                     [
-                        'nom'       => $row['nom'],
-                        'prenom'    => $row['prenom'],
+                        'nom' => $row['nom'],
+                        'prenom' => $row['prenom'],
                         'telephone' => $row['telephone'] ?? null,
-                        'role'      => $row['role'] ?? 'Apprentis',
+                        'role' => $row['role'] ?? 'Apprentis',
                     ]
                 );
 
-                // Creer le contrat si ecole + formation fournis
-                if (!empty($row['ecole']) || !empty($row['formation']) || !empty($row['entreprise'])) {
-                    $ecoleId = null;
-                    if (!empty($row['ecole'])) {
-                        $ecole = Ecole::firstOrCreate(['libelle' => $row['ecole']]);
-                        $ecoleId = $ecole->id;
-                    }
+                $ecoleId = $this->resolveEcoleId($row['ecole'] ?? null, $resolvedEcoles);
+                $formationId = $this->resolveFormationId($row['formation'] ?? null, $resolvedFormations);
+                $entrepriseId = $this->resolveEntrepriseId($row['entreprise'] ?? null, $resolvedEntreprises);
 
-                    $formationId = null;
-                    if (!empty($row['formation'])) {
-                        $formation = Formations::firstOrCreate(['libelle' => $row['formation']]);
-                        $formationId = $formation->id;
-                    }
-
-                    $entrepriseId = null;
-                    if (!empty($row['entreprise'])) {
-                        $entreprise = Entreprise::firstOrCreate(['raison_sociale' => $row['entreprise']]);
-                        $entrepriseId = $entreprise->id;
-                    }
-
-                    Contrat::firstOrCreate(
+                if ($ecoleId !== null && $formationId !== null) {
+                    Contrat::updateOrCreate(
                         ['participant_id' => $participant->id],
                         [
-                            'ecole_id'      => $ecoleId,
-                            'formation_id'  => $formationId,
+                            'ecole_id' => $ecoleId,
+                            'formation_id' => $formationId,
                             'entreprise_id' => $entrepriseId,
                             'utilisateur_id' => \Illuminate\Support\Facades\Auth::id(),
-                            'date_entree'   => $row['date_entree'] ?? now()->toDateString(),
-                            'date_sortiee'  => $row['date_sortiee'] ?? null,
+                            'date_entree' => $row['date_entree'] ?? now()->toDateString(),
+                            'date_sortiee' => $row['date_sortiee'] ?? null,
                         ]
                     );
                 }
@@ -276,13 +212,79 @@ class ParticipantController extends Controller
         }
     }
 
+    private function resolveEcoleId(?string $label, array $resolvedEcoles): ?int
+    {
+        $label = trim((string) $label);
+        if ($label === '') {
+            return null;
+        }
+
+        if (isset($resolvedEcoles[$label])) {
+            return (int) $resolvedEcoles[$label];
+        }
+
+        $ecole = Ecole::query()
+            ->whereRaw('LOWER(libelle) = ?', [mb_strtolower($label)])
+            ->first();
+
+        if ($ecole) {
+            return (int) $ecole->id;
+        }
+
+        throw new \RuntimeException("L'école '{$label}' doit être sélectionnée ou créée avant l'import.");
+    }
+
+    private function resolveFormationId(?string $label, array $resolvedFormations): ?int
+    {
+        $label = trim((string) $label);
+        if ($label === '') {
+            return null;
+        }
+
+        if (isset($resolvedFormations[$label])) {
+            return (int) $resolvedFormations[$label];
+        }
+
+        $formation = Formations::query()
+            ->whereRaw('LOWER(libelle) = ?', [mb_strtolower($label)])
+            ->first();
+
+        if ($formation) {
+            return (int) $formation->id;
+        }
+
+        return (int) Formations::create(['libelle' => $label])->id;
+    }
+
+    private function resolveEntrepriseId(?string $label, array $resolvedEntreprises): ?int
+    {
+        $label = trim((string) $label);
+        if ($label === '') {
+            return null;
+        }
+
+        if (isset($resolvedEntreprises[$label])) {
+            return (int) $resolvedEntreprises[$label];
+        }
+
+        $entreprise = Entreprise::query()
+            ->whereRaw('LOWER(raison_sociale) = ?', [mb_strtolower($label)])
+            ->first();
+
+        if ($entreprise) {
+            return (int) $entreprise->id;
+        }
+
+        return (int) Entreprise::create(['raison_sociale' => $label])->id;
+    }
+
     /**
      * Telecharger un fichier CSV exemple.
      */
     public function downloadExemple()
     {
         $headers = [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="exemple_participants.csv"',
         ];
 

@@ -17,8 +17,8 @@ class ExcelService
     {
         $extension = strtolower(
             $file instanceof UploadedFile
-              ? $file->getClientOriginalExtension()
-              : pathinfo($file, PATHINFO_EXTENSION)
+            ? $file->getClientOriginalExtension()
+            : pathinfo($file, PATHINFO_EXTENSION)
         );
 
         if ($extension === 'csv') {
@@ -35,8 +35,8 @@ class ExcelService
     private function importFromCsv($file): Collection
     {
         $path = $file instanceof UploadedFile
-          ? $file->getRealPath()
-          : $file;
+            ? $file->getRealPath()
+            : $file;
 
         $handle = fopen($path, 'r');
         if ($handle === false) {
@@ -85,8 +85,8 @@ class ExcelService
     {
         // FastExcel a besoin du vrai chemin avec la bonne extension
         if ($file instanceof UploadedFile) {
-            $tmpPath = sys_get_temp_dir().DIRECTORY_SEPARATOR
-              .uniqid('elan_import_').'.'.$file->getClientOriginalExtension();
+            $tmpPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR
+                . uniqid('elan_import_') . '.' . $file->getClientOriginalExtension();
             $file->move(dirname($tmpPath), basename($tmpPath));
             $path = $tmpPath;
         } else {
@@ -127,7 +127,7 @@ class ExcelService
                     'code_postal' => $line['code_postal'] ?? $line['Code postal'] ?? $line['Code Postal'] ?? null,
                 ];
             })
-            ->filter(fn ($item) => ! empty($item['raison_sociale']));
+            ->filter(fn($item) => !empty($item['raison_sociale']));
     }
 
     /**
@@ -139,8 +139,8 @@ class ExcelService
     {
         $extension = strtolower(
             $file instanceof UploadedFile
-              ? $file->getClientOriginalExtension()
-              : pathinfo($file, PATHINFO_EXTENSION)
+            ? $file->getClientOriginalExtension()
+            : pathinfo($file, PATHINFO_EXTENSION)
         );
 
         if ($extension === 'csv') {
@@ -172,7 +172,7 @@ class ExcelService
                     'date_sortiee' => $line['date_sortiee'] ?? $line['Date sortie'] ?? $line['Date sortie'] ?? null,
                 ];
             })
-            ->filter(fn ($item) => ! empty($item['nom']) && ! empty($item['prenom']) && ! empty($item['mail']));
+            ->filter(fn($item) => !empty($item['nom']) && !empty($item['prenom']) && !empty($item['mail']));
     }
 
     /**
@@ -183,13 +183,13 @@ class ExcelService
     {
         $extension = strtolower(
             $file instanceof UploadedFile
-              ? $file->getClientOriginalExtension()
-              : pathinfo($file, PATHINFO_EXTENSION)
+            ? $file->getClientOriginalExtension()
+            : pathinfo($file, PATHINFO_EXTENSION)
         );
 
         $raw = $extension === 'csv'
-          ? $this->importFromCsvRaw($file)
-          : $this->importFromExcelRaw($file);
+            ? $this->importFromCsvRaw($file)
+            : $this->importFromExcelRaw($file);
 
         $rows = $this->mapParticipants($raw);
 
@@ -198,13 +198,13 @@ class ExcelService
         $unknownEntreprises = [];
 
         foreach ($rows as $row) {
-            if ($row['ecole'] && ! in_array(strtolower($row['ecole']), array_map('strtolower', $knownEcoles))) {
+            if ($row['ecole'] && !in_array(strtolower($row['ecole']), array_map('strtolower', $knownEcoles))) {
                 $unknownEcoles[] = $row['ecole'];
             }
-            if ($row['formation'] && ! in_array(strtolower($row['formation']), array_map('strtolower', $knownFormations))) {
+            if ($row['formation'] && !in_array(strtolower($row['formation']), array_map('strtolower', $knownFormations))) {
                 $unknownFormations[] = $row['formation'];
             }
-            if ($row['entreprise'] && ! in_array(strtolower($row['entreprise']), array_map('strtolower', $knownEntreprises))) {
+            if ($row['entreprise'] && !in_array(strtolower($row['entreprise']), array_map('strtolower', $knownEntreprises))) {
                 $unknownEntreprises[] = $row['entreprise'];
             }
         }
@@ -224,7 +224,7 @@ class ExcelService
     {
         $path = $file instanceof UploadedFile ? $file->getRealPath() : $file;
         $handle = fopen($path, 'r');
-        if (! $handle) {
+        if (!$handle) {
             throw new \RuntimeException("Impossible d'ouvrir le CSV.");
         }
 
@@ -257,14 +257,14 @@ class ExcelService
     private function importFromExcelRaw($file): Collection
     {
         if ($file instanceof UploadedFile) {
-            $tmpPath = sys_get_temp_dir().DIRECTORY_SEPARATOR.uniqid('elan_import_').'.'.$file->getClientOriginalExtension();
+            $tmpPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('elan_import_') . '.' . $file->getClientOriginalExtension();
             $file->move(dirname($tmpPath), basename($tmpPath));
             $path = $tmpPath;
         } else {
             $path = $file;
         }
         try {
-            return (new FastExcel)->import($path, fn ($line) => $line);
+            return (new FastExcel)->import($path, fn($line) => $line);
         } finally {
             if (isset($tmpPath) && file_exists($tmpPath)) {
                 unlink($tmpPath);

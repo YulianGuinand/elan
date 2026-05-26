@@ -36,6 +36,9 @@ interface PreviewData {
     unknownEcoles: string[];
     unknownFormations: string[];
     unknownEntreprises: string[];
+    knownEcoles: { id: number; libelle: string }[];
+    knownEntreprises: { id: number; raison_sociale: string }[];
+    knownFormations: { id: number; libelle: string }[];
 }
 
 function EntityCell({
@@ -95,11 +98,20 @@ export default function StudentCsvImport() {
     const [resolvedEcoles, setResolvedEcoles] = useState<
         Record<string, number>
     >({});
+    const [resolvedEcoleLabels, setResolvedEcoleLabels] = useState<
+        Record<string, string>
+    >({});
     const [resolvedFormations, setResolvedFormations] = useState<
         Record<string, number>
     >({});
+    const [resolvedFormationLabels, setResolvedFormationLabels] = useState<
+        Record<string, string>
+    >({});
     const [resolvedEntreprises, setResolvedEntreprises] = useState<
         Record<string, number>
+    >({});
+    const [resolvedEntrepriseLabels, setResolvedEntrepriseLabels] = useState<
+        Record<string, string>
     >({});
 
     // Modal inline
@@ -115,8 +127,11 @@ export default function StudentCsvImport() {
         setError(null);
         setImportOk(false);
         setResolvedEcoles({});
+        setResolvedEcoleLabels({});
         setResolvedFormations({});
+        setResolvedFormationLabels({});
         setResolvedEntreprises({});
+        setResolvedEntrepriseLabels({});
         await runPreview(f);
     };
 
@@ -169,6 +184,14 @@ export default function StudentCsvImport() {
             const fd = new FormData();
             fd.append("fichier", file);
             fd.append("_token", getCsrf());
+            fd.append(
+                "resolutions",
+                JSON.stringify({
+                    ecoles: resolvedEcoles,
+                    formations: resolvedFormations,
+                    entreprises: resolvedEntreprises,
+                }),
+            );
 
             const res = await fetch(route("participants.import"), {
                 method: "POST",
@@ -195,15 +218,27 @@ export default function StudentCsvImport() {
                 ...r,
                 [modalContext]: option.id as number,
             }));
+            setResolvedEcoleLabels((r) => ({
+                ...r,
+                [modalContext]: option.name,
+            }));
         } else if (modalType === "formation") {
             setResolvedFormations((r) => ({
                 ...r,
                 [modalContext]: option.id as number,
             }));
+            setResolvedFormationLabels((r) => ({
+                ...r,
+                [modalContext]: option.name,
+            }));
         } else if (modalType === "entreprise") {
             setResolvedEntreprises((r) => ({
                 ...r,
                 [modalContext]: option.id as number,
+            }));
+            setResolvedEntrepriseLabels((r) => ({
+                ...r,
+                [modalContext]: option.name,
             }));
         }
         setModalType(null);
@@ -344,6 +379,8 @@ export default function StudentCsvImport() {
                                     {preview.unknownEcoles.map((name) => (
                                         <button
                                             key={name}
+                                            type="button"
+                                            disabled={!!resolvedEcoles[name]}
                                             onClick={() => {
                                                 setModalType("ecole");
                                                 setModalDefault(name);
@@ -354,13 +391,17 @@ export default function StudentCsvImport() {
                                                     ? "bg-green-50 border-green-300 text-green-700 cursor-default"
                                                     : "bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100"
                                             }`}
+                                            title={
+                                                resolvedEcoleLabels[name] ??
+                                                name
+                                            }
                                         >
                                             {resolvedEcoles[name] ? (
                                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                             ) : (
                                                 <PlusCircle className="w-3 h-3" />
                                             )}
-                                            {name}
+                                            {resolvedEcoleLabels[name] ?? name}
                                         </button>
                                     ))}
                                 </div>
@@ -378,6 +419,10 @@ export default function StudentCsvImport() {
                                     {preview.unknownFormations.map((name) => (
                                         <button
                                             key={name}
+                                            type="button"
+                                            disabled={
+                                                !!resolvedFormations[name]
+                                            }
                                             onClick={() => {
                                                 setModalType("formation");
                                                 setModalDefault(name);
@@ -388,13 +433,18 @@ export default function StudentCsvImport() {
                                                     ? "bg-green-50 border-green-300 text-green-700 cursor-default"
                                                     : "bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100"
                                             }`}
+                                            title={
+                                                resolvedFormationLabels[name] ??
+                                                name
+                                            }
                                         >
                                             {resolvedFormations[name] ? (
                                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                             ) : (
                                                 <PlusCircle className="w-3 h-3" />
                                             )}
-                                            {name}
+                                            {resolvedFormationLabels[name] ??
+                                                name}
                                         </button>
                                     ))}
                                 </div>
@@ -412,6 +462,10 @@ export default function StudentCsvImport() {
                                     {preview.unknownEntreprises.map((name) => (
                                         <button
                                             key={name}
+                                            type="button"
+                                            disabled={
+                                                !!resolvedEntreprises[name]
+                                            }
                                             onClick={() => {
                                                 setModalType("entreprise");
                                                 setModalDefault(name);
@@ -422,13 +476,19 @@ export default function StudentCsvImport() {
                                                     ? "bg-green-50 border-green-300 text-green-700 cursor-default"
                                                     : "bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100"
                                             }`}
+                                            title={
+                                                resolvedEntrepriseLabels[
+                                                    name
+                                                ] ?? name
+                                            }
                                         >
                                             {resolvedEntreprises[name] ? (
                                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                             ) : (
                                                 <PlusCircle className="w-3 h-3" />
                                             )}
-                                            {name}
+                                            {resolvedEntrepriseLabels[name] ??
+                                                name}
                                         </button>
                                     ))}
                                 </div>
@@ -497,7 +557,11 @@ export default function StudentCsvImport() {
                                         </td>
                                         <td className="px-4 py-2.5">
                                             <EntityCell
-                                                value={row.ecole}
+                                                value={
+                                                    resolvedEcoleLabels[
+                                                        row.ecole ?? ""
+                                                    ] ?? row.ecole
+                                                }
                                                 isUnknown={
                                                     !!row.ecole &&
                                                     preview.unknownEcoles.includes(
@@ -512,7 +576,11 @@ export default function StudentCsvImport() {
                                         </td>
                                         <td className="px-4 py-2.5">
                                             <EntityCell
-                                                value={row.formation}
+                                                value={
+                                                    resolvedFormationLabels[
+                                                        row.formation ?? ""
+                                                    ] ?? row.formation
+                                                }
                                                 isUnknown={
                                                     !!row.formation &&
                                                     preview.unknownFormations.includes(
@@ -529,7 +597,11 @@ export default function StudentCsvImport() {
                                         </td>
                                         <td className="px-4 py-2.5">
                                             <EntityCell
-                                                value={row.entreprise}
+                                                value={
+                                                    resolvedEntrepriseLabels[
+                                                        row.entreprise ?? ""
+                                                    ] ?? row.entreprise
+                                                }
                                                 isUnknown={
                                                     !!row.entreprise &&
                                                     preview.unknownEntreprises.includes(
@@ -584,6 +656,9 @@ export default function StudentCsvImport() {
                 defaultName={modalDefault}
                 onClose={() => setModalType(null)}
                 onCreated={handleCreated}
+                knownFormations={preview?.knownFormations}
+                knownEntreprises={preview?.knownEntreprises}
+                knownEcoles={preview?.knownEcoles}
             />
         </div>
     );
